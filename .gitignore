@@ -38,3 +38,6 @@ htmlcov/
 # Reports / runs (these accumulate; commit only the canonical
 # ones, not every run artifact)
 runs/*.log
+
+# Local UI reference material
+html/
