@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS bars_symbol_ts;
+DROP TABLE IF EXISTS bars;
