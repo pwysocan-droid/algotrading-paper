@@ -24,6 +24,85 @@ When evaluating a specific situation:
 
 ---
 
+## Future-self-letter convention
+
+Cluster-4 methodology 4F from `week-0-synthesis.md`. Hard-rule entries
+in this log — Phase 2 entry gates, Phase 2 exit conditions, the reframe
+entry's adaptive clause, and any future entry that creates a hard rule —
+get a `### Future-self letter` section appended.
+
+The letter is written *at the moment the rule is committed*, addressed
+to the operator at *the moment override would be tempting*. Its job is
+not to argue against the override but to anticipate the *specific
+cognitive distortion* future-self will be experiencing — so future-self
+recognizes the pattern and pauses.
+
+Inheritor of a long tradition (Marcus Aurelius's *Meditations* are
+literally 2nd-century letters to future self at moments of weakness).
+The point isn't moralism; it's that present-self has access to
+information future-self loses access to, namely the un-narrativized
+view of *why this rule was set*.
+
+### How to write one
+
+Three short paragraphs, no more:
+
+1. **What you're feeling right now** (the rule was just committed,
+   pre-commitment is fresh, the data hasn't yet arrived to challenge
+   it). Sets the contrast with the future-state.
+2. **What you'll be feeling at the override moment** (named
+   specifically — "you'll be telling yourself X" — based on the
+   documented failure mode the rule guards against).
+3. **The single concrete thing to do before overriding** (re-read X,
+   wait Y hours, write Z, talk to W). Not "don't override" — the
+   discipline is in the *interrupt*, not the prohibition.
+
+The letter goes inside a `### Future-self letter` heading at the end
+of the entry it belongs to, so it travels with the rule.
+
+### Worked example — the Phase 2 drawdown exit ($700 floor)
+
+This example is appended to the *forthcoming* worked-out version of
+the 2026-04-26 entry "Three explicit Phase 2 exit conditions"; the
+existing version of that entry below does not yet have the letter
+because writing letters for *all* existing entries needs an operator-
+in-the-room session and that session is deferred to Week 2 per the
+roadmap.
+
+> **Future-self letter — Phase 2 drawdown exit ($700 floor)**
+>
+> *Right now, 2026-04-26.* The rule is fresh. Real money hasn't been
+> committed yet. The number $700 is just arithmetic — 30% drawdown on
+> $1,000. It feels like a generous floor: I'd have to lose $300 of
+> $1,000 before this fires. The pre-commitment is easy because the
+> loss is hypothetical.
+>
+> *At the override moment.* You'll be staring at an account that has
+> just touched $710. You'll be telling yourself one of three things:
+> "the position is about to recover," "this is a flash crash and the
+> exit will catch the wick," or "this is the worst possible time to
+> sell because the strategies are about to start working." All three
+> are documented retail-trader rationalizations for not closing a
+> losing position. The 4G adversarial review will already have
+> flagged the drawdown the previous Friday; you'll be tempted to
+> argue the bear case was wrong because the account hasn't fully
+> hit $700 yet.
+>
+> *Before overriding, do this one thing.* Open `playbook.md` §6,
+> read the Phase 2 exit play in full, and write a `decision-log.md`
+> entry titled "Override of Phase 2 drawdown exit — [date]" with
+> the exact reasoning *before* placing any trade or canceling any
+> order. If you cannot write the entry without it reading like
+> rationalization, the letter has done its job: stop, run the play,
+> file the postmortem.
+
+The convention holds for entries written from this point forward.
+The retroactive letter-writing for the existing 2026-04-26 entries
+(Phase 2 entry gates, exit conditions, reframe adaptive clause) is
+deferred to Week 2 per `roadmap.md`.
+
+---
+
 ## 2026-04-26 — Claude as epistemological backbone (project reframe)
 
 The animating idea: try wild ideas, leave behind whole categories
