@@ -1,0 +1,40 @@
+# Secrets
+.env
+.env.*
+!.env.template
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build / cache
+build/
+dist/
+.coverage
+htmlcov/
+
+# Database (Phase 1 will create local SQLite files)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Reports / runs (these accumulate; commit only the canonical
+# ones, not every run artifact)
+runs/*.log
