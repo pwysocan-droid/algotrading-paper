@@ -1,0 +1,263 @@
+"""Execution layer — applies position limits and routes signals to trades.
+
+Reads pending Signal rows. For each one, runs the position-limit checks:
+  - Per-trade size: $200 max
+  - Total open exposure: $1,000 max
+  - Concurrent open positions: 5 max
+  - Per-symbol cooldown: 1h between trades on the same symbol
+
+Every signal produces a `decisions` row — action='placed' with a trade_id,
+or action='rejected' with a reason explaining which limit was breached.
+The execution layer refuses orders that breach any limit; the decisions
+audit trail is non-negotiable.
+
+For Week 1 with an empty STRATEGY_VARIANTS, no signals exist, so this
+module runs cleanly and produces zero trades. The position-limit logic
+is fully wired so Week 2's strategy roster lands against an enforced
+ceiling on day one.
+"""
+
+from __future__ import annotations
+
+import sqlite3
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+import db
+from config import (
+    MAX_CONCURRENT_POSITIONS,
+    MAX_POSITION_USD,
+    MAX_TOTAL_EXPOSURE_USD,
+    SYMBOL_COOLDOWN_HOURS,
+)
+
+
+@dataclass(frozen=True)
+class PendingSignal:
+    id: int
+    symbol: str
+    variant_name: str
+    strategy: str
+    side: str
+    bar_timestamp: str
+    price_at_signal: float
+
+
+@dataclass(frozen=True)
+class LimitCheckResult:
+    ok: bool
+    reason: str = ""
+
+
+def open_positions(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+    return conn.execute(
+        """
+        SELECT id, variant_name, symbol, side, qty, entry_price, entry_time
+          FROM trades
+         WHERE status = 'open'
+        """
+    ).fetchall()
+
+
+def total_open_exposure_usd(conn: sqlite3.Connection) -> float:
+    row = conn.execute(
+        "SELECT COALESCE(SUM(qty * entry_price), 0) AS exposure FROM trades WHERE status = 'open'"
+    ).fetchone()
+    return float(row["exposure"]) if row else 0.0
+
+
+def last_trade_for_symbol(
+    conn: sqlite3.Connection, symbol: str
+) -> sqlite3.Row | None:
+    return conn.execute(
+        """
+        SELECT entry_time
+          FROM trades
+         WHERE symbol = ?
+         ORDER BY entry_time DESC
+         LIMIT 1
+        """,
+        (symbol,),
+    ).fetchone()
+
+
+def check_limits(
+    conn: sqlite3.Connection,
+    sig: PendingSignal,
+    intended_position_usd: float,
+    now: datetime,
+) -> LimitCheckResult:
+    if intended_position_usd > MAX_POSITION_USD:
+        return LimitCheckResult(
+            False,
+            f"position size ${intended_position_usd:.2f} exceeds per-trade max "
+            f"${MAX_POSITION_USD:.2f}",
+        )
+
+    open_count = len(open_positions(conn))
+    if open_count >= MAX_CONCURRENT_POSITIONS:
+        return LimitCheckResult(
+            False,
+            f"{open_count} concurrent positions already open; max is "
+            f"{MAX_CONCURRENT_POSITIONS}",
+        )
+
+    current_exposure = total_open_exposure_usd(conn)
+    if current_exposure + intended_position_usd > MAX_TOTAL_EXPOSURE_USD:
+        return LimitCheckResult(
+            False,
+            f"total exposure ${current_exposure:.2f} + new ${intended_position_usd:.2f} "
+            f"exceeds ${MAX_TOTAL_EXPOSURE_USD:.2f}",
+        )
+
+    last = last_trade_for_symbol(conn, sig.symbol)
+    if last is not None:
+        last_time = datetime.fromisoformat(last["entry_time"])
+        if last_time.tzinfo is None:
+            last_time = last_time.replace(tzinfo=timezone.utc)
+        if now - last_time < timedelta(hours=SYMBOL_COOLDOWN_HOURS):
+            return LimitCheckResult(
+                False,
+                f"{sig.symbol} traded within last {SYMBOL_COOLDOWN_HOURS}h "
+                f"(at {last['entry_time']}); cooldown not elapsed",
+            )
+
+    return LimitCheckResult(True)
+
+
+def _record_decision(
+    conn: sqlite3.Connection,
+    signal_id: int,
+    action: str,
+    reason: str,
+    decided_at: str,
+    trade_id: int | None = None,
+) -> int:
+    cur = conn.execute(
+        """
+        INSERT INTO decisions (signal_id, decided_at, action, trade_id, reason)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (signal_id, decided_at, action, trade_id, reason),
+    )
+    return int(cur.lastrowid) if cur.lastrowid else 0
+
+
+def _record_trade(
+    conn: sqlite3.Connection,
+    sig: PendingSignal,
+    qty: float,
+    entry_price: float,
+    entry_time: str,
+    is_real_money: int = 0,
+    alpaca_order_id: str | None = None,
+) -> int:
+    cur = conn.execute(
+        """
+        INSERT INTO trades (
+            signal_id, variant_name, symbol, side, qty, entry_price, entry_time,
+            is_real_money, alpaca_order_id, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')
+        """,
+        (
+            sig.id,
+            sig.variant_name,
+            sig.symbol,
+            sig.side,
+            qty,
+            entry_price,
+            entry_time,
+            is_real_money,
+            alpaca_order_id,
+        ),
+    )
+    return int(cur.lastrowid) if cur.lastrowid else 0
+
+
+def position_qty_for_signal(
+    sig: PendingSignal, position_usd: float = MAX_POSITION_USD
+) -> float:
+    if sig.price_at_signal <= 0:
+        raise ValueError(f"non-positive price_at_signal={sig.price_at_signal!r}")
+    return position_usd / sig.price_at_signal
+
+
+def execute_signal(
+    conn: sqlite3.Connection,
+    sig: PendingSignal,
+    entry_price: float,
+    entry_time: datetime | None = None,
+    intended_position_usd: float = MAX_POSITION_USD,
+    is_real_money: int = 0,
+    alpaca_order_id: str | None = None,
+) -> tuple[int, str, str]:
+    """Apply limits, write a decision row, optionally write a trade row.
+
+    Returns (decision_id, action, reason). action is 'placed' or 'rejected'.
+    """
+    now = entry_time or datetime.now(timezone.utc)
+    decided_at = now.isoformat()
+    result = check_limits(conn, sig, intended_position_usd, now)
+    if not result.ok:
+        decision_id = _record_decision(
+            conn, sig.id, "rejected", result.reason, decided_at, trade_id=None
+        )
+        return decision_id, "rejected", result.reason
+
+    qty = intended_position_usd / entry_price
+    trade_id = _record_trade(
+        conn,
+        sig,
+        qty=qty,
+        entry_price=entry_price,
+        entry_time=decided_at,
+        is_real_money=is_real_money,
+        alpaca_order_id=alpaca_order_id,
+    )
+    reason = f"placed {sig.side} {qty:.6f} {sig.symbol} @ {entry_price:.2f}"
+    decision_id = _record_decision(
+        conn, sig.id, "placed", reason, decided_at, trade_id=trade_id
+    )
+    return decision_id, "placed", reason
+
+
+def pending_signals(conn: sqlite3.Connection) -> list[PendingSignal]:
+    """Signals with no associated decision row yet."""
+    rows = conn.execute(
+        """
+        SELECT s.id, s.symbol, s.variant_name, s.strategy, s.side,
+               s.bar_timestamp, s.price_at_signal
+          FROM signals s
+          LEFT JOIN decisions d ON d.signal_id = s.id
+         WHERE d.id IS NULL
+         ORDER BY s.id ASC
+        """
+    ).fetchall()
+    return [
+        PendingSignal(
+            id=r["id"],
+            symbol=r["symbol"],
+            variant_name=r["variant_name"],
+            strategy=r["strategy"],
+            side=r["side"],
+            bar_timestamp=r["bar_timestamp"],
+            price_at_signal=r["price_at_signal"],
+        )
+        for r in rows
+    ]
+
+
+def process_pending(db_path: Path | None = None) -> int:
+    """Process every pending signal in the DB. Returns count of placed trades.
+
+    For Week 1 with no strategies registered there are no pending signals,
+    so this returns 0 cleanly.
+    """
+    placed = 0
+    with db.connect(db_path) as conn:
+        for sig in pending_signals(conn):
+            _, action, _ = execute_signal(conn, sig, entry_price=sig.price_at_signal)
+            if action == "placed":
+                placed += 1
+    return placed

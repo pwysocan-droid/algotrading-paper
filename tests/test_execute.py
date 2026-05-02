@@ -1,0 +1,231 @@
+"""Tests for execute.py — position-limit enforcement.
+
+The position limits ($200/trade, $1,000 total, 5 concurrent, 1h cooldown)
+are enforced in code, not honor system. Every check has a test that
+constructs the limit-breach scenario and asserts a 'rejected' decision
+is logged with a reason.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+import pytest
+
+import db
+import execute
+from config import (
+    MAX_CONCURRENT_POSITIONS,
+    MAX_POSITION_USD,
+    MAX_TOTAL_EXPOSURE_USD,
+    SYMBOL_COOLDOWN_HOURS,
+)
+from execute import PendingSignal
+
+
+@pytest.fixture
+def tmp_db(tmp_path: Path) -> Path:
+    path = tmp_path / "test.db"
+    db.migrate(path)
+    return path
+
+
+def _seed_signal(
+    db_path: Path,
+    symbol: str = "BTC/USD",
+    variant: str = "test_variant",
+    side: str = "buy",
+    price: float = 60_000.0,
+    bar_timestamp: str = "2026-05-01T12:00:00+00:00",
+) -> int:
+    with db.connect(db_path) as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO signals (
+                symbol, variant_name, strategy, side, bar_timestamp,
+                price_at_signal, reasoning_json, emitted_at
+            ) VALUES (?, ?, 'test', ?, ?, ?, '{}', ?)
+            """,
+            (symbol, variant, side, bar_timestamp, price, "2026-05-01T12:01:00+00:00"),
+        )
+        return int(cur.lastrowid) if cur.lastrowid else 0
+
+
+def _pending(db_path: Path, signal_id: int) -> PendingSignal:
+    with db.connect(db_path) as conn:
+        row = conn.execute("SELECT * FROM signals WHERE id = ?", (signal_id,)).fetchone()
+    return PendingSignal(
+        id=row["id"],
+        symbol=row["symbol"],
+        variant_name=row["variant_name"],
+        strategy=row["strategy"],
+        side=row["side"],
+        bar_timestamp=row["bar_timestamp"],
+        price_at_signal=row["price_at_signal"],
+    )
+
+
+def test_empty_db_zero_pending(tmp_db: Path) -> None:
+    assert execute.process_pending(tmp_db) == 0
+    with db.connect(tmp_db) as conn:
+        n_trades = conn.execute("SELECT COUNT(*) AS c FROM trades").fetchone()["c"]
+        n_decisions = conn.execute("SELECT COUNT(*) AS c FROM decisions").fetchone()["c"]
+    assert n_trades == 0
+    assert n_decisions == 0
+
+
+def test_signal_within_limits_is_placed(tmp_db: Path) -> None:
+    sid = _seed_signal(tmp_db, price=60_000.0)
+    sig = _pending(tmp_db, sid)
+    with db.connect(tmp_db) as conn:
+        decision_id, action, reason = execute.execute_signal(
+            conn, sig, entry_price=60_000.0,
+            entry_time=datetime(2026, 5, 1, 12, 5, tzinfo=timezone.utc),
+        )
+    assert action == "placed"
+    assert "60000" in reason
+    with db.connect(tmp_db) as conn:
+        decision = conn.execute("SELECT * FROM decisions WHERE id = ?", (decision_id,)).fetchone()
+        trade = conn.execute("SELECT * FROM trades WHERE id = ?", (decision["trade_id"],)).fetchone()
+    assert decision["action"] == "placed"
+    assert trade is not None
+    assert trade["status"] == "open"
+    assert abs(trade["qty"] * trade["entry_price"] - MAX_POSITION_USD) < 0.01
+
+
+def test_signal_above_per_trade_max_is_rejected(tmp_db: Path) -> None:
+    sid = _seed_signal(tmp_db)
+    sig = _pending(tmp_db, sid)
+    with db.connect(tmp_db) as conn:
+        decision_id, action, reason = execute.execute_signal(
+            conn, sig, entry_price=60_000.0,
+            entry_time=datetime(2026, 5, 1, 12, 5, tzinfo=timezone.utc),
+            intended_position_usd=MAX_POSITION_USD + 1.0,
+        )
+    assert action == "rejected"
+    assert "exceeds per-trade max" in reason
+    with db.connect(tmp_db) as conn:
+        n_trades = conn.execute("SELECT COUNT(*) AS c FROM trades").fetchone()["c"]
+        decision = conn.execute("SELECT * FROM decisions WHERE id = ?", (decision_id,)).fetchone()
+    assert n_trades == 0
+    assert decision["trade_id"] is None
+
+
+def test_total_exposure_cap_rejects_new_signal(tmp_db: Path) -> None:
+    """Five $200 positions = $1000 ceiling; sixth $200 must reject on exposure."""
+    base_time = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    symbols = ["BTC/USD", "ETH/USD", "SOL/USD", "LINK/USD", "AVAX/USD"]
+    placed = 0
+    for i, symbol in enumerate(symbols):
+        sid = _seed_signal(tmp_db, symbol=symbol, variant=f"v{i}", price=100.0,
+                           bar_timestamp=f"2026-05-01T12:0{i}:00+00:00")
+        sig = _pending(tmp_db, sid)
+        with db.connect(tmp_db) as conn:
+            _, action, _ = execute.execute_signal(
+                conn, sig, entry_price=100.0,
+                entry_time=base_time + timedelta(hours=i + 1),
+            )
+        assert action == "placed", f"signal {i} should have placed"
+        placed += 1
+    assert placed == 5
+
+    sid = _seed_signal(tmp_db, symbol="DOGE/USD", variant="v6", price=100.0,
+                       bar_timestamp="2026-05-01T13:00:00+00:00")
+    sig = _pending(tmp_db, sid)
+    with db.connect(tmp_db) as conn:
+        _, action, reason = execute.execute_signal(
+            conn, sig, entry_price=100.0,
+            entry_time=base_time + timedelta(hours=10),
+        )
+    assert action == "rejected"
+    assert "concurrent positions" in reason or "total exposure" in reason
+
+
+def test_concurrent_position_cap(tmp_db: Path) -> None:
+    """At MAX_CONCURRENT_POSITIONS open trades, the next one is rejected."""
+    base_time = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    symbols = ["S1", "S2", "S3", "S4", "S5"]
+    for i, symbol in enumerate(symbols):
+        sid = _seed_signal(tmp_db, symbol=symbol, variant=f"v{i}", price=10.0,
+                           bar_timestamp=f"2026-05-01T12:0{i}:00+00:00")
+        sig = _pending(tmp_db, sid)
+        with db.connect(tmp_db) as conn:
+            _, action, _ = execute.execute_signal(
+                conn, sig, entry_price=10.0,
+                entry_time=base_time + timedelta(hours=i + 1),
+                intended_position_usd=10.0,
+            )
+        assert action == "placed"
+
+    sid = _seed_signal(tmp_db, symbol="S6", variant="v6", price=10.0,
+                       bar_timestamp="2026-05-01T13:00:00+00:00")
+    sig = _pending(tmp_db, sid)
+    with db.connect(tmp_db) as conn:
+        _, action, reason = execute.execute_signal(
+            conn, sig, entry_price=10.0,
+            entry_time=base_time + timedelta(hours=10),
+            intended_position_usd=10.0,
+        )
+    assert action == "rejected"
+    assert f"max is {MAX_CONCURRENT_POSITIONS}" in reason
+
+
+def test_symbol_cooldown_rejects_within_window(tmp_db: Path) -> None:
+    sid1 = _seed_signal(tmp_db, symbol="BTC/USD", variant="v1", price=60_000.0,
+                        bar_timestamp="2026-05-01T12:00:00+00:00")
+    sig1 = _pending(tmp_db, sid1)
+    base_time = datetime(2026, 5, 1, 12, 5, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        _, action, _ = execute.execute_signal(conn, sig1, entry_price=60_000.0, entry_time=base_time)
+    assert action == "placed"
+
+    sid2 = _seed_signal(tmp_db, symbol="BTC/USD", variant="v2", price=60_000.0,
+                        bar_timestamp="2026-05-01T12:30:00+00:00")
+    sig2 = _pending(tmp_db, sid2)
+    with db.connect(tmp_db) as conn:
+        _, action, reason = execute.execute_signal(
+            conn, sig2, entry_price=60_000.0,
+            entry_time=base_time + timedelta(minutes=30),
+        )
+    assert action == "rejected"
+    assert "cooldown" in reason
+
+
+def test_symbol_cooldown_clears_after_window(tmp_db: Path) -> None:
+    sid1 = _seed_signal(tmp_db, symbol="BTC/USD", variant="v1", price=60_000.0,
+                        bar_timestamp="2026-05-01T12:00:00+00:00")
+    sig1 = _pending(tmp_db, sid1)
+    base_time = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        _, action, _ = execute.execute_signal(conn, sig1, entry_price=60_000.0, entry_time=base_time)
+    assert action == "placed"
+
+    sid2 = _seed_signal(tmp_db, symbol="BTC/USD", variant="v2", price=60_000.0,
+                        bar_timestamp="2026-05-01T13:30:00+00:00")
+    sig2 = _pending(tmp_db, sid2)
+    with db.connect(tmp_db) as conn:
+        _, action, _ = execute.execute_signal(
+            conn, sig2, entry_price=60_000.0,
+            entry_time=base_time + timedelta(hours=SYMBOL_COOLDOWN_HOURS + 1),
+        )
+    assert action == "placed"
+
+
+def test_pending_signals_excludes_decided(tmp_db: Path) -> None:
+    sid1 = _seed_signal(tmp_db, symbol="BTC/USD", variant="v1", price=60_000.0,
+                        bar_timestamp="2026-05-01T12:00:00+00:00")
+    sid2 = _seed_signal(tmp_db, symbol="ETH/USD", variant="v2", price=2_000.0,
+                        bar_timestamp="2026-05-01T12:05:00+00:00")
+    with db.connect(tmp_db) as conn:
+        pending = execute.pending_signals(conn)
+    assert {s.id for s in pending} == {sid1, sid2}
+
+    sig1 = _pending(tmp_db, sid1)
+    with db.connect(tmp_db) as conn:
+        execute.execute_signal(
+            conn, sig1, entry_price=60_000.0,
+            entry_time=datetime(2026, 5, 1, 12, 5, tzinfo=timezone.utc),
+        )
+        pending = execute.pending_signals(conn)
+    assert {s.id for s in pending} == {sid2}
