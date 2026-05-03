@@ -35,23 +35,80 @@ def test_uptime_returns_none_with_no_runs(tmp_db: Path) -> None:
         assert render_index.system_uptime_pct(conn, now) is None
 
 
-def test_uptime_calculation(tmp_db: Path) -> None:
-    now = datetime(2026, 5, 2, 12, 0, tzinfo=timezone.utc)
+def test_uptime_calculation_against_expected_denominator(tmp_db: Path) -> None:
+    """Uptime is ok_count / expected_runs_in_window — not ok_count / actual_runs.
+
+    With 4 weeks of expected runs at 5-min cadence (288 * 28 = 8064), seeding
+    4000 successful and 32 failed runs yields ~49.6% uptime, not ~99%.
+    """
+    now = datetime(2026, 5, 30, 0, 0, tzinfo=timezone.utc)
+    expected_in_window = render_index.EXPECTED_RUNS_PER_DAY * 4 * 7
     with db.connect(tmp_db) as conn:
-        for i in range(10):
+        for i in range(4000):
             conn.execute(
                 "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
-                ((now - timedelta(hours=i)).isoformat(),),
+                ((now - timedelta(minutes=(i + 1) * 5)).isoformat(),),
             )
-        for i in range(2):
+        for i in range(32):
             conn.execute(
                 "INSERT INTO runs (started_at, status) VALUES (?, 'failed')",
-                ((now - timedelta(hours=i + 100)).isoformat(),),
+                ((now - timedelta(minutes=(4000 + i + 1) * 5)).isoformat(),),
             )
     with db.connect(tmp_db) as conn:
         pct = render_index.system_uptime_pct(conn, now)
     assert pct is not None
-    assert abs(pct - (10 / 12) * 100.0) < 0.01
+    assert abs(pct - (4000 / expected_in_window) * 100.0) < 0.5
+
+
+def test_uptime_with_one_run_does_not_read_as_full(tmp_db: Path) -> None:
+    """Regression: previously 1 ok run / 1 total run = 100% — vacuously true.
+
+    The fix uses expected as the denominator; 1 ok run / 8064 expected ≈ 0.012%.
+    """
+    now = datetime(2026, 5, 3, 0, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
+            ((now - timedelta(hours=1)).isoformat(),),
+        )
+    with db.connect(tmp_db) as conn:
+        pct = render_index.system_uptime_pct(conn, now)
+    assert pct is not None
+    assert pct < 1.0, f"1 run should not read as full uptime; got {pct}%"
+
+
+def test_gate_1_fails_with_insufficient_runs_even_if_all_ok(tmp_db: Path) -> None:
+    """Even at trivially 100% uptime, gate 1 requires GATE_1_MIN_RUNS history."""
+    now = datetime(2026, 5, 3, 0, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
+            ((now - timedelta(hours=1)).isoformat(),),
+        )
+    with db.connect(tmp_db) as conn:
+        n, gates = render_index.phase_2_gates_passed(conn, now)
+    assert gates[0] is False, (
+        "1 successful run is not enough cron history; the trivial-100% case "
+        "must not count as gate 1 pass"
+    )
+    assert n == 0
+
+
+def test_gate_1_passes_with_full_cron_history_and_high_uptime(tmp_db: Path) -> None:
+    now = datetime(2026, 5, 30, 0, 0, tzinfo=timezone.utc)
+    expected = render_index.EXPECTED_RUNS_PER_DAY * 4 * 7  # 8064
+    n_ok = int(expected * 0.97)
+    with db.connect(tmp_db) as conn:
+        for i in range(n_ok):
+            conn.execute(
+                "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
+                ((now - timedelta(minutes=(i + 1) * 5)).isoformat(),),
+            )
+    with db.connect(tmp_db) as conn:
+        n, gates = render_index.phase_2_gates_passed(conn, now)
+    assert gates[0] is True, (
+        "8064 expected, ~97% ok runs across 4 weeks should satisfy gate 1"
+    )
 
 
 def test_phase_2_gates_all_zero_in_week_1(tmp_db: Path) -> None:

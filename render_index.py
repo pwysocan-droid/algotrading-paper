@@ -27,6 +27,11 @@ PHASE_1_REVIEW_DEFAULT = datetime(2026, 6, 28, tzinfo=timezone.utc)
 EXPECTED_RUNS_PER_DAY = 288  # one every 5 minutes
 UPTIME_GATE_PCT = 95.0
 PROMOTION_GATE_TRADES = 100
+# Gate 1 requires a minimum amount of cron history before it's evaluable.
+# 1 successful run trivially yields 100% of "actual_runs" but zero confidence;
+# the gate uses actual_ok / expected_in_window, and additionally requires that
+# at least 1 day of cron has actually fired (288 runs) before the gate can pass.
+GATE_1_MIN_RUNS = EXPECTED_RUNS_PER_DAY
 
 
 @dataclass
@@ -147,9 +152,16 @@ def _mtime(path: Path | None) -> datetime | None:
 
 
 def system_uptime_pct(conn: sqlite3.Connection, now: datetime, weeks: int = 4) -> float | None:
-    """Approximate uptime as fraction of expected runs that completed with status='ok'.
+    """Pessimistic uptime: successful runs as a fraction of *expected* runs in window.
 
-    Returns None when no runs have happened yet (true em-dash case for Week 1).
+    Cron is expected to fire every 5 minutes; over `weeks` weeks the denominator
+    is `EXPECTED_RUNS_PER_DAY * weeks * 7`. Computing against expected (rather
+    than actual_total) avoids the trivial-100% case where one ok run reads as
+    full uptime.
+
+    Returns None only when there are zero runs at all in the window — the true
+    "value not yet present" em-dash state. Otherwise returns a float capped at
+    100.0% (clock skew can occasionally produce a few extra runs).
     """
     cutoff = now - timedelta(weeks=weeks)
     row = conn.execute(
@@ -164,7 +176,18 @@ def system_uptime_pct(conn: sqlite3.Connection, now: datetime, weeks: int = 4) -
         (cutoff.isoformat(),),
     ).fetchone()
     ok = int(ok_row["c"]) if ok_row else 0
-    return (ok / total) * 100.0
+    expected = EXPECTED_RUNS_PER_DAY * weeks * 7
+    pct = (ok / expected) * 100.0
+    return min(pct, 100.0)
+
+
+def runs_in_window(conn: sqlite3.Connection, now: datetime, weeks: int = 4) -> int:
+    cutoff = now - timedelta(weeks=weeks)
+    row = conn.execute(
+        "SELECT COUNT(*) AS c FROM runs WHERE started_at >= ?",
+        (cutoff.isoformat(),),
+    ).fetchone()
+    return int(row["c"]) if row else 0
 
 
 def trades_this_week(conn: sqlite3.Connection, now: datetime) -> int:
@@ -185,7 +208,12 @@ def phase_2_gates_passed(conn: sqlite3.Connection, now: datetime) -> tuple[int, 
     gate 3: 30-day paper P&L positive (or written override; we read raw P&L only)
     """
     uptime = system_uptime_pct(conn, now)
-    gate1 = uptime is not None and uptime >= UPTIME_GATE_PCT
+    runs_count = runs_in_window(conn, now)
+    gate1 = (
+        uptime is not None
+        and uptime >= UPTIME_GATE_PCT
+        and runs_count >= GATE_1_MIN_RUNS
+    )
 
     promotion_row = conn.execute(
         """

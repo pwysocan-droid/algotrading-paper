@@ -2,22 +2,22 @@
 
 Phase 1  ·  Week 1
 
-2026-05-03T00:02:53Z
+2026-05-03T00:18:15Z
 
 7 surfaces tracked
 
-[↗ latest replay](reports/2026-05-02-replay.md)  ·  [↗ latest week status](week-1-status.md)
+[↗ latest replay](reports/2026-05-03-replay.md)  ·  [↗ latest week status](week-1-status.md)
 
 | System uptime | Trades this week | Phase 2 gates | Days to phase 1 review |
 | :--- | :--- | :--- | :--- |
-| **—** | **0** | **0 / 3** | **55** |
+| **0.0%** | **0** | **0 / 3** | **55** |
 | last 4w | paper | passed | calendar |
 
 ## § 01 — Surfaces
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
-| replay | [reports/2026-05-02-replay.md](reports/2026-05-02-replay.md) | 2026-05-02T23:53:22Z | ok |
+| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-03T00:13:20Z | ok |
 | week status | [week-1-status.md](week-1-status.md) | 2026-05-02T23:55:23Z | ok |
 | weekly A/B | — | — | not yet · Week 4 |
 | recommendations | — | — | not yet · Week 4 |
