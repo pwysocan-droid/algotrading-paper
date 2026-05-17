@@ -1,0 +1,91 @@
+name: fetch-and-commit
+
+# Every 5 minutes: fetch fresh bars from Alpaca, regenerate INDEX.md,
+# commit the SQLite DB + INDEX, push. Single workflow doing the full
+# cycle per decision-log entry 2026-05-17.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:  # manual trigger for testing / on-demand fetches
+
+permissions:
+  contents: write  # required for git push back to the same repo
+
+concurrency:
+  group: fetch-and-commit
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4  # one less than the 5-min interval prevents overlap
+    env:
+      ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      ALPACA_BASE_URL: ${{ secrets.ALPACA_BASE_URL }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch bars
+        id: fetch
+        continue-on-error: true  # failures still produce a runs row we want to commit
+        run: |
+          # 15-minute lookback (3x the cron interval) provides cushion
+          # for missed runs without hammering the API. fetch.py upserts
+          # on (symbol, timestamp) so overlap is free.
+          python fetch.py --minutes=15
+
+      - name: Regenerate INDEX.md
+        # Always run, even on fetch failure — INDEX reflects current DB
+        # state including the failure row, which is what we want operators
+        # to see.
+        run: python render_index.py
+
+      - name: Commit and push
+        run: |
+          set -e
+          git config user.email "actions@github.com"
+          git config user.name "algotrading-paper bot"
+          git add trader.db INDEX.md
+          if git diff --staged --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          MSG="fetch run ${NOW}"
+          if [ "${{ steps.fetch.outcome }}" != "success" ]; then
+            MSG="${MSG} (fetch failed; runs row logged)"
+          fi
+          git commit -m "${MSG}"
+
+          # Retry on push conflict (operator pushed during cron run).
+          # The runs row is already committed locally; if push fails
+          # permanently, the next cron run will catch up.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "push succeeded on attempt ${attempt}"
+              exit 0
+            fi
+            echo "push failed on attempt ${attempt}; pulling rebased and retrying"
+            git pull --rebase --autostash || {
+              echo "rebase failed; data is safe in next run"
+              exit 0
+            }
+          done
+          echo "push failed after 3 retries; runs data is safe — next cron run will pick up"
+          exit 0

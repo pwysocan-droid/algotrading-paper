@@ -29,8 +29,11 @@ dist/
 .coverage
 htmlcov/
 
-# Database (Phase 1 will create local SQLite files)
+# Database — Phase 1 commits trader.db back on every cron run (Option A
+# per decision-log entry 2026-05-17). All other SQLite files stay ignored
+# (test temporaries, journals, scratch DBs).
 *.db
+!trader.db
 *.db-journal
 *.sqlite
 *.sqlite3
