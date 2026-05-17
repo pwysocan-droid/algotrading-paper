@@ -156,6 +156,102 @@ def test_days_to_phase_1_review_clamps_to_zero() -> None:
     assert render_index.days_to_phase_1_review(now, target) == 0
 
 
+def test_days_to_phase_1_review_returns_none_when_no_target(tmp_db: Path) -> None:
+    now = datetime(2026, 5, 2, 12, 0, tzinfo=timezone.utc)
+    assert render_index.days_to_phase_1_review(now, None) is None
+
+
+def test_first_successful_run_at_returns_none_with_no_runs(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        assert render_index.first_successful_run_at(conn) is None
+
+
+def test_first_successful_run_at_returns_earliest_ok(tmp_db: Path) -> None:
+    """Multiple runs: returns the earliest ok one, ignores failed ones earlier."""
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'failed')",
+            ("2026-05-01T00:00:00+00:00",),
+        )
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
+            ("2026-05-02T12:00:00+00:00",),
+        )
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
+            ("2026-05-03T00:00:00+00:00",),
+        )
+    with db.connect(tmp_db) as conn:
+        ts = render_index.first_successful_run_at(conn)
+    assert ts == datetime(2026, 5, 2, 12, 0, tzinfo=timezone.utc)
+
+
+def test_first_successful_run_at_skips_only_failed(tmp_db: Path) -> None:
+    """Runs exist but none are ok → still None (curriculum hasn't started)."""
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'failed')",
+            ("2026-05-01T00:00:00+00:00",),
+        )
+    with db.connect(tmp_db) as conn:
+        assert render_index.first_successful_run_at(conn) is None
+
+
+def test_compute_phase_1_review_target_uses_first_ok_plus_56_days(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
+            ("2026-05-03T00:00:00+00:00",),
+        )
+    with db.connect(tmp_db) as conn:
+        target = render_index.compute_phase_1_review_target(conn)
+    assert target == datetime(2026, 5, 3, 0, 0, tzinfo=timezone.utc) + timedelta(
+        days=render_index.CURRICULUM_DAYS
+    )
+
+
+def test_compute_phase_1_review_target_returns_none_with_no_runs(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        assert render_index.compute_phase_1_review_target(conn) is None
+
+
+def test_index_shows_emdash_and_not_yet_started_when_no_runs(
+    tmp_db: Path, tmp_repo: Path
+) -> None:
+    """The deliverable: with no successful runs, days renders as em-dash and
+    the sublabel reads 'not yet started' (not 'calendar')."""
+    now = datetime(2026, 5, 17, 0, 0, tzinfo=timezone.utc)
+    out_path = tmp_repo / "INDEX.md"
+    render_index.write_index(out_path, now=now, db_path=tmp_db, repo_root=tmp_repo)
+    text = out_path.read_text()
+    band = text.split("# algotrading-paper")[1].split("§ 01")[0]
+    assert "Days to phase 1 review" in band
+    assert "**—**" in band, "days-to-review must be em-dash when no anchor exists"
+    assert "not yet started" in band, "sublabel must read 'not yet started'"
+    assert "**0 / 3**" in band
+
+
+def test_index_shows_days_count_after_first_ok_run(
+    tmp_db: Path, tmp_repo: Path
+) -> None:
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status) VALUES (?, 'ok')",
+            ("2026-05-03T00:00:00+00:00",),
+        )
+    now = datetime(2026, 5, 17, 0, 0, tzinfo=timezone.utc)
+    out_path = tmp_repo / "INDEX.md"
+    render_index.write_index(out_path, now=now, db_path=tmp_db, repo_root=tmp_repo)
+    text = out_path.read_text()
+    band = text.split("# algotrading-paper")[1].split("§ 01")[0]
+    expected_days = render_index.CURRICULUM_DAYS - 14  # 56 - 14 since 5/3 to 5/17
+    assert f"**{expected_days}**" in band, (
+        f"days-to-review should be {expected_days} days "
+        f"(anchor 2026-05-03 + {render_index.CURRICULUM_DAYS}d − today 2026-05-17)"
+    )
+    assert "calendar" in band
+
+
 def test_discover_surfaces_empty_repo(tmp_repo: Path) -> None:
     surfaces = render_index.discover_surfaces(tmp_repo)
     assert len(surfaces) == 7

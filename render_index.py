@@ -24,7 +24,7 @@ from render import EMDASH, Stat, format_iso_ts, render_index
 
 REPO_ROOT = Path(__file__).resolve().parent
 
-PHASE_1_REVIEW_DEFAULT = datetime(2026, 6, 28, tzinfo=timezone.utc)
+CURRICULUM_DAYS = 56  # 8 weeks from the first successful run
 EXPECTED_RUNS_PER_DAY = 288  # one every 5 minutes
 UPTIME_GATE_PCT = 95.0
 PROMOTION_GATE_TRADES = 100
@@ -346,7 +346,39 @@ def phase_2_gates_passed(conn: sqlite3.Connection, now: datetime) -> tuple[int, 
     return sum(gates), gates
 
 
-def days_to_phase_1_review(now: datetime, target: datetime = PHASE_1_REVIEW_DEFAULT) -> int:
+def first_successful_run_at(conn: sqlite3.Connection) -> datetime | None:
+    """Timestamp of the first run row with status='ok' (the curriculum anchor).
+
+    Phase 1 begins when the system has actually succeeded at running once,
+    not when a date was hardcoded. Returns None until that's happened.
+    """
+    row = conn.execute(
+        "SELECT started_at FROM runs WHERE status = 'ok' ORDER BY started_at ASC LIMIT 1"
+    ).fetchone()
+    if row is None or row["started_at"] is None:
+        return None
+    ts = datetime.fromisoformat(row["started_at"])
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts.astimezone(timezone.utc)
+
+
+def compute_phase_1_review_target(
+    conn: sqlite3.Connection, days: int = CURRICULUM_DAYS
+) -> datetime | None:
+    """Phase 1 review target = first_successful_run + days. None if no run yet."""
+    anchor = first_successful_run_at(conn)
+    if anchor is None:
+        return None
+    return anchor + timedelta(days=days)
+
+
+def days_to_phase_1_review(now: datetime, target: datetime | None) -> int | None:
+    """Days until the curriculum review. None when no anchor is set yet
+    (the true em-dash case for INDEX display).
+    """
+    if target is None:
+        return None
     delta = target - now
     return max(0, delta.days)
 
@@ -364,22 +396,37 @@ def assemble_index_state(
     repo_root: Path = REPO_ROOT,
     phase_label: str = "Phase 1",
     week: int | str = 1,
-    phase_1_review_target: datetime = PHASE_1_REVIEW_DEFAULT,
+    phase_1_review_target: datetime | None = None,
 ) -> dict:
+    """Assemble the dict consumed by render.render_index.
+
+    `phase_1_review_target` is optional; when None (the default), it's derived
+    as first_successful_run + CURRICULUM_DAYS. The whole point of the
+    derivation is that the curriculum anchor is data, not configuration —
+    pass an explicit target only for tests or one-off overrides.
+    """
     surfaces = discover_surfaces(repo_root)
 
     with db.connect(db_path) as conn:
         uptime = system_uptime_pct(conn, now)
         n_trades_week = trades_this_week(conn, now)
         gates_passed, _ = phase_2_gates_passed(conn, now)
+        if phase_1_review_target is None:
+            phase_1_review_target = compute_phase_1_review_target(conn)
 
     days_left = days_to_phase_1_review(now, phase_1_review_target)
+    if days_left is None:
+        days_value = EMDASH
+        days_sublabel = "not yet started"
+    else:
+        days_value = str(days_left)
+        days_sublabel = "calendar"
 
     stats = [
         Stat("System uptime", _format_uptime(uptime), "last 4w"),
         Stat("Trades this week", str(n_trades_week), "paper"),
         Stat("Phase 2 gates", f"{gates_passed} / 3", "passed"),
-        Stat("Days to phase 1 review", str(days_left), "calendar"),
+        Stat("Days to phase 1 review", days_value, days_sublabel),
     ]
 
     surface_dicts = [
@@ -446,7 +493,7 @@ def write_index(
     repo_root: Path = REPO_ROOT,
     phase_label: str = "Phase 1",
     week: int | str = 1,
-    phase_1_review_target: datetime = PHASE_1_REVIEW_DEFAULT,
+    phase_1_review_target: datetime | None = None,
 ) -> Path:
     out = out_path or (repo_root / "INDEX.md")
     state = assemble_index_state(
@@ -465,12 +512,21 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate INDEX.md")
     parser.add_argument("--phase", default="Phase 1")
     parser.add_argument("--week", default="1")
-    parser.add_argument("--review-date", default=PHASE_1_REVIEW_DEFAULT.date().isoformat(),
-                        help="phase 1 review target date (YYYY-MM-DD)")
+    parser.add_argument(
+        "--review-date-override",
+        default=None,
+        help=("emergency override for the Phase 1 review target (YYYY-MM-DD). "
+              "Default behavior derives the target from the first successful "
+              "run in the runs table + 56 days."),
+    )
     args = parser.parse_args()
 
     db.migrate()
-    target = datetime.fromisoformat(args.review_date).replace(tzinfo=timezone.utc)
+    target: datetime | None = None
+    if args.review_date_override:
+        target = datetime.fromisoformat(args.review_date_override).replace(
+            tzinfo=timezone.utc
+        )
     out = write_index(
         phase_label=args.phase, week=args.week, phase_1_review_target=target
     )
