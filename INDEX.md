@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-17T15:25:05Z
+2026-05-17T15:29:29Z
 
 7 surfaces tracked
 
@@ -10,18 +10,18 @@ Phase 1  ·  Week 1
 
 | System uptime | Trades this week | Phase 2 gates | Days to phase 1 review |
 | :--- | :--- | :--- | :--- |
-| **0.0%** | **0** | **0 / 3** | **41** |
-| last 4w | paper | passed | ends 2026-06-28 |
+| **0.0%** | **0** | **0 / 3** | **—** |
+| last 4w | paper | passed | not yet started |
 
 ## § 01 — Recently changed
 
 | File | Last modified | Changed |
 | --- | --- | --- |
+| [setup.md](setup.md) | 2026-05-17T15:25:14Z | Document the cron commit-back… |
 | [decision-log.md](decision-log.md) | 2026-05-17T15:16:41Z | Log three related decisions (… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
-| [roadmap.md](roadmap.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
 ## § 02 — Pending decisions · 4 items
 
