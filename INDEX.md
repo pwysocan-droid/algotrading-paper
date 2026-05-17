@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-17T20:35:01Z
+2026-05-17T21:30:56Z
 
 7 surfaces tracked
 
@@ -17,11 +17,11 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [PROJECT.md](PROJECT.md) | 2026-05-17T19:47:37Z | fetch run 2026-05-17T19:47:37Z |
-| [philosophy.md](philosophy.md) | 2026-05-17T19:47:37Z | fetch run 2026-05-17T19:47:37Z |
-| [decision-log.md](decision-log.md) | 2026-05-17T19:47:37Z | fetch run 2026-05-17T19:47:37Z |
-| [playbook.md](playbook.md) | 2026-05-17T19:47:37Z | fetch run 2026-05-17T19:47:37Z |
-| [roadmap.md](roadmap.md) | 2026-05-17T19:47:37Z | fetch run 2026-05-17T19:47:37Z |
+| [PROJECT.md](PROJECT.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
+| [philosophy.md](philosophy.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
+| [decision-log.md](decision-log.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
+| [playbook.md](playbook.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
+| [roadmap.md](roadmap.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
 
 ## § 02 — Pending decisions · 4 items
 
@@ -47,8 +47,8 @@ Phase 1  ·  Week 1
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
-| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-17T20:34:45Z | ok |
-| week status | [week-1-status.md](week-1-status.md) | 2026-05-17T20:34:45Z | ok |
+| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-17T21:30:41Z | ok |
+| week status | [week-1-status.md](week-1-status.md) | 2026-05-17T21:30:41Z | ok |
 | weekly A/B | — | — | not yet · Week 4 |
 | recommendations | — | — | not yet · Week 4 |
 | Friday adversarial review | — | — | first run · Week 1 |
