@@ -347,13 +347,21 @@ def phase_2_gates_passed(conn: sqlite3.Connection, now: datetime) -> tuple[int, 
 
 
 def get_curriculum_start(conn: sqlite3.Connection) -> datetime | None:
-    """Timestamp of the first run row with status='ok' (the curriculum anchor).
+    """Timestamp of the first cron run row with status='ok' (the curriculum anchor).
 
-    Phase 1 begins when the system has actually succeeded at running once,
-    not when a date was hardcoded. Returns None until that's happened.
+    The curriculum measures *operational* data per decision-log 2026-05-17 —
+    runs from the cron schedule, not backfills or manual ad-hoc invocations.
+    Filters kind='cron' so a 30-day backfill or a manual fetch doesn't
+    falsely start the 8-week countdown.
+
+    Returns None until the first successful cron run has fired.
     """
     row = conn.execute(
-        "SELECT started_at FROM runs WHERE status = 'ok' ORDER BY started_at ASC LIMIT 1"
+        """
+        SELECT started_at FROM runs
+         WHERE status = 'ok' AND kind = 'cron'
+         ORDER BY started_at ASC LIMIT 1
+        """
     ).fetchone()
     if row is None or row["started_at"] is None:
         return None

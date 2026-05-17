@@ -197,6 +197,79 @@ def test_get_curriculum_start_skips_only_failed(tmp_db: Path) -> None:
         assert render_index.get_curriculum_start(conn) is None
 
 
+def test_get_curriculum_start_ignores_backfill_kind(tmp_db: Path) -> None:
+    """A backfill run (even successful) does NOT start the curriculum.
+
+    The curriculum measures cron operations; backfills are seeding events.
+    """
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'backfill')",
+            ("2026-05-03T00:00:00+00:00",),
+        )
+    with db.connect(tmp_db) as conn:
+        assert render_index.get_curriculum_start(conn) is None, (
+            "a successful backfill must not be treated as a curriculum-start cron run"
+        )
+
+
+def test_get_curriculum_start_ignores_manual_kind(tmp_db: Path) -> None:
+    """Manual ad-hoc fetches don't start the curriculum either."""
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'manual')",
+            ("2026-05-03T00:00:00+00:00",),
+        )
+    with db.connect(tmp_db) as conn:
+        assert render_index.get_curriculum_start(conn) is None
+
+
+def test_get_curriculum_start_returns_earliest_cron_with_mixed_kinds(tmp_db: Path) -> None:
+    """When backfill, manual, and cron rows all exist, returns the earliest cron one
+    even if it's later in wall-clock time than the backfill/manual rows."""
+    with db.connect(tmp_db) as conn:
+        # Earliest row is a backfill — should be ignored.
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'backfill')",
+            ("2026-05-01T00:00:00+00:00",),
+        )
+        # Manual run between backfill and cron — also ignored.
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'manual')",
+            ("2026-05-02T00:00:00+00:00",),
+        )
+        # Two cron runs; the earlier one wins.
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'cron')",
+            ("2026-05-04T12:00:00+00:00",),
+        )
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'cron')",
+            ("2026-05-03T12:00:00+00:00",),
+        )
+    with db.connect(tmp_db) as conn:
+        ts = render_index.get_curriculum_start(conn)
+    assert ts == datetime(2026, 5, 3, 12, 0, tzinfo=timezone.utc), (
+        "must return the earliest cron-kind ok run, not the earliest of any kind"
+    )
+
+
+def test_get_curriculum_start_skips_failed_cron(tmp_db: Path) -> None:
+    """A failed cron run doesn't start the curriculum either — only ok+cron does."""
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'failed', 'cron')",
+            ("2026-05-03T00:00:00+00:00",),
+        )
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'cron')",
+            ("2026-05-04T00:00:00+00:00",),
+        )
+    with db.connect(tmp_db) as conn:
+        ts = render_index.get_curriculum_start(conn)
+    assert ts == datetime(2026, 5, 4, 0, 0, tzinfo=timezone.utc)
+
+
 def test_compute_phase_1_review_target_uses_first_ok_plus_56_days(tmp_db: Path) -> None:
     with db.connect(tmp_db) as conn:
         conn.execute(
