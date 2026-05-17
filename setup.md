@@ -241,6 +241,60 @@ approved.
 
 ---
 
+## Cron commit-back pattern
+
+Added 2026-05-17 alongside the decision-log entry that committed the
+Phase 1 storage approach (Option A — SQLite-in-repo).
+
+The cron workflow `.github/workflows/fetch-and-commit.yml` runs every
+5 minutes. Each run does the full cycle in a single commit:
+
+1. `fetch.py` writes new bars and a `runs` row to `trader.db`
+2. `render_index.py` regenerates `INDEX.md` from the current DB state
+3. The workflow stages `trader.db` + `INDEX.md`, commits, and pushes
+   back to `main`
+
+Consequences to expect:
+
+- **Commit volume.** ~8,064 cron commits per 4 weeks. After Phase 1,
+  the git history will be dominated by `fetch run YYYY-MM-DDTHH:MM:SSZ`
+  entries. This is auditable, expected, and accepted per decision-log
+  2026-05-17. `git log --invert-grep --grep='^fetch run'` filters them
+  out when reviewing operator activity.
+
+- **Repo bloat.** ~800MB over Phase 1, well under GitHub's ~5GB
+  warning threshold. v2 likely migrates to a remote Postgres
+  (Supabase/Neon/Railway via `DATABASE_URL`) and drops the in-repo DB.
+
+- **Operator workflow.** `git pull` before running anything local
+  (replay, render_index manually, etc.) so your local `trader.db`
+  stays in sync with the cron's writes. If the operator commits
+  during a cron run, the cron retries the push 3 times with
+  `git pull --rebase` between attempts; if all retries fail, the
+  data is safe — the next cron run picks up where this one left off.
+
+- **Failure visibility.** A failed `fetch.py` (Alpaca outage, rate
+  limit, network) still writes a `runs` row with `status='failed'`
+  and `error_text`. The workflow's `continue-on-error: true` on the
+  fetch step means INDEX.md regenerates and the commit happens even
+  on failure — so uptime is visible immediately in the four-stat
+  band rather than hidden by a missing commit.
+
+- **Anchor side effect.** The curriculum-start anchor in
+  `render_index.py` (`get_curriculum_start`) uses the first
+  `runs` row with `status='ok'`. The first successful cron run
+  starts the 8-week countdown. Re-deploying or wiping `trader.db`
+  resets the anchor — don't do this without committing the
+  rationale to `decision-log.md` first.
+
+To temporarily pause the cron without removing it, disable the
+workflow on github.com: Actions → fetch-and-commit → ··· →
+Disable workflow. Re-enable the same way. The decision to pause
+gets a `decision-log.md` entry per the project's standing
+discipline.
+
+---
+
 ## Step 9 — Begin Week 1
 
 Once Steps 1–8 are complete, the repo is ready for the Week 1
