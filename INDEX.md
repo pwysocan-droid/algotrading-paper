@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-17T21:45:42Z
+2026-05-17T22:27:24Z
 
 7 surfaces tracked
 
@@ -17,11 +17,11 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [setup.md](setup.md) | 2026-05-17T15:25:14Z | Document the cron commit-back… |
-| [decision-log.md](decision-log.md) | 2026-05-17T15:16:41Z | Log three related decisions (… |
-| [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
-| [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
-| [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [PROJECT.md](PROJECT.md) | 2026-05-17T21:45:19Z | Wire generate_surface.py into… |
+| [philosophy.md](philosophy.md) | 2026-05-17T21:45:19Z | Wire generate_surface.py into… |
+| [decision-log.md](decision-log.md) | 2026-05-17T21:45:19Z | Wire generate_surface.py into… |
+| [playbook.md](playbook.md) | 2026-05-17T21:45:19Z | Wire generate_surface.py into… |
+| [roadmap.md](roadmap.md) | 2026-05-17T21:45:19Z | Wire generate_surface.py into… |
 
 ## § 02 — Pending decisions · 4 items
 
@@ -47,8 +47,8 @@ Phase 1  ·  Week 1
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
-| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-03T00:13:20Z | ok |
-| week status | [week-1-status.md](week-1-status.md) | 2026-05-17T15:24:14Z | ok |
+| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-17T22:27:07Z | ok |
+| week status | [week-1-status.md](week-1-status.md) | 2026-05-17T22:27:07Z | ok |
 | weekly A/B | — | — | not yet · Week 4 |
 | recommendations | — | — | not yet · Week 4 |
 | Friday adversarial review | — | — | first run · Week 1 |
