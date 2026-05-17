@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-03T00:18:15Z
+2026-05-17T15:03:57Z
 
 7 surfaces tracked
 
@@ -10,10 +10,40 @@ Phase 1  ·  Week 1
 
 | System uptime | Trades this week | Phase 2 gates | Days to phase 1 review |
 | :--- | :--- | :--- | :--- |
-| **0.0%** | **0** | **0 / 3** | **55** |
+| **0.0%** | **0** | **0 / 3** | **41** |
 | last 4w | paper | passed | calendar |
 
-## § 01 — Surfaces
+## § 01 — Recently changed
+
+| File | Last modified | Changed |
+| --- | --- | --- |
+| [decision-log.md](decision-log.md) | 2026-05-02T23:44:06Z | Add future-self-letter conven… |
+| [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [roadmap.md](roadmap.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+
+## § 02 — Pending decisions · 4 items
+
+▸ Week 2 strategy-roster review — decide whether Bollinger and MA-crossover survive the modern filter, or get replaced by a Week 0 candidate. Reference: 2026-04-26 reframe entry.
+
+▸ Future-self letters for existing 2026-04-26 entries — convention is in place; letters not yet written for Phase 2 entry gates, exit conditions, and the reframe's adaptive clause.
+
+▸ Styled HTML surface decision — Week 2 review per roadmap.
+
+▸ Decision-log entry for .env.template exposure incident during pre-flight — caught and rotated; not yet logged.
+
+## § 03 — Read-me-when-lost · 4 pointers
+
+▸ [philosophy.md](philosophy.md), "The animating disciplines" — the three single-sentence principles. Start here if you've forgotten what the project is for.
+
+▸ [decision-log.md](decision-log.md), 2026-04-26 reframe entry — animating idea and falsifiable hypothesis. Read before any gate override or major scope change.
+
+▸ [week-0-synthesis.md](week-0-synthesis.md), "What this synthesis is committing to" — the methodology-imports-survive-more-reliably finding. Read when tempted to chase a new strategy.
+
+▸ [playbook.md](playbook.md) §5 — the in-Phase enthusiasm response. Read when about to add something not on the curriculum.
+
+## § 04 — Surfaces
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
@@ -25,7 +55,7 @@ Phase 1  ·  Week 1
 | weekly prediction | — | — | not yet · Week 2 |
 | monthly patterns | — | — | not yet · Month 2 |
 
-## § 02 — Reading order
+## § 05 — Reading order
 
 **replay** — the latest backtest snapshot — start here on Monday morning.
 
@@ -37,7 +67,7 @@ Phase 1  ·  Week 1
 
 **philosophy** — if you're lost in week 4, this is where you go — what success means and what failure looks like.
 
-## § 03 — Foundational documents
+## § 06 — Foundational documents
 
 - [PROJECT.md](PROJECT.md)
 - [philosophy.md](philosophy.md)
