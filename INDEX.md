@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-17T21:30:56Z
+2026-05-17T21:45:42Z
 
 7 surfaces tracked
 
@@ -17,21 +17,21 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [PROJECT.md](PROJECT.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
-| [philosophy.md](philosophy.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
-| [decision-log.md](decision-log.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
-| [playbook.md](playbook.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
-| [roadmap.md](roadmap.md) | 2026-05-17T20:35:01Z | fetch run 2026-05-17T20:35:01Z |
+| [setup.md](setup.md) | 2026-05-17T15:25:14Z | Document the cron commit-back… |
+| [decision-log.md](decision-log.md) | 2026-05-17T15:16:41Z | Log three related decisions (… |
+| [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
 ## § 02 — Pending decisions · 4 items
 
-▸ Week 2 strategy-roster review — decide whether Bollinger and MA-crossover survive the modern filter, or get replaced by a Week 0 candidate. Reference: 2026-04-26 reframe entry.
+▸ Week 2 strategy-roster review — Bollinger and MA-crossover survive, or replaced
 
-▸ Future-self letters for existing 2026-04-26 entries — convention is in place; letters not yet written for Phase 2 entry gates, exit conditions, and the reframe's adaptive clause.
+▸ Friday adversarial review · #1 — first operational rhythm · bear case only
 
-▸ Styled HTML surface decision — Week 2 review per roadmap.
+▸ Future-self letters · 2026-04-26 entries — convention set, letters pending
 
-▸ Decision-log entry for .env.template exposure incident during pre-flight — caught and rotated; not yet logged.
+▸ Decision-log entry · .env.template exposure — caught, rotated, unlogged
 
 ## § 03 — Read-me-when-lost · 4 pointers
 
@@ -47,8 +47,8 @@ Phase 1  ·  Week 1
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
-| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-17T21:30:41Z | ok |
-| week status | [week-1-status.md](week-1-status.md) | 2026-05-17T21:30:41Z | ok |
+| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-03T00:13:20Z | ok |
+| week status | [week-1-status.md](week-1-status.md) | 2026-05-17T15:24:14Z | ok |
 | weekly A/B | — | — | not yet · Week 4 |
 | recommendations | — | — | not yet · Week 4 |
 | Friday adversarial review | — | — | first run · Week 1 |

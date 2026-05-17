@@ -55,12 +55,18 @@ jobs:
         # to see.
         run: python render_index.py
 
+      - name: Regenerate surface/surface.json
+        # Writes the JSON feed consumed by the live PWA at /surface/.
+        # Same always-run discipline as INDEX — failures still produce
+        # a fresh snapshot so the surface reflects current uptime.
+        run: python scripts/generate_surface.py
+
       - name: Commit and push
         run: |
           set -e
           git config user.email "actions@github.com"
           git config user.name "algotrading-paper bot"
-          git add trader.db INDEX.md
+          git add trader.db INDEX.md surface/surface.json
           if git diff --staged --quiet; then
             echo "no changes to commit"
             exit 0

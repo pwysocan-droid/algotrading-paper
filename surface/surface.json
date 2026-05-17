@@ -1,0 +1,188 @@
+{
+  "generated_at": "2026-05-17T21:45:43Z",
+  "masthead": {
+    "title": "algotrading-paper",
+    "sub": "live"
+  },
+  "kahneman": {
+    "trigger": "day 1 · planning fallacy",
+    "body_html": "You will <em>underestimate</em> how long the accumulation takes. The eight-week curriculum is the antidote, not the obstacle.",
+    "attribution": "— after Kahneman & Tversky, 1979"
+  },
+  "vitals": {
+    "last_run_iso": "2026-05-17T21:30:56.362362+00:00",
+    "last_run_human": "14m 46s ago",
+    "last_run_human_date": "2026-05-17 · 21:30 UTC",
+    "next_run_human": "now",
+    "uptime_recent": "7 of 7 ok · 100.0%"
+  },
+  "state": [
+    {
+      "name": "system uptime",
+      "qual": "7 of 8064 expected · 28-day window",
+      "figure": "0.1",
+      "unit": "%",
+      "spark": "▁▁▁▁▁▃██",
+      "spark_class": "growing"
+    },
+    {
+      "name": "trades this week",
+      "qual": "no strategies registered",
+      "figure": "0",
+      "unit": "",
+      "spark": "▁▁▁▁▁▁▁▁",
+      "spark_class": "empty"
+    },
+    {
+      "name": "phase 2 gates",
+      "qual": "curriculum day 1 · open after week 4",
+      "figure": "0",
+      "unit": "/3",
+      "spark": "▁▁▁▁▁▁▁▁",
+      "spark_class": "empty"
+    },
+    {
+      "name": "days to phase 1 review",
+      "qual": "ends 2026-07-12",
+      "figure": "55",
+      "unit": "",
+      "spark": "█▇▆▅▄▃▂▁",
+      "spark_class": null
+    }
+  ],
+  "pending": [
+    {
+      "when": "10d",
+      "when_class": "urgent",
+      "thing": "Week 2 strategy-roster review",
+      "detail": "Bollinger and MA-crossover survive, or replaced",
+      "kind": "gate",
+      "promoted": true
+    },
+    {
+      "when": "5d",
+      "when_class": "urgent",
+      "thing": "Friday adversarial review · #1",
+      "detail": "first operational rhythm · bear case only",
+      "kind": "ops",
+      "promoted": false
+    },
+    {
+      "when": "open",
+      "when_class": "open",
+      "thing": "Future-self letters · 2026-04-26 entries",
+      "detail": "convention set, letters pending",
+      "kind": "ops",
+      "promoted": false
+    },
+    {
+      "when": "open",
+      "when_class": "open",
+      "thing": "Decision-log entry · .env.template exposure",
+      "detail": "caught, rotated, unlogged",
+      "kind": "log",
+      "promoted": false
+    }
+  ],
+  "accumulating": [
+    {
+      "name": "bars",
+      "count": "41,736",
+      "delta": "+80",
+      "delta_class": null,
+      "spark": "▁▁▁▁▁▂▅█",
+      "spark_class": "growing"
+    },
+    {
+      "name": "cron runs",
+      "count": "7",
+      "delta": "+7",
+      "delta_class": null,
+      "spark": "▁▁▁▁▁▃██",
+      "spark_class": "growing"
+    },
+    {
+      "name": "llm calls",
+      "count": "0",
+      "delta": "+0",
+      "delta_class": "zero",
+      "spark": "▁▁▁▁▁▁▁▁",
+      "spark_class": "empty"
+    },
+    {
+      "name": "decisions",
+      "count": "0",
+      "delta": "+0",
+      "delta_class": "zero",
+      "spark": "▁▁▁▁▁▁▁▁",
+      "spark_class": "empty"
+    },
+    {
+      "name": "letters",
+      "count": "1",
+      "delta": "+1",
+      "delta_class": null,
+      "spark": "▁▁▁▁▁▁▁█",
+      "spark_class": null
+    },
+    {
+      "name": "reviews",
+      "count": "—",
+      "delta": "fri",
+      "delta_class": "note",
+      "spark": "▁▁▁▁▁▁▁▁",
+      "spark_class": "empty"
+    }
+  ],
+  "timetable": [
+    {
+      "when": "sun 5/17",
+      "what": "curriculum day 1 · now",
+      "tag": "●",
+      "tag_class": "teal",
+      "row_class": "now"
+    },
+    {
+      "when": "fri 5/22",
+      "what": "adversarial review · #1",
+      "tag": "ops",
+      "tag_class": "ops",
+      "row_class": null
+    },
+    {
+      "when": "wed 5/27",
+      "what": "week 2 · strategy-roster review",
+      "tag": "gate",
+      "tag_class": "gate",
+      "row_class": null
+    },
+    {
+      "when": "mon 6/15",
+      "what": "week 4 · walk-forward tuner online",
+      "tag": "build",
+      "tag_class": "build",
+      "row_class": null
+    },
+    {
+      "when": "mon 6/22",
+      "what": "week 5 · F&G integration",
+      "tag": "build",
+      "tag_class": "build",
+      "row_class": null
+    },
+    {
+      "when": "mon 7/6",
+      "what": "week 7 · LLM news sentiment",
+      "tag": "build",
+      "tag_class": "build",
+      "row_class": null
+    },
+    {
+      "when": "sun 7/12",
+      "what": "phase 1 review",
+      "tag": "gate",
+      "tag_class": "gate",
+      "row_class": null
+    }
+  ]
+}

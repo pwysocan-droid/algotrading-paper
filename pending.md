@@ -25,7 +25,7 @@ the resolution is non-trivial).
   kind: gate
   promoted: true
 
-- thing: Friday adversarial review · #1
+- thing: "Friday adversarial review · #1"
   detail: first operational rhythm · bear case only
   when: 5d
   kind: ops

@@ -457,6 +457,19 @@ def test_read_pending_items_handles_malformed_yaml(tmp_repo: Path) -> None:
     assert render_index.read_pending_items(tmp_repo) == []
 
 
+def test_read_pending_items_preserves_hash_in_quoted_strings(tmp_repo: Path) -> None:
+    """YAML treats unquoted # as comment start — values containing # must be
+    quoted in pending.md. Verifies quoted values round-trip cleanly."""
+    (tmp_repo / "pending.md").write_text(
+        "---\n\n"
+        '- thing: "Friday adversarial review · #1"\n'
+        "  when: 5d\n"
+        "  kind: ops\n"
+    )
+    items = render_index.read_pending_items(tmp_repo)
+    assert items == ["Friday adversarial review · #1"]
+
+
 def test_read_pending_records_returns_full_structure(tmp_repo: Path) -> None:
     """generate_surface.py consumes the structured form via this function."""
     (tmp_repo / "pending.md").write_text(
