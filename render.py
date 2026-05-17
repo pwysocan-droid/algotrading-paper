@@ -165,6 +165,28 @@ def render_flags_section(flags: list[str], collapsed_when_empty: bool = True) ->
     return f"{header}\n\n{body}"
 
 
+def render_bullet_list_section(
+    section_marker: str,
+    items: list[str],
+    *,
+    empty_modifier: str = "none",
+    count_label: str = "items",
+    header_level: str = "##",
+) -> str:
+    """Render a ▸-bulleted list under a `§ ...` section header.
+
+    Used for the Pending decisions and Read-me-when-lost sections on
+    INDEX.md. Same visual grammar as the flags section but without the
+    🔴 signal indicator. When `items` is empty, the section collapses
+    to a single line: `## § Section name · none`.
+    """
+    if not items:
+        return f"{header_level} {section_marker} · {empty_modifier}"
+    header = f"{header_level} {section_marker} · {len(items)} {count_label}"
+    body = "\n\n".join(f"▸ {item}" for item in items)
+    return f"{header}\n\n{body}"
+
+
 def render_table(spec: TableSpec) -> str:
     lines = [f"## {spec.section_marker}", ""]
     if not spec.rows:
@@ -272,14 +294,23 @@ def render_index(state: dict[str, Any]) -> str:
       - latest_links (required): [(label, url), ...] up to 2
       - stats (required): list of 4 Stat objects (project-level four-stat band)
       - flags: list of flag strings (project-level only)
+      - recently_changed (required): list of [file, last_modified_iso, change_msg] rows
+      - pending_decisions (required): list of strings, each a ▸-bullet line
+      - read_me_when_lost (required): list of strings, each a ▸-bullet line
       - surfaces (required): list of dicts:
             {"surface": str, "filename": str | None,
              "generated": datetime | None, "status": str}
-      - reading_order (required): list of (surface_label, prose_para) tuples — 5 paragraphs
+      - reading_order (required): list of (surface_label, prose_para) tuples
       - foundational_docs (required): list of (label, path) tuples
+
+    Sections, in order: header · four-stat band · (flags above, if populated) ·
+    § 01 Recently changed · § 02 Pending decisions · § 03 Read-me-when-lost ·
+    § 04 Surfaces · § 05 Reading order · § 06 Foundational documents ·
+    (flags below, if empty) · footer.
     """
-    required = ("phase", "week", "timestamp", "stats", "surfaces", "reading_order",
-                "foundational_docs")
+    required = ("phase", "week", "timestamp", "stats",
+                "recently_changed", "pending_decisions", "read_me_when_lost",
+                "surfaces", "reading_order", "foundational_docs")
     for key in required:
         if key not in state:
             raise ValueError(f"render_index: missing required key {key!r}")
@@ -304,6 +335,32 @@ def render_index(state: dict[str, Any]) -> str:
     if flags:
         sections.append(render_flags_section(flags))
 
+    sections.append(
+        render_table(
+            TableSpec(
+                section_marker="§ 01 — Recently changed",
+                columns=["File", "Last modified", "Changed"],
+                rows=state["recently_changed"],
+                empty_row_message="no canonical files in git history",
+            )
+        )
+    )
+
+    sections.append(
+        render_bullet_list_section(
+            section_marker="§ 02 — Pending decisions",
+            items=state["pending_decisions"],
+        )
+    )
+
+    sections.append(
+        render_bullet_list_section(
+            section_marker="§ 03 — Read-me-when-lost",
+            items=state["read_me_when_lost"],
+            count_label="pointers",
+        )
+    )
+
     surface_rows: list[list[str]] = []
     for s in state["surfaces"]:
         filename = s.get("filename") or EMDASH
@@ -319,7 +376,7 @@ def render_index(state: dict[str, Any]) -> str:
     sections.append(
         render_table(
             TableSpec(
-                section_marker="§ 01 — Surfaces",
+                section_marker="§ 04 — Surfaces",
                 columns=["Surface", "Latest", "Generated", "Status"],
                 rows=surface_rows,
                 empty_row_message="no surfaces yet",
@@ -327,13 +384,13 @@ def render_index(state: dict[str, Any]) -> str:
         )
     )
 
-    reading_lines = ["## § 02 — Reading order", ""]
+    reading_lines = ["## § 05 — Reading order", ""]
     for label, prose in state["reading_order"]:
         reading_lines.append(f"**{label}** — {prose}")
         reading_lines.append("")
     sections.append("\n".join(reading_lines).rstrip())
 
-    foundational_lines = ["## § 03 — Foundational documents", ""]
+    foundational_lines = ["## § 06 — Foundational documents", ""]
     for label, path in state["foundational_docs"]:
         foundational_lines.append(f"- [{label}]({path})")
     sections.append("\n".join(foundational_lines))

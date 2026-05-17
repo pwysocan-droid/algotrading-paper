@@ -282,8 +282,8 @@ def test_v1_report_missing_required_key_raises() -> None:
         render_v1_report(data)
 
 
-def test_render_index_empty_state_is_fully_formed() -> None:
-    state = {
+def _minimal_index_state() -> dict:
+    return {
         "phase": "Phase 1",
         "week": 1,
         "timestamp": datetime(2026, 5, 2, 16, 6, 29, tzinfo=timezone.utc),
@@ -298,6 +298,11 @@ def test_render_index_empty_state_is_fully_formed() -> None:
             Stat("Days to phase 1 review", "56", "calendar"),
         ],
         "flags": [],
+        "recently_changed": [
+            ["[PROJECT.md](PROJECT.md)", "2026-04-26T13:36:00Z", "Initial project spec"],
+        ],
+        "pending_decisions": [],
+        "read_me_when_lost": ["pointer A", "pointer B"],
         "surfaces": [
             {
                 "surface": "replay",
@@ -329,37 +334,95 @@ def test_render_index_empty_state_is_fully_formed() -> None:
             ("setup.md", "setup.md"),
         ],
     }
-    out = render_index(state)
+
+
+def test_render_index_empty_state_is_fully_formed() -> None:
+    out = render_index(_minimal_index_state())
     assert "# algotrading-paper" in out
     assert "Phase 1" in out
     assert "Week 1" in out
     assert "**100%**" in out
     assert "**0**" in out
-    assert "§ 01 — Surfaces" in out
-    assert "§ 02 — Reading order" in out
-    assert "§ 03 — Foundational documents" in out
+
+    assert "§ 01 — Recently changed" in out
+    assert "§ 02 — Pending decisions" in out
+    assert "§ 03 — Read-me-when-lost" in out
+    assert "§ 04 — Surfaces" in out
+    assert "§ 05 — Reading order" in out
+    assert "§ 06 — Foundational documents" in out
     assert "§ Flags · none" in out
-    assert "not yet · Week 4" in out
+
     assert "PROJECT.md" in out
+    assert "not yet · Week 4" in out
     assert "no data yet" not in out
 
 
-def test_render_index_idempotent() -> None:
-    state = {
-        "phase": "Phase 1",
-        "week": 1,
-        "timestamp": datetime(2026, 5, 2, 16, 6, 29, tzinfo=timezone.utc),
-        "latest_links": [],
-        "stats": [
-            Stat("A", EMDASH, "—"),
-            Stat("B", "0", "—"),
-            Stat("C", "0", "—"),
-            Stat("D", "0", "—"),
-        ],
-        "surfaces": [],
-        "reading_order": [("a", "b")],
-        "foundational_docs": [("PROJECT.md", "PROJECT.md")],
+def test_render_index_section_ordering() -> None:
+    """The three new sections must appear between flags and § 04 Surfaces, in order."""
+    out = render_index(_minimal_index_state())
+    pos = {
+        marker: out.find(marker)
+        for marker in (
+            "§ 01 — Recently changed",
+            "§ 02 — Pending decisions",
+            "§ 03 — Read-me-when-lost",
+            "§ 04 — Surfaces",
+            "§ 05 — Reading order",
+            "§ 06 — Foundational documents",
+        )
     }
+    assert all(v >= 0 for v in pos.values()), pos
+    ordered = list(pos.values())
+    assert ordered == sorted(ordered), f"sections out of order: {pos}"
+
+
+def test_render_index_pending_decisions_empty_collapses() -> None:
+    state = _minimal_index_state()
+    state["pending_decisions"] = []
+    out = render_index(state)
+    assert "§ 02 — Pending decisions · none" in out
+
+
+def test_render_index_pending_decisions_populated() -> None:
+    state = _minimal_index_state()
+    state["pending_decisions"] = [
+        "Week 2 strategy-roster review — decide whether...",
+        "Future-self letters for existing entries.",
+    ]
+    out = render_index(state)
+    assert "§ 02 — Pending decisions · 2 items" in out
+    assert "▸ Week 2 strategy-roster review" in out
+    assert "▸ Future-self letters for existing entries." in out
+
+
+def test_render_index_read_me_when_lost_uses_pointers_label() -> None:
+    state = _minimal_index_state()
+    state["read_me_when_lost"] = ["a", "b", "c", "d"]
+    out = render_index(state)
+    assert "§ 03 — Read-me-when-lost · 4 pointers" in out
+
+
+def test_render_index_idempotent() -> None:
+    state = _minimal_index_state()
     a = render_index(state)
     b = render_index(state)
     assert a == b
+
+
+def test_render_index_missing_new_required_key_raises() -> None:
+    state = _minimal_index_state()
+    del state["pending_decisions"]
+    with pytest.raises(ValueError, match="missing required key 'pending_decisions'"):
+        render_index(state)
+
+
+def test_render_bullet_list_section_helpers() -> None:
+    from render import render_bullet_list_section
+
+    out = render_bullet_list_section("§ X — Y", [], empty_modifier="none")
+    assert out == "## § X — Y · none"
+
+    out = render_bullet_list_section("§ X — Y", ["one", "two"], count_label="items")
+    assert "## § X — Y · 2 items" in out
+    assert "▸ one" in out
+    assert "▸ two" in out

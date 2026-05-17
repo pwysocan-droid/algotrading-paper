@@ -13,13 +13,14 @@ from __future__ import annotations
 import argparse
 import re
 import sqlite3
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
 
 import db
-from render import EMDASH, Stat, render_index
+from render import EMDASH, Stat, format_iso_ts, render_index
 
 REPO_ROOT = Path(__file__).resolve().parent
 
@@ -32,6 +33,36 @@ PROMOTION_GATE_TRADES = 100
 # the gate uses actual_ok / expected_in_window, and additionally requires that
 # at least 1 day of cron has actually fired (288 runs) before the gate can pass.
 GATE_1_MIN_RUNS = EXPECTED_RUNS_PER_DAY
+
+# Canonical files per roadmap.md "Canonical file list" — surfaced in
+# § Recently changed (sorted by git-log timestamp).
+CANONICAL_FILES: tuple[str, ...] = (
+    "PROJECT.md",
+    "philosophy.md",
+    "decision-log.md",
+    "playbook.md",
+    "roadmap.md",
+    "week-0-synthesis.md",
+    "report-format-spec.md",
+    "setup.md",
+)
+
+# Static — surfaced in § Read-me-when-lost on every regeneration.
+READ_ME_WHEN_LOST: tuple[str, ...] = (
+    '[philosophy.md](philosophy.md), "The animating disciplines" — the '
+    "three single-sentence principles. Start here if you've forgotten what "
+    "the project is for.",
+    "[decision-log.md](decision-log.md), 2026-04-26 reframe entry — "
+    "animating idea and falsifiable hypothesis. Read before any gate "
+    "override or major scope change.",
+    '[week-0-synthesis.md](week-0-synthesis.md), "What this synthesis is '
+    'committing to" — the methodology-imports-survive-more-reliably finding. '
+    "Read when tempted to chase a new strategy.",
+    "[playbook.md](playbook.md) §5 — the in-Phase enthusiasm response. "
+    "Read when about to add something not on the curriculum.",
+)
+
+CHANGE_MSG_MAX = 30
 
 
 @dataclass
@@ -149,6 +180,80 @@ def _mtime(path: Path | None) -> datetime | None:
     if path is None:
         return None
     return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+
+
+def _git_last_commit(repo_root: Path, file_path: str) -> tuple[datetime, str] | None:
+    """Return (commit_timestamp_utc, subject) for the most recent commit
+    touching file_path, or None if the file has no git history or git fails.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "log", "-1", "--format=%aI%x00%s", "--", file_path],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        return None
+    if result.returncode != 0:
+        return None
+    out = result.stdout.strip()
+    if not out:
+        return None
+    iso_ts, _, subject = out.partition("\x00")
+    try:
+        ts = datetime.fromisoformat(iso_ts)
+    except ValueError:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts.astimezone(timezone.utc), subject
+
+
+def _truncate(text: str, max_len: int = CHANGE_MSG_MAX) -> str:
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 1].rstrip() + "…"
+
+
+def discover_recently_changed(
+    repo_root: Path = REPO_ROOT,
+    canonical_files: tuple[str, ...] = CANONICAL_FILES,
+    n: int = 5,
+) -> list[list[str]]:
+    """Return up to N most recently committed canonical files as table rows.
+
+    Each row: [linked filename, ISO timestamp, truncated commit subject].
+    Files with no git history are omitted (so the result can be short or
+    empty in a fresh repo).
+    """
+    entries: list[tuple[datetime, str, str]] = []
+    for filename in canonical_files:
+        info = _git_last_commit(repo_root, filename)
+        if info is None:
+            continue
+        ts, subject = info
+        entries.append((ts, filename, subject))
+    entries.sort(key=lambda e: e[0], reverse=True)
+    rows: list[list[str]] = []
+    for ts, filename, subject in entries[:n]:
+        rows.append([f"[{filename}]({filename})", format_iso_ts(ts), _truncate(subject)])
+    return rows
+
+
+def read_pending_items(repo_root: Path = REPO_ROOT) -> list[str]:
+    """Parse pending.md at repo root. Lines starting with '▸ ' are items;
+    anything else is ignored. Missing file → []. Empty file or no items → [].
+    """
+    path = repo_root / "pending.md"
+    if not path.exists():
+        return []
+    items: list[str] = []
+    for raw in path.read_text().splitlines():
+        line = raw.strip()
+        if line.startswith("▸"):
+            items.append(line.removeprefix("▸").strip())
+    return items
 
 
 def system_uptime_pct(conn: sqlite3.Connection, now: datetime, weeks: int = 4) -> float | None:
@@ -314,6 +419,9 @@ def assemble_index_state(
         ("setup.md", "setup.md"),
     ]
 
+    recently_changed = discover_recently_changed(repo_root)
+    pending = read_pending_items(repo_root)
+
     return {
         "phase": phase_label,
         "week": week,
@@ -321,6 +429,9 @@ def assemble_index_state(
         "latest_links": latest_links,
         "stats": stats,
         "flags": [],
+        "recently_changed": recently_changed,
+        "pending_decisions": pending,
+        "read_me_when_lost": list(READ_ME_WHEN_LOST),
         "surfaces": surface_dicts,
         "reading_order": reading_order,
         "foundational_docs": foundational,
