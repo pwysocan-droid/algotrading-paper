@@ -108,10 +108,19 @@ def upsert_bars(conn: sqlite3.Connection, bars: Iterable[Bar], fetched_at: str) 
     return cur.rowcount if cur.rowcount and cur.rowcount > 0 else len(rows)
 
 
-def _record_run_start(conn: sqlite3.Connection, started_at: str) -> int:
+VALID_RUN_KINDS = frozenset({"cron", "backfill", "manual"})
+
+
+def _record_run_start(
+    conn: sqlite3.Connection, started_at: str, kind: str = "cron"
+) -> int:
+    if kind not in VALID_RUN_KINDS:
+        raise ValueError(
+            f"kind must be one of {sorted(VALID_RUN_KINDS)}, got {kind!r}"
+        )
     cur = conn.execute(
-        "INSERT INTO runs (started_at, status) VALUES (?, 'in_progress')",
-        (started_at,),
+        "INSERT INTO runs (started_at, status, kind) VALUES (?, 'in_progress', ?)",
+        (started_at, kind),
     )
     return int(cur.lastrowid) if cur.lastrowid is not None else -1
 
@@ -140,15 +149,21 @@ def fetch_window(
     start: datetime,
     end: datetime,
     db_path: Path | None = None,
+    kind: str = "cron",
 ) -> tuple[int, int]:
     """Fetch bars from `source` for `symbols` in [start, end] and upsert.
+
+    `kind` is recorded on the runs row to disambiguate the invocation
+    source (see migration 009). Default 'cron' covers the GitHub Actions
+    workflow; manual invocations should pass kind='manual', backfill
+    scripts kind='backfill'.
 
     Returns (run_id, bars_added). Logs success or failure to the runs table.
     """
     started_at = datetime.now(timezone.utc).isoformat()
 
     with db.connect(db_path) as conn:
-        run_id = _record_run_start(conn, started_at)
+        run_id = _record_run_start(conn, started_at, kind=kind)
 
     bars_added = 0
     error_text: str | None = None
@@ -177,12 +192,13 @@ def fetch_recent(
     source: BarSource | None = None,
     minutes: int = 60,
     db_path: Path | None = None,
+    kind: str = "cron",
 ) -> tuple[int, int]:
     """Fetch the last N minutes of bars for all WATCHED_SYMBOLS."""
     src = source or AlpacaBarSource()
     end = datetime.now(timezone.utc)
     start = end - timedelta(minutes=minutes)
-    return fetch_window(src, WATCHED_SYMBOLS, start, end, db_path=db_path)
+    return fetch_window(src, WATCHED_SYMBOLS, start, end, db_path=db_path, kind=kind)
 
 
 if __name__ == "__main__":
@@ -190,8 +206,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Fetch recent bars from Alpaca")
     parser.add_argument("--minutes", type=int, default=60, help="lookback window")
+    parser.add_argument(
+        "--kind",
+        choices=sorted(VALID_RUN_KINDS),
+        default="cron",
+        help="invocation kind written to the runs row (default: cron)",
+    )
     args = parser.parse_args()
 
     db.migrate()
-    run_id, n = fetch_recent(minutes=args.minutes)
-    print(f"run_id={run_id} bars_added={n}")
+    run_id, n = fetch_recent(minutes=args.minutes, kind=args.kind)
+    print(f"run_id={run_id} bars_added={n} kind={args.kind}")

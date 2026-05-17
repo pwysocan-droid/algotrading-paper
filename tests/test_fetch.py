@@ -101,6 +101,76 @@ def test_fetch_zero_bars_succeeds(tmp_db: Path) -> None:
     assert run["bars_added"] == 0
 
 
+def test_fetch_default_kind_is_cron(tmp_db: Path) -> None:
+    """Default kind='cron' matches the GitHub Actions workflow default; no
+    code change needed in the workflow YAML."""
+    start = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    end = start + timedelta(minutes=60)
+    bars = make_bar_series("BTC/USD", start, n=3)
+    source = FakeBarSource(bars=bars)
+
+    run_id, _ = fetch.fetch_window(source, ["BTC/USD"], start, end, db_path=tmp_db)
+    with db.connect(tmp_db) as conn:
+        row = conn.execute("SELECT kind FROM runs WHERE id = ?", (run_id,)).fetchone()
+    assert row["kind"] == "cron"
+
+
+def test_fetch_kind_backfill_is_recorded(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    end = start + timedelta(minutes=60)
+    bars = make_bar_series("BTC/USD", start, n=3)
+    source = FakeBarSource(bars=bars)
+
+    run_id, _ = fetch.fetch_window(
+        source, ["BTC/USD"], start, end, db_path=tmp_db, kind="backfill"
+    )
+    with db.connect(tmp_db) as conn:
+        row = conn.execute("SELECT kind FROM runs WHERE id = ?", (run_id,)).fetchone()
+    assert row["kind"] == "backfill"
+
+
+def test_fetch_kind_manual_is_recorded(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    end = start + timedelta(minutes=60)
+    bars = make_bar_series("BTC/USD", start, n=3)
+    source = FakeBarSource(bars=bars)
+
+    run_id, _ = fetch.fetch_window(
+        source, ["BTC/USD"], start, end, db_path=tmp_db, kind="manual"
+    )
+    with db.connect(tmp_db) as conn:
+        row = conn.execute("SELECT kind FROM runs WHERE id = ?", (run_id,)).fetchone()
+    assert row["kind"] == "manual"
+
+
+def test_fetch_kind_failure_still_records_kind(tmp_db: Path) -> None:
+    """Failed fetches record kind too — important for filtering uptime
+    diagnostics by where the failure happened."""
+    start = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    end = start + timedelta(minutes=60)
+    source = FakeBarSource(raise_on_call=RuntimeError("alpaca 503"))
+
+    with pytest.raises(RuntimeError):
+        fetch.fetch_window(
+            source, ["BTC/USD"], start, end, db_path=tmp_db, kind="cron"
+        )
+    with db.connect(tmp_db) as conn:
+        row = conn.execute("SELECT kind, status FROM runs ORDER BY id DESC LIMIT 1").fetchone()
+    assert row["kind"] == "cron"
+    assert row["status"] == "failed"
+
+
+def test_fetch_kind_rejects_invalid_value(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    end = start + timedelta(minutes=60)
+    source = FakeBarSource(bars=[])
+
+    with pytest.raises(ValueError, match="kind must be one of"):
+        fetch.fetch_window(
+            source, ["BTC/USD"], start, end, db_path=tmp_db, kind="bogus"
+        )
+
+
 def test_upsert_overwrites_on_collision(tmp_db: Path) -> None:
     start = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
     bars_v1 = make_bar_series("BTC/USD", start, n=3, base_price=100.0)
