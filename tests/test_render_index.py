@@ -161,12 +161,12 @@ def test_days_to_phase_1_review_returns_none_when_no_target(tmp_db: Path) -> Non
     assert render_index.days_to_phase_1_review(now, None) is None
 
 
-def test_first_successful_run_at_returns_none_with_no_runs(tmp_db: Path) -> None:
+def test_get_curriculum_start_returns_none_with_no_runs(tmp_db: Path) -> None:
     with db.connect(tmp_db) as conn:
-        assert render_index.first_successful_run_at(conn) is None
+        assert render_index.get_curriculum_start(conn) is None
 
 
-def test_first_successful_run_at_returns_earliest_ok(tmp_db: Path) -> None:
+def test_get_curriculum_start_returns_earliest_ok(tmp_db: Path) -> None:
     """Multiple runs: returns the earliest ok one, ignores failed ones earlier."""
     with db.connect(tmp_db) as conn:
         conn.execute(
@@ -182,11 +182,11 @@ def test_first_successful_run_at_returns_earliest_ok(tmp_db: Path) -> None:
             ("2026-05-03T00:00:00+00:00",),
         )
     with db.connect(tmp_db) as conn:
-        ts = render_index.first_successful_run_at(conn)
+        ts = render_index.get_curriculum_start(conn)
     assert ts == datetime(2026, 5, 2, 12, 0, tzinfo=timezone.utc)
 
 
-def test_first_successful_run_at_skips_only_failed(tmp_db: Path) -> None:
+def test_get_curriculum_start_skips_only_failed(tmp_db: Path) -> None:
     """Runs exist but none are ok → still None (curriculum hasn't started)."""
     with db.connect(tmp_db) as conn:
         conn.execute(
@@ -194,7 +194,7 @@ def test_first_successful_run_at_skips_only_failed(tmp_db: Path) -> None:
             ("2026-05-01T00:00:00+00:00",),
         )
     with db.connect(tmp_db) as conn:
-        assert render_index.first_successful_run_at(conn) is None
+        assert render_index.get_curriculum_start(conn) is None
 
 
 def test_compute_phase_1_review_target_uses_first_ok_plus_56_days(tmp_db: Path) -> None:
@@ -249,7 +249,12 @@ def test_index_shows_days_count_after_first_ok_run(
         f"days-to-review should be {expected_days} days "
         f"(anchor 2026-05-03 + {render_index.CURRICULUM_DAYS}d − today 2026-05-17)"
     )
-    assert "calendar" in band
+    # New sublabel: actual review date, not the word "calendar"
+    expected_end_date = "2026-06-28"  # 2026-05-03 + 56 days
+    assert f"ends {expected_end_date}" in band, (
+        f"sublabel must read 'ends {expected_end_date}'; got band:\n{band}"
+    )
+    assert "calendar" not in band, "sublabel should not say 'calendar' anymore"
 
 
 def test_discover_surfaces_empty_repo(tmp_repo: Path) -> None:

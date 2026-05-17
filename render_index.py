@@ -346,7 +346,7 @@ def phase_2_gates_passed(conn: sqlite3.Connection, now: datetime) -> tuple[int, 
     return sum(gates), gates
 
 
-def first_successful_run_at(conn: sqlite3.Connection) -> datetime | None:
+def get_curriculum_start(conn: sqlite3.Connection) -> datetime | None:
     """Timestamp of the first run row with status='ok' (the curriculum anchor).
 
     Phase 1 begins when the system has actually succeeded at running once,
@@ -367,7 +367,7 @@ def compute_phase_1_review_target(
     conn: sqlite3.Connection, days: int = CURRICULUM_DAYS
 ) -> datetime | None:
     """Phase 1 review target = first_successful_run + days. None if no run yet."""
-    anchor = first_successful_run_at(conn)
+    anchor = get_curriculum_start(conn)
     if anchor is None:
         return None
     return anchor + timedelta(days=days)
@@ -420,7 +420,7 @@ def assemble_index_state(
         days_sublabel = "not yet started"
     else:
         days_value = str(days_left)
-        days_sublabel = "calendar"
+        days_sublabel = f"ends {phase_1_review_target.date().isoformat()}"
 
     stats = [
         Stat("System uptime", _format_uptime(uptime), "last 4w"),
