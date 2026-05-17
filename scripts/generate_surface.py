@@ -204,10 +204,12 @@ def build_vitals(conn: sqlite3.Connection, now: datetime) -> dict:
     last_run_iso = last_cron.isoformat() if last_cron else None
     if last_cron is None:
         last_human = "—"
+        last_human_date = "—"
         next_human = "—"
     else:
         elapsed = (now - last_cron).total_seconds()
         last_human = f"{humanize_elapsed(elapsed)} ago"
+        last_human_date = last_cron.strftime("%Y-%m-%d · %H:%M UTC")
         remaining = CRON_INTERVAL_SECONDS - elapsed
         next_human = "now" if remaining <= 0 else humanize_elapsed(remaining)
 
@@ -228,6 +230,7 @@ def build_vitals(conn: sqlite3.Connection, now: datetime) -> dict:
     return {
         "last_run_iso": last_run_iso,
         "last_run_human": last_human,
+        "last_run_human_date": last_human_date,
         "next_run_human": next_human,
         "uptime_recent": uptime_recent,
     }

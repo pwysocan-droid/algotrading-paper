@@ -77,8 +77,22 @@ def test_vitals_no_runs_shows_em_dash(tmp_db: Path) -> None:
         v = gs.build_vitals(conn, now)
     assert v["last_run_iso"] is None
     assert v["last_run_human"] == "—"
+    assert v["last_run_human_date"] == "—"
     assert v["next_run_human"] == "—"
     assert "no cron runs yet" in v["uptime_recent"]
+
+
+def test_vitals_human_date_formatted_for_last_run(tmp_db: Path) -> None:
+    now = datetime(2026, 5, 17, 19, 24, tzinfo=timezone.utc)
+    last_cron = datetime(2026, 5, 17, 19, 22, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO runs (started_at, status, kind) VALUES (?, 'ok', 'cron')",
+            (last_cron.isoformat(),),
+        )
+    with db.connect(tmp_db) as conn:
+        v = gs.build_vitals(conn, now)
+    assert v["last_run_human_date"] == "2026-05-17 · 19:22 UTC"
 
 
 def test_vitals_with_one_cron_run(tmp_db: Path) -> None:
