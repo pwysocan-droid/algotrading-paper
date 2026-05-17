@@ -103,6 +103,85 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-05-17 — Curriculum anchor is first cron run; cron wire-up; SQLite-in-repo as data store
+
+Three related decisions captured together.
+
+**1. The curriculum starts when the cron starts, not when Week 1
+was built.** The 8-week curriculum exists to accumulate ~300
+trades/variant for statistically defensible A/B comparisons. Wall-
+clock time without cron runs accumulates nothing. Going forward,
+the curriculum anchor is the timestamp of the first `runs` row
+with status='ok'. Phase 1 review date = `first_successful_run +
+56 days`. Until the first successful run exists, days-to-review
+renders as `—` per the empty-state convention.
+
+**2. Cron wire-up happens today.** GitHub Actions workflow on
+5-minute cron invoking `fetch.py` against live Alpaca paper. No
+signals or trades pre-roster-review; the cron's only pre-Week-2
+job is accumulating bars and proving uptime.
+
+**3. The SQLite database is committed back to the repo on every
+successful cron run (Option A).** The cron runs on disposable
+GitHub Actions infrastructure; without commit-back, the runs/bars
+data would only exist on ephemeral runners. Operator-side tools
+(`replay.py`, future `tune.py` and `compare.py`) need the SQLite
+file locally to function. Committing back is the simplest way to
+keep operator's local DB and cron's working DB in sync.
+
+Cost of Option A: ~8,064 commits per 4 weeks at ~100KB each = ~800MB
+of repo bloat over Phase 1. GitHub tolerates this up to ~5GB without
+warnings. Accept the bloat as a Phase 1 cost; revisit in v2 (likely
+move to a remote Postgres on Supabase/Neon/Railway, accessed via
+`DATABASE_URL`).
+
+**Considered and rejected:**
+
+- *Anchor curriculum to first cron attempt, not first success.*
+  Failed attempts don't accumulate data. The metric measures data
+  accumulation.
+- *Anchor to Week 1 commit and accept that 0-cron weeks count.*
+  Compresses the effective curriculum, incentivizes rushing.
+- *Make the curriculum anchor operator-set rather than computed.*
+  Operator-set means operator gets to move goalposts. Computed-
+  from-runs is auditable.
+- *Cron writes only JSON summaries (not full SQLite) back to
+  repo.* Loses bars/trades tables, which `replay.py` and Week-4
+  tools need.
+- *Cron writes to remote database (Option B).* Right for v2;
+  premature for Phase 1. Adds infrastructure and new failure modes
+  (DB connection, credentials, billing) for marginal benefit.
+- *Cron stores in GitHub Actions artifacts (Option C).* Operator
+  has to pull artifacts before running any local tool. Adds
+  friction the project doesn't need.
+
+**Falsifiable hypothesis this entry commits to:**
+
+By end of the first calendar week of cron operation, the `runs`
+table should contain ~2,016 rows with status='ok' (90%+ success
+rate). If success rate is below 90%, the issue gets investigated
+*before* Week 2 strategy-roster review begins. Strategy
+registration on top of an unreliable substrate is the failure mode
+this hypothesis catches.
+
+**Letter to future self at the moment of override temptation:**
+
+Future me, you're going to read this entry in Week 5 or 6 when
+the Phase 1 review date feels far away and you want to scale up
+faster — register more variants, add more sources, "make use of
+the time." The discipline that says *the curriculum measures
+operational data, not wall-clock weeks* is what prevents you from
+arriving at Week 8 with thin coverage and forcing the A/B
+comparator to make decisions on insufficient data. The discipline
+is annoying *now* (you want to move). It is what makes Phase 2
+entry meaningful *later* (you want the data to be real). Trust
+present-me. Don't shorten the operational window.
+
+You're also going to be tempted to look at the repo's commit
+clutter — thousands of "fetch run" commits — and think "let's
+move to Postgres to clean this up." That's also future-me work.
+The clutter is auditable. v2 cleans it up. Phase 1 lives with it.
+
 ## 2026-04-26 — Claude as epistemological backbone (project reframe)
 
 The animating idea: try wild ideas, leave behind whole categories
