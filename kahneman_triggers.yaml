@@ -1,0 +1,43 @@
+# Kahneman triggers — operator-maintained list of cognitive-bias prompts
+# that fire on the live surface when the project state matches the
+# condition. Per surface-philosophy.md, the block "earns its weight by
+# being rare." Keep this list short and the conditions specific.
+#
+# Conditions evaluated top-to-bottom; first match wins. Available state
+# variables:
+#   day_in_curriculum            int   — days since first ok cron run (1-indexed)
+#   days_to_phase_1_review       int|null — days until anchor + 56
+#   days_since_last_decision     int   — days since newest decision-log entry
+#   weeks_in_curriculum          int   — (day_in_curriculum + 6) // 7
+#
+# Available condition operators (one per condition):
+#   eq, lte, gte, between (list of two ints)
+
+triggers:
+  - condition:
+      day_in_curriculum:
+        eq: 1
+    trigger: "day 1 · planning fallacy"
+    body_html: "You will <em>underestimate</em> how long the accumulation takes. The eight-week curriculum is the antidote, not the obstacle."
+    attribution: "— after Kahneman & Tversky, 1979"
+
+  - condition:
+      days_to_phase_1_review:
+        lte: 7
+    trigger: "pre-review · anchoring"
+    body_html: "The final week's data will <em>feel decisive</em>. It is one observation among 56."
+    attribution: "— after Kahneman & Tversky, 1974"
+
+  - condition:
+      day_in_curriculum:
+        between: [9, 11]
+    trigger: "week 2 · sunk cost"
+    body_html: "If Bollinger and MA-crossover should be replaced, they should be replaced — <em>regardless</em> of the time spent building support for them. The roster review is not a sentencing hearing."
+    attribution: "— after Arkes & Blumer, 1985"
+
+  - condition:
+      days_since_last_decision:
+        gte: 14
+    trigger: "no recent decisions · status quo bias"
+    body_html: "Two weeks without a written decision is <em>not stability</em>. It is the absence of recorded choice."
+    attribution: "— after Samuelson & Zeckhauser, 1988"
