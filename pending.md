@@ -1,22 +1,41 @@
-# Pending decisions
+# Pending
 
-Operator-managed list of open decisions / unfinished discipline work
-that doesn't fit elsewhere. Added and removed by hand — `render_index.py`
-reads this file and surfaces the items in INDEX.md under § Pending
-decisions. Lines starting with `▸` are treated as items; everything else
-is ignored.
+Operator-managed list of open items requiring human attention. Surfaced
+in both INDEX.md (§ Pending decisions) and the live surface (§ Pending,
+Tier 2). One source of truth, read by `render_index.py` and
+`scripts/generate_surface.py`.
 
-When an item is resolved, delete the line (or commit a `decision-log.md`
-entry resolving it and then delete). When a new item appears that isn't
-already covered by a play, a roadmap to-do, or a decision-log entry, add
-it here so it's surfaced on every regeneration.
+The format is a YAML list of records. Each item:
+
+  - `thing`     (required) — short headline
+  - `detail`    (optional) — one-line clarification
+  - `when`      (required) — "Nd" for N days remaining, or "open"
+  - `kind`      (required) — one of: gate, ops, log, build
+  - `promoted`  (optional) — true marks the active gate (one max)
+
+Order is rendered top-to-bottom. Add new items at the appropriate
+position; resolve by deleting (and writing a decision-log entry if
+the resolution is non-trivial).
 
 ---
 
-▸ Week 2 strategy-roster review — decide whether Bollinger and MA-crossover survive the modern filter, or get replaced by a Week 0 candidate. Reference: 2026-04-26 reframe entry.
+- thing: Week 2 strategy-roster review
+  detail: Bollinger and MA-crossover survive, or replaced
+  when: 10d
+  kind: gate
+  promoted: true
 
-▸ Future-self letters for existing 2026-04-26 entries — convention is in place; letters not yet written for Phase 2 entry gates, exit conditions, and the reframe's adaptive clause.
+- thing: Friday adversarial review · #1
+  detail: first operational rhythm · bear case only
+  when: 5d
+  kind: ops
 
-▸ Styled HTML surface decision — Week 2 review per roadmap.
+- thing: Future-self letters · 2026-04-26 entries
+  detail: convention set, letters pending
+  when: open
+  kind: ops
 
-▸ Decision-log entry for .env.template exposure incident during pre-flight — caught and rotated; not yet logged.
+- thing: Decision-log entry · .env.template exposure
+  detail: caught, rotated, unlogged
+  when: open
+  kind: log

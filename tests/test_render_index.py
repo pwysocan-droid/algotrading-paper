@@ -414,39 +414,91 @@ def test_read_pending_items_empty_file_returns_empty(tmp_repo: Path) -> None:
     assert render_index.read_pending_items(tmp_repo) == []
 
 
-def test_read_pending_items_no_bullet_lines_returns_empty(tmp_repo: Path) -> None:
+def test_read_pending_items_doc_only_returns_empty(tmp_repo: Path) -> None:
+    """A pending.md with only prose and no YAML body returns []."""
     (tmp_repo / "pending.md").write_text(
-        "# Pending decisions\n\nSome prose explaining the file.\n"
+        "# Pending\n\nSome prose explaining the file.\n"
     )
     assert render_index.read_pending_items(tmp_repo) == []
 
 
-def test_read_pending_items_parses_bullet_lines(tmp_repo: Path) -> None:
+def test_read_pending_items_parses_yaml_records(tmp_repo: Path) -> None:
     (tmp_repo / "pending.md").write_text(
-        "# Header\n\nIntro prose.\n\n"
-        "▸ first item — with em-dash\n\n"
-        "▸ second item.\n\n"
-        "Some non-bullet prose to ignore.\n\n"
-        "▸ third item with multiple words and punctuation, here.\n"
+        "# Pending\n\nIntro prose.\n\n"
+        "---\n\n"
+        "- thing: First item\n"
+        "  detail: with a clarifying line\n"
+        "  when: 10d\n"
+        "  kind: gate\n"
+        "  promoted: true\n"
+        "\n"
+        "- thing: Second item without a detail\n"
+        "  when: open\n"
+        "  kind: ops\n"
+        "\n"
+        "- thing: Third item with em-dash — punctuation\n"
+        "  detail: should survive\n"
+        "  when: 5d\n"
+        "  kind: log\n"
     )
     items = render_index.read_pending_items(tmp_repo)
     assert len(items) == 3
-    assert items[0] == "first item — with em-dash"
-    assert items[1] == "second item."
-    assert items[2].startswith("third item")
+    assert items[0] == "First item — with a clarifying line"
+    assert items[1] == "Second item without a detail"
+    assert items[2] == "Third item with em-dash — punctuation — should survive"
+
+
+def test_read_pending_items_handles_malformed_yaml(tmp_repo: Path) -> None:
+    """A broken YAML body returns [] rather than raising — the surface
+    keeps working even if the operator types an unbalanced quote."""
+    (tmp_repo / "pending.md").write_text(
+        "# Pending\n\n---\n\n- thing: broken\n  detail: \"unclosed\n"
+    )
+    assert render_index.read_pending_items(tmp_repo) == []
+
+
+def test_read_pending_records_returns_full_structure(tmp_repo: Path) -> None:
+    """generate_surface.py consumes the structured form via this function."""
+    (tmp_repo / "pending.md").write_text(
+        "---\n\n"
+        "- thing: First\n"
+        "  detail: detail-1\n"
+        "  when: 10d\n"
+        "  kind: gate\n"
+        "  promoted: true\n"
+        "\n"
+        "- thing: Second\n"
+        "  when: open\n"
+        "  kind: ops\n"
+    )
+    records = render_index.read_pending_records(tmp_repo)
+    assert len(records) == 2
+    assert records[0]["thing"] == "First"
+    assert records[0]["promoted"] is True
+    assert records[0]["kind"] == "gate"
+    assert records[1]["when"] == "open"
+    assert "detail" not in records[1] or records[1].get("detail") is None
 
 
 def test_pending_decisions_rendered_in_index(tmp_db: Path, tmp_repo: Path) -> None:
     (tmp_repo / "pending.md").write_text(
-        "▸ Test pending item one.\n\n▸ Test pending item two.\n"
+        "---\n\n"
+        "- thing: Test pending item one\n"
+        "  detail: with detail\n"
+        "  when: 10d\n"
+        "  kind: gate\n"
+        "\n"
+        "- thing: Test pending item two\n"
+        "  when: open\n"
+        "  kind: ops\n"
     )
     now = datetime(2026, 5, 2, 16, 6, 29, tzinfo=timezone.utc)
     out_path = tmp_repo / "INDEX.md"
     render_index.write_index(out_path, now=now, db_path=tmp_db, repo_root=tmp_repo)
     text = out_path.read_text()
     assert "§ 02 — Pending decisions · 2 items" in text
-    assert "▸ Test pending item one." in text
-    assert "▸ Test pending item two." in text
+    assert "▸ Test pending item one — with detail" in text
+    assert "▸ Test pending item two" in text
 
 
 def test_pending_decisions_empty_collapses_in_index(tmp_db: Path, tmp_repo: Path) -> None:
