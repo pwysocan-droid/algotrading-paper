@@ -11,13 +11,21 @@
   const PADDLE_SWEEP_MS = 58 * 1000;
   const PADDLE_HOLD_MS = 2 * 1000;
   const PADDLE_CYCLE_MS = PADDLE_SWEEP_MS + PADDLE_HOLD_MS;
-  const CRON_INTERVAL_MS = 5 * 60 * 1000;
+
+  // Cron cadence is sourced from vitals.cron_interval_seconds in the
+  // JSON (the Python generator's source of truth — see decision-log
+  // 2026-05-18). The initial fallback of 1h matches GH cron's observed
+  // delivery in case the JSON is missing the field.
+  let cronIntervalMs = 60 * 60 * 1000;
 
   // ---------- fetch cadence ----------
   const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
   const RETRY_INTERVAL_MS = 30 * 1000;
-  const FETCH_STALE_THRESHOLD_MS = 2 * CRON_INTERVAL_MS;  // 10min — JSON fetch failing
-  const CRON_STALE_THRESHOLD_MS = 90 * 60 * 1000;         // 90min — cron stopped firing
+  // Both staleness thresholds are independent of cron cadence — they
+  // measure infrastructure failures, not slow scheduling. 10 min for
+  // fetch (network / Pages outage), 90 min for cron (scheduler stopped).
+  const FETCH_STALE_THRESHOLD_MS = 10 * 60 * 1000;
+  const CRON_STALE_THRESHOLD_MS = 90 * 60 * 1000;
 
   // ---------- runtime state ----------
   let lastSurface = null;       // last successfully parsed JSON
@@ -168,6 +176,9 @@
     } else {
       lastRunAt = null;
     }
+    if (surface.vitals && typeof surface.vitals.cron_interval_seconds === 'number') {
+      cronIntervalMs = surface.vitals.cron_interval_seconds * 1000;
+    }
     checkStale();
   }
 
@@ -251,7 +262,7 @@
     const nextEl = $('#next-run');
     if (lastEl) lastEl.textContent = `${fmtElapsed(now - lastRunAt)} ago`;
     if (nextEl) {
-      const remaining = (lastRunAt + CRON_INTERVAL_MS) - now;
+      const remaining = (lastRunAt + cronIntervalMs) - now;
       if (remaining > 0) {
         nextEl.textContent = fmtElapsed(remaining);
       } else {
@@ -297,8 +308,8 @@
 
     // Ring arc: fills over cron cycle from the last ok run
     if (lastRunAt != null) {
-      const elapsed = (now - lastRunAt) % CRON_INTERVAL_MS;
-      const pct = Math.min(100, (elapsed / CRON_INTERVAL_MS) * 100);
+      const elapsed = (now - lastRunAt) % cronIntervalMs;
+      const pct = Math.min(100, (elapsed / cronIntervalMs) * 100);
       ringArc.setAttribute('stroke-dashoffset', String(100 - pct));
     } else {
       ringArc.setAttribute('stroke-dashoffset', '100');  // empty

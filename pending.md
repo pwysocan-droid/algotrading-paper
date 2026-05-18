@@ -25,6 +25,12 @@ the resolution is non-trivial).
   kind: gate
   promoted: true
 
+- thing: "Scheduler migration decision · signals vs execute vs full stack"
+  detail: GH cron cadence forces real scheduler before Phase 2; scope decided alongside strategy roster
+  when: 10d
+  kind: gate
+  promoted: false
+
 - thing: "Friday adversarial review · #1"
   detail: first operational rhythm · bear case only
   when: 5d

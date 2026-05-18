@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-18T04:45:40Z",
+  "generated_at": "2026-05-18T04:59:18Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -11,10 +11,11 @@
   },
   "vitals": {
     "last_run_iso": "2026-05-18T01:28:49.575453+00:00",
-    "last_run_human": "196m 51s ago",
+    "last_run_human": "210m 29s ago",
     "last_run_human_date": "2026-05-18 · 01:28 UTC",
     "next_run_human": "now",
-    "uptime_recent": "10 of 10 ok · 100.0%"
+    "uptime_recent": "10 of 10 ok · 100.0%",
+    "cron_interval_seconds": 3600
   },
   "state": [
     {
@@ -22,7 +23,7 @@
       "qual": "10 of 8064 expected · 28-day window",
       "figure": "0.1",
       "unit": "%",
-      "spark": "▁▁▁▅▅█▅▁",
+      "spark": "▁▁▁▆██▆▁",
       "spark_class": null
     },
     {
@@ -60,6 +61,14 @@
       "promoted": true
     },
     {
+      "when": "10d",
+      "when_class": "urgent",
+      "thing": "Scheduler migration decision · signals vs execute vs full stack",
+      "detail": "GH cron cadence forces real scheduler before Phase 2; scope decided alongside strategy roster",
+      "kind": "gate",
+      "promoted": false
+    },
+    {
       "when": "5d",
       "when_class": "urgent",
       "thing": "Friday adversarial review · #1",
@@ -90,15 +99,23 @@
       "count": "41,781",
       "delta": "+125",
       "delta_class": null,
-      "spark": "▁▁▁▂▄▆██",
+      "spark": "▁▁▁▂▅▆██",
       "spark_class": "growing"
+    },
+    {
+      "name": "bar coverage",
+      "count": "9%",
+      "delta": "-1315",
+      "delta_class": "note",
+      "spark": "▁▁▁▅█▆▆▁",
+      "spark_class": null
     },
     {
       "name": "cron runs",
       "count": "10",
       "delta": "+10",
       "delta_class": null,
-      "spark": "▁▁▁▅▅█▅▁",
+      "spark": "▁▁▁▆██▆▁",
       "spark_class": null
     },
     {

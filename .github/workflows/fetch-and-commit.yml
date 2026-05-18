@@ -44,10 +44,13 @@ jobs:
         id: fetch
         continue-on-error: true  # failures still produce a runs row we want to commit
         run: |
-          # 15-minute lookback (3x the cron interval) provides cushion
-          # for missed runs without hammering the API. fetch.py upserts
-          # on (symbol, timestamp) so overlap is free.
-          python fetch.py --minutes=15
+          # 90-minute lookback (1.5x the observed ~60-min GH cron cadence)
+          # closes the bar-coverage gap that --minutes=15 left when the
+          # documented */5 cadence is throttled to ~hourly. fetch.py
+          # upserts on (symbol, timestamp) so overlap is free; the extra
+          # bars per call are ~18 per symbol instead of ~3. See decision-
+          # log 2026-05-18 for the recalibration rationale.
+          python fetch.py --minutes=90
 
       - name: Regenerate INDEX.md
         # Always run, even on fetch failure — INDEX reflects current DB

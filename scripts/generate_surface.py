@@ -48,6 +48,7 @@ import yaml
 
 import db
 import render_index
+from config import WATCHED_SYMBOLS
 from render_index import (
     CURRICULUM_DAYS,
     EXPECTED_RUNS_PER_DAY,
@@ -60,8 +61,14 @@ from render_index import (
     trades_this_week,
 )
 
-CRON_INTERVAL_SECONDS = 5 * 60
+# Observed cadence of the GH Actions cron, not the documented one. The
+# workflow YAML says */5 * * * * (300s) but GH throttles small repos to
+# ~60-min delivery. The surface tracks the actual cadence so the paddle
+# ring fills at the right rate and "+Xm overdue" math is honest. See
+# decision-log entry 2026-05-18.
+CRON_INTERVAL_SECONDS = 60 * 60
 SPARKLINE_BUCKETS = 8
+EXPECTED_BARS_PER_DAY_PER_SYMBOL = 288  # 24h × 60min / 5-min-bar — Alpaca's bar grid
 SPARKLINE_CHARS = "▁▂▃▄▅▆▇█"
 EMPTY_SPARKLINE = SPARKLINE_CHARS[0] * SPARKLINE_BUCKETS
 
@@ -234,6 +241,7 @@ def build_vitals(conn: sqlite3.Connection, now: datetime) -> dict:
         "last_run_human_date": last_human_date,
         "next_run_human": next_human,
         "uptime_recent": uptime_recent,
+        "cron_interval_seconds": CRON_INTERVAL_SECONDS,
     }
 
 
@@ -414,6 +422,45 @@ def build_accumulating(conn: sqlite3.Connection, repo_root: Path, now: datetime)
         "name": "bars", "count": f"{bars_total:,}",
         "delta": delta_str, "delta_class": delta_class,
         "spark": bars_spark, "spark_class": bars_class,
+    })
+
+    # Bar coverage — integrity check that catches future data holes.
+    # Expected = 24h × 288 bars/symbol × len(WATCHED_SYMBOLS). Actual =
+    # bars whose timestamp falls in the last 24h (using bars.timestamp,
+    # which is the market time, not fetched_at). Coverage = actual / expected,
+    # clamped to 100% (over-fetch impossible since timestamp is the Alpaca
+    # bar grid). Sparkline = per-3h-bucket coverage rate.
+    n_symbols = len(WATCHED_SYMBOLS)
+    expected_24h = EXPECTED_BARS_PER_DAY_PER_SYMBOL * n_symbols
+    actual_24h_row = conn.execute(
+        "SELECT COUNT(*) AS c FROM bars WHERE timestamp >= ?",
+        ((now - timedelta(hours=24)).isoformat(),),
+    ).fetchone()
+    actual_24h = int(actual_24h_row["c"]) if actual_24h_row else 0
+    coverage_pct = min(100.0, (actual_24h / expected_24h) * 100.0) if expected_24h else 0.0
+
+    coverage_buckets: list[float] = []
+    expected_per_bucket = (EXPECTED_BARS_PER_DAY_PER_SYMBOL * n_symbols) / SPARKLINE_BUCKETS
+    for start, end in bucket_24h(now):
+        row = conn.execute(
+            "SELECT COUNT(*) AS c FROM bars WHERE timestamp >= ? AND timestamp < ?",
+            (start.isoformat(), end.isoformat()),
+        ).fetchone()
+        n = int(row["c"]) if row else 0
+        coverage_buckets.append(min(1.0, n / expected_per_bucket) if expected_per_bucket else 0.0)
+    cov_spark, cov_class = render_sparkline(coverage_buckets)
+    missing = max(0, expected_24h - actual_24h)
+    if missing == 0:
+        cov_delta, cov_delta_class = "+0", "zero"
+    else:
+        cov_delta, cov_delta_class = f"-{missing}", "note"
+    rows.append({
+        "name": "bar coverage",
+        "count": f"{coverage_pct:.0f}%",
+        "delta": cov_delta,
+        "delta_class": cov_delta_class,
+        "spark": cov_spark,
+        "spark_class": cov_class,
     })
 
     cron_total_row = conn.execute(

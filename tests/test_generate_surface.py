@@ -82,6 +82,17 @@ def test_vitals_no_runs_shows_em_dash(tmp_db: Path) -> None:
     assert "no cron runs yet" in v["uptime_recent"]
 
 
+def test_vitals_includes_cron_interval_seconds(tmp_db: Path) -> None:
+    """The surface needs to know the actual cron cadence so the ring arc
+    fills over the right window. Hardcoded to GH's observed ~60-min
+    cadence, not the documented 5-min schedule. See decision-log 2026-05-18."""
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        v = gs.build_vitals(conn, now)
+    assert v["cron_interval_seconds"] == gs.CRON_INTERVAL_SECONDS
+    assert v["cron_interval_seconds"] == 3600
+
+
 def test_vitals_human_date_formatted_for_last_run(tmp_db: Path) -> None:
     now = datetime(2026, 5, 17, 19, 24, tzinfo=timezone.utc)
     last_cron = datetime(2026, 5, 17, 19, 22, tzinfo=timezone.utc)
@@ -96,6 +107,8 @@ def test_vitals_human_date_formatted_for_last_run(tmp_db: Path) -> None:
 
 
 def test_vitals_with_one_cron_run(tmp_db: Path) -> None:
+    """next_run_human is computed against CRON_INTERVAL_SECONDS (3600s after
+    the 2026-05-18 recalibration to GH's observed cadence)."""
     now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
     last_cron = now - timedelta(minutes=2, seconds=14)
     with db.connect(tmp_db) as conn:
@@ -107,7 +120,8 @@ def test_vitals_with_one_cron_run(tmp_db: Path) -> None:
         v = gs.build_vitals(conn, now)
     assert v["last_run_iso"] is not None
     assert "2m 14s ago" in v["last_run_human"]
-    assert v["next_run_human"] == "2m 46s"
+    # 3600s - (2*60 + 14) = 3466s = 57m 46s
+    assert v["next_run_human"] == "57m 46s"
     assert "1 of 1 ok · 100.0%" in v["uptime_recent"]
 
 
@@ -177,12 +191,49 @@ def test_pending_when_class_open_vs_urgent(tmp_repo: Path) -> None:
 # ────────────────────────── accumulating ──────────────────────────────
 
 
-def test_accumulating_six_rows_in_known_order(tmp_db: Path, tmp_repo: Path) -> None:
+def test_accumulating_seven_rows_in_known_order(tmp_db: Path, tmp_repo: Path) -> None:
     now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
     with db.connect(tmp_db) as conn:
         rows = gs.build_accumulating(conn, tmp_repo, now)
     names = [r["name"] for r in rows]
-    assert names == ["bars", "cron runs", "llm calls", "decisions", "letters", "reviews"]
+    assert names == [
+        "bars", "bar coverage", "cron runs", "llm calls",
+        "decisions", "letters", "reviews",
+    ]
+
+
+def test_bar_coverage_zero_when_no_bars(tmp_db: Path, tmp_repo: Path) -> None:
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        rows = gs.build_accumulating(conn, tmp_repo, now)
+    cov = next(r for r in rows if r["name"] == "bar coverage")
+    assert cov["count"] == "0%"
+    assert cov["delta_class"] == "note"
+    expected = gs.EXPECTED_BARS_PER_DAY_PER_SYMBOL * len(gs.WATCHED_SYMBOLS) \
+        if hasattr(gs, "WATCHED_SYMBOLS") else 288 * 5
+    assert cov["delta"] == f"-{expected}"
+
+
+def test_bar_coverage_100pct_when_bars_complete(tmp_db: Path, tmp_repo: Path) -> None:
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
+    n_symbols = len(gs.WATCHED_SYMBOLS)
+    expected = gs.EXPECTED_BARS_PER_DAY_PER_SYMBOL * n_symbols
+    with db.connect(tmp_db) as conn:
+        for i in range(expected):
+            symbol = gs.WATCHED_SYMBOLS[i % n_symbols]
+            ts = (now - timedelta(minutes=5 * (i // n_symbols + 1))).isoformat()
+            conn.execute(
+                """INSERT OR IGNORE INTO bars
+                   (symbol, timestamp, open, high, low, close, volume, fetched_at)
+                   VALUES (?, ?, 1, 1, 1, 1, 1, ?)""",
+                (symbol, ts, now.isoformat()),
+            )
+    with db.connect(tmp_db) as conn:
+        rows = gs.build_accumulating(conn, tmp_repo, now)
+    cov = next(r for r in rows if r["name"] == "bar coverage")
+    assert cov["count"] == "100%"
+    assert cov["delta"] == "+0"
+    assert cov["delta_class"] == "zero"
 
 
 def test_accumulating_zero_delta_marked_zero_class(tmp_db: Path, tmp_repo: Path) -> None:
@@ -476,6 +527,6 @@ def test_generate_writes_well_formed_json(tmp_db: Path, tmp_repo: Path) -> None:
                 "state", "pending", "accumulating", "timetable"):
         assert key in reloaded, f"missing key {key}"
     assert len(reloaded["state"]) == 4
-    assert len(reloaded["accumulating"]) == 6
+    assert len(reloaded["accumulating"]) == 7
     assert reloaded["masthead"] == {"title": "algotrading-paper", "sub": "live"}
     assert reloaded["generated_at"].endswith("Z")
