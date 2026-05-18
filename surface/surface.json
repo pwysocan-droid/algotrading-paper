@@ -1,29 +1,25 @@
 {
-  "generated_at": "2026-05-18T12:38:21Z",
+  "generated_at": "2026-05-18T16:05:53Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
-  "kahneman": {
-    "trigger": "day 1 · planning fallacy",
-    "body_html": "You will <em>underestimate</em> how long the accumulation takes. The eight-week curriculum is the antidote, not the obstacle.",
-    "attribution": "— after Kahneman & Tversky, 1979"
-  },
+  "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-18T12:38:21.387117+00:00",
+    "last_run_iso": "2026-05-18T16:05:52.670962+00:00",
     "last_run_human": "0m 00s ago",
-    "last_run_human_date": "2026-05-18 · 12:38 UTC",
+    "last_run_human_date": "2026-05-18 · 16:05 UTC",
     "next_run_human": "59m 59s",
-    "uptime_recent": "14 of 14 ok · 100.0%",
+    "uptime_recent": "15 of 15 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "14 of 8064 expected · 28-day window",
+      "qual": "15 of 8064 expected · 28-day window",
       "figure": "0.2",
       "unit": "%",
-      "spark": "▁▃█▃▁▃▁▁",
+      "spark": "██▅▁▅▁▁▁",
       "spark_class": null
     },
     {
@@ -36,7 +32,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 1 · open after week 4",
+      "qual": "curriculum day 2 · open after week 4",
       "figure": "0",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -45,7 +41,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "55",
+      "figure": "54",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -96,26 +92,26 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "42,076",
-      "delta": "+420",
+      "count": "42,161",
+      "delta": "+493",
       "delta_class": null,
-      "spark": "▁▁▂▃▃▅▆█",
+      "spark": "▁▁▂▂▄▅▇█",
       "spark_class": "growing"
     },
     {
       "name": "bar coverage",
-      "count": "29%",
-      "delta": "-1020",
+      "count": "34%",
+      "delta": "-947",
       "delta_class": "note",
-      "spark": "▁▃▂▂▁█▅▆",
+      "spark": "▂▁▁▃█▇█▇",
       "spark_class": null
     },
     {
       "name": "cron runs",
-      "count": "14",
+      "count": "15",
       "delta": "+14",
       "delta_class": null,
-      "spark": "▁▃█▃▁▃▁▁",
+      "spark": "██▅▁▅▁▁▁",
       "spark_class": null
     },
     {
