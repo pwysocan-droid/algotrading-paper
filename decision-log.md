@@ -103,6 +103,86 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-05-18 — GH cron cadence does not match assumed 5-min — recalibrating gate math
+
+The GitHub Actions cron expression in
+`.github/workflows/fetch-and-commit.yml` documents `*/5 * * * *` (every
+5 minutes). After ~12 hours of operation, observed cadence is
+**~60 minutes between successful runs, not 5.** GH Actions throttles
+scheduled workflows aggressively on small / inactive repos; the
+documented cadence is a ceiling, not a guarantee.
+
+This invalidates two pieces of math the project was committed to:
+
+1. **`PROJECT.md`'s sample-size assumption.** The 8-week curriculum
+   targets ~10 trades/day per variant → ~300 trades/month → A/B
+   comparator hits p<0.05 around Week 4–5. Sample-size math assumed
+   288 cron evaluations/day. Actual ~24/day means ~8% of the assumed
+   signal-evaluation opportunities. Without correction, Phase 2 gate
+   #2 (≥1 A/B-validated promotion with 100+ trades) fails by
+   timeline, not by merit.
+
+2. **Phase 2 architectural gate #1 (≥95% uptime).** Original spec:
+   ratio of successful runs to *expected* runs in the 4-week window.
+   `expected` was anchored to the documented 288/day → 8064/4w. With
+   actual delivery at ~24/day, the gate reads 0.6% uptime even when
+   100% of attempted runs succeed. The gate as written measures the
+   wrong thing.
+
+**Recalibration:**
+
+Gate #1's denominator changes from *infrastructure-documented expected
+rate* to *infrastructure-actual expected rate*. The new
+`expected_runs_in_window` is computed from observed cadence — e.g.,
+"in the last 4w we got 600 runs, so expect ~600 in the next 4w; gate
+passes if ≥95% of those succeed." Until enough history exists to
+estimate cadence, gate #1 reports as `—` (em-dash, per the project's
+empty-state convention) rather than `0.6%`.
+
+The 0.6% number from before this entry is preserved in
+`render_index.py`'s git history and the early `INDEX.md` commits as a
+"GH cron lag, not project breaking" footnote — useful for the Week 8
+phase-1 review when the operator asks "why did the early INDEX show
+0.6% uptime?"
+
+**Scope deferred to Week 2 strategy-roster review:**
+*scheduler migration.* GH cron is adequate for fetch.py (Alpaca
+returns historical bars; widening the lookback window closes the
+data-coverage gap — see commit alongside this entry). It is *not*
+adequate for execute.py: a 3% stop-loss checked once per hour can
+become a 6–10% realized loss on a fast move, which directly conflicts
+with Phase 2 exit condition #2 (paper-vs-real variance > 50%).
+Whether to keep signals.py on GH cron (slower learning, but free) or
+move signals + execute to a real scheduler (Render / Fly.io / VPS,
+~$0–5/mo) is a Week 2 decision logged in `pending.md`.
+
+**Considered and rejected:**
+
+- *Switch to GH Actions self-hosted runner today.* Adds infrastructure
+  before the strategy roster is even chosen. Premature.
+- *Move now to a paid scheduler.* Same — premature before the Week 2
+  scope decision says what needs reliable timing.
+- *Hide the 0.6% uptime number on INDEX retroactively.* It's
+  load-bearing evidence of the misalignment that caused this entry.
+  Leave it visible.
+- *Re-anchor the curriculum from "first ok cron run" to "first ok
+  cron run after switching schedulers."* Tempting but contaminates
+  the falsifiable hypothesis from 2026-05-17. The curriculum starts
+  when data starts accumulating, even slowly.
+
+**Falsifiable hypothesis this entry commits to:**
+
+By end of Week 2, the operator commits a decision-log entry naming
+either (a) "keep GH cron for fetch + signals; move execute to real
+scheduler before Phase 2," or (b) "move signals + execute together
+to one scheduler now; keep fetch on GH cron," or (c) "move
+everything to one real scheduler before Week 3 variant explosion."
+If no decision is committed by end of Week 2, the scheduler issue
+has become the project's most expensive un-made call and the Week 3
+build doesn't begin until it's made.
+
+---
+
 ## 2026-05-17 — Curriculum anchor is first cron run; cron wire-up; SQLite-in-repo as data store
 
 Three related decisions captured together.
