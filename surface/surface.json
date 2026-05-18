@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-18T01:28:50Z",
+  "generated_at": "2026-05-18T04:45:40Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -11,9 +11,9 @@
   },
   "vitals": {
     "last_run_iso": "2026-05-18T01:28:49.575453+00:00",
-    "last_run_human": "0m 00s ago",
+    "last_run_human": "196m 51s ago",
     "last_run_human_date": "2026-05-18 · 01:28 UTC",
-    "next_run_human": "4m 59s",
+    "next_run_human": "now",
     "uptime_recent": "10 of 10 ok · 100.0%"
   },
   "state": [
@@ -22,7 +22,7 @@
       "qual": "10 of 8064 expected · 28-day window",
       "figure": "0.1",
       "unit": "%",
-      "spark": "▁▁▁▁▃▆█▅",
+      "spark": "▁▁▁▅▅█▅▁",
       "spark_class": null
     },
     {
@@ -90,7 +90,7 @@
       "count": "41,781",
       "delta": "+125",
       "delta_class": null,
-      "spark": "▁▁▁▁▂▄▆█",
+      "spark": "▁▁▁▂▄▆██",
       "spark_class": "growing"
     },
     {
@@ -98,7 +98,7 @@
       "count": "10",
       "delta": "+10",
       "delta_class": null,
-      "spark": "▁▁▁▁▃▆█▅",
+      "spark": "▁▁▁▅▅█▅▁",
       "spark_class": null
     },
     {

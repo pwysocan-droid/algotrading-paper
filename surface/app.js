@@ -16,7 +16,8 @@
   // ---------- fetch cadence ----------
   const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
   const RETRY_INTERVAL_MS = 30 * 1000;
-  const STALE_THRESHOLD_MS = 2 * CRON_INTERVAL_MS;  // > 10min behind = stale
+  const FETCH_STALE_THRESHOLD_MS = 2 * CRON_INTERVAL_MS;  // 10min — JSON fetch failing
+  const CRON_STALE_THRESHOLD_MS = 90 * 60 * 1000;         // 90min — cron stopped firing
 
   // ---------- runtime state ----------
   let lastSurface = null;       // last successfully parsed JSON
@@ -167,7 +168,7 @@
     } else {
       lastRunAt = null;
     }
-    setStale(false);
+    checkStale();
   }
 
   // The surface JSON only carries day-1 info in the qualifier. Derive a
@@ -200,13 +201,32 @@
     }
   }
 
+  // Two independent staleness conditions:
+  //   - cron stale:   last successful cron run is far behind expected
+  //                   (GitHub Actions cron is best-effort; this catches
+  //                   "scheduler appears stopped" vs "just running late")
+  //   - fetch stale:  the PWA's surface.json fetches have been failing
+  //                   (network down, GH Pages outage, JSON corrupt)
+  // Each shows a distinct masthead message so the operator can tell
+  // which side is broken.
   function checkStale() {
-    if (!lastFetchAt) return;
-    const ageMs = Date.now() - lastFetchAt;
-    if (ageMs > STALE_THRESHOLD_MS) {
-      const ageMin = Math.floor(ageMs / 60000);
-      setStale(true, `surface stale · last update ${ageMin}m ago`);
+    const now = Date.now();
+
+    if (lastRunAt && (now - lastRunAt) > CRON_STALE_THRESHOLD_MS) {
+      const min = Math.floor((now - lastRunAt) / 60000);
+      setStale(true, `cron stale · last run ${min}m ago`);
+      return;
     }
+    if (lastFetchAt && (now - lastFetchAt) > FETCH_STALE_THRESHOLD_MS) {
+      const min = Math.floor((now - lastFetchAt) / 60000);
+      setStale(true, `surface stale · last fetch ${min}m ago`);
+      return;
+    }
+    if (!lastFetchAt) {
+      setStale(true, 'surface stale · waiting for first data');
+      return;
+    }
+    setStale(false);
   }
 
   // ---------- vitals ticker ----------
@@ -232,7 +252,18 @@
     if (lastEl) lastEl.textContent = `${fmtElapsed(now - lastRunAt)} ago`;
     if (nextEl) {
       const remaining = (lastRunAt + CRON_INTERVAL_MS) - now;
-      nextEl.textContent = remaining <= 0 ? 'now' : fmtElapsed(remaining);
+      if (remaining > 0) {
+        nextEl.textContent = fmtElapsed(remaining);
+      } else {
+        // Past the expected next-run time. Show "now" for the first
+        // minute of overdue (GitHub cron is usually a touch late), then
+        // switch to "+Xm overdue" so the operator can see the magnitude
+        // of the lag at a glance instead of "now" sticking for hours.
+        const overdueMin = Math.floor(-remaining / 60000);
+        nextEl.textContent = overdueMin === 0
+          ? 'now'
+          : `+${overdueMin}m overdue`;
+      }
     }
   }
 
@@ -292,11 +323,9 @@
     } catch (err) {
       console.warn('surface refresh failed:', err);
       if (!lastSurface) {
-        setStale(true, 'surface stale · waiting for first data');
         setTimeout(refresh, RETRY_INTERVAL_MS);
-      } else {
-        checkStale();
       }
+      checkStale();
     }
   }
 
