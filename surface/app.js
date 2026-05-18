@@ -209,6 +209,33 @@
     }
   }
 
+  // ---------- vitals ticker ----------
+  //
+  // The populator writes initial "last run" / "next run" text from the
+  // JSON snapshot, but those strings would freeze for the 5-min refresh
+  // interval if we left it at that. Recompute every second from cached
+  // lastRunAt so the elapsed/remaining display ticks live.
+
+  function fmtElapsed(ms) {
+    if (ms < 0) ms = 0;
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}m ${s.toString().padStart(2, '0')}s`;
+  }
+
+  function tickVitals() {
+    if (lastRunAt == null) return;
+    const now = Date.now();
+    const lastEl = $('#last-run');
+    const nextEl = $('#next-run');
+    if (lastEl) lastEl.textContent = `${fmtElapsed(now - lastRunAt)} ago`;
+    if (nextEl) {
+      const remaining = (lastRunAt + CRON_INTERVAL_MS) - now;
+      nextEl.textContent = remaining <= 0 ? 'now' : fmtElapsed(remaining);
+    }
+  }
+
   // ---------- masthead timestamp (current wall-clock UTC) ----------
 
   function updateTimestamp() {
@@ -280,6 +307,7 @@
     updateClock();
     refresh();
     setInterval(updateClock, 100);
+    setInterval(tickVitals, 1000);
     setInterval(updateTimestamp, 30 * 1000);
     setInterval(refresh, REFRESH_INTERVAL_MS);
     setInterval(checkStale, 60 * 1000);
