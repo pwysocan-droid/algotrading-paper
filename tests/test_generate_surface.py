@@ -364,6 +364,107 @@ def test_generate_idempotent(tmp_db: Path, tmp_repo: Path) -> None:
     assert json.dumps(a) == json.dumps(b)
 
 
+# ──────────────────────── cache-busting ───────────────────────────────
+
+
+def test_hash_app_js_stable_for_same_content(tmp_path: Path) -> None:
+    app_js = tmp_path / "app.js"
+    app_js.write_text("console.log('v1');\n")
+    h1 = gs._hash_app_js(app_js)
+    h2 = gs._hash_app_js(app_js)
+    assert h1 == h2
+    assert len(h1) == 12
+    assert all(c in "0123456789abcdef" for c in h1)
+
+
+def test_hash_app_js_changes_with_content(tmp_path: Path) -> None:
+    app_js = tmp_path / "app.js"
+    app_js.write_text("console.log('v1');\n")
+    h1 = gs._hash_app_js(app_js)
+    app_js.write_text("console.log('v2');\n")
+    h2 = gs._hash_app_js(app_js)
+    assert h1 != h2
+
+
+def test_update_index_html_version_rewrites_when_hash_differs(tmp_path: Path) -> None:
+    surface = tmp_path / "surface"
+    surface.mkdir()
+    (surface / "app.js").write_text("console.log('initial');\n")
+    (surface / "index.html").write_text(
+        '<html><body>\n<script src="./app.js?v=stale"></script>\n</body></html>\n'
+    )
+
+    rewrote = gs.update_index_html_version(surface)
+    assert rewrote is True
+
+    expected_hash = gs._hash_app_js(surface / "app.js")
+    new_html = (surface / "index.html").read_text()
+    assert f'src="./app.js?v={expected_hash}"' in new_html
+    assert "?v=stale" not in new_html
+
+
+def test_update_index_html_version_no_op_when_hash_matches(tmp_path: Path) -> None:
+    surface = tmp_path / "surface"
+    surface.mkdir()
+    (surface / "app.js").write_text("console.log('initial');\n")
+    h = gs._hash_app_js(surface / "app.js")
+    (surface / "index.html").write_text(
+        f'<html><body>\n<script src="./app.js?v={h}"></script>\n</body></html>\n'
+    )
+    mtime_before = (surface / "index.html").stat().st_mtime_ns
+
+    rewrote = gs.update_index_html_version(surface)
+    assert rewrote is False
+    mtime_after = (surface / "index.html").stat().st_mtime_ns
+    assert mtime_before == mtime_after, "no-op must not touch the file"
+
+
+def test_update_index_html_version_inserts_when_missing(tmp_path: Path) -> None:
+    """If index.html has <script src='./app.js'> with no version, insert one."""
+    surface = tmp_path / "surface"
+    surface.mkdir()
+    (surface / "app.js").write_text("console.log('x');\n")
+    (surface / "index.html").write_text(
+        '<html><body>\n<script src="./app.js"></script>\n</body></html>\n'
+    )
+
+    rewrote = gs.update_index_html_version(surface)
+    assert rewrote is True
+    h = gs._hash_app_js(surface / "app.js")
+    assert f'src="./app.js?v={h}"' in (surface / "index.html").read_text()
+
+
+def test_update_index_html_version_missing_files_no_op(tmp_path: Path) -> None:
+    surface = tmp_path / "surface"
+    surface.mkdir()
+    assert gs.update_index_html_version(surface) is False
+
+    (surface / "index.html").write_text("<html></html>\n")
+    assert gs.update_index_html_version(surface) is False
+
+
+def test_update_index_html_version_does_not_match_other_scripts(tmp_path: Path) -> None:
+    """The version-rewrite regex is anchored to './app.js' specifically — must
+    not touch other script tags or random app.js mentions in prose."""
+    surface = tmp_path / "surface"
+    surface.mkdir()
+    (surface / "app.js").write_text("x\n")
+    html_before = (
+        '<html><body>\n'
+        '<script src="./vendor/jquery.js?v=oldjq"></script>\n'
+        '<script src="./app.js?v=dev"></script>\n'
+        '<!-- comment mentions app.js?v=fake but should stay -->\n'
+        '</body></html>\n'
+    )
+    (surface / "index.html").write_text(html_before)
+    gs.update_index_html_version(surface)
+    html_after = (surface / "index.html").read_text()
+    assert "vendor/jquery.js?v=oldjq" in html_after, "other scripts untouched"
+    assert "app.js?v=fake" in html_after, "prose mentions of app.js?v=fake untouched"
+    h = gs._hash_app_js(surface / "app.js")
+    assert f'src="./app.js?v={h}"' in html_after
+
+
 def test_generate_writes_well_formed_json(tmp_db: Path, tmp_repo: Path) -> None:
     now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
     data = gs.generate(repo_root=tmp_repo, db_path=tmp_db, now=now)

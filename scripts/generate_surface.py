@@ -31,6 +31,7 @@ Monotonically increasing → spark_class='growing'.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sqlite3
@@ -651,6 +652,47 @@ def write_surface_json(out_path: Path, data: dict) -> Path:
     return out_path
 
 
+# ──────────────────── cache-busting for app.js ───────────────────────
+
+
+_APP_JS_VERSION_RE = re.compile(r'(src="\./app\.js)(?:\?v=[^"]*)?(")')
+
+
+def _hash_app_js(app_js: Path, length: int = 12) -> str:
+    """First N hex chars of SHA-256(app.js) — enough cache-bust entropy
+    without bloating the HTML. 12 chars = 48 bits ≈ 1 in 281 trillion
+    collision probability."""
+    return hashlib.sha256(app_js.read_bytes()).hexdigest()[:length]
+
+
+def update_index_html_version(surface_dir: Path = REPO_ROOT / "surface") -> bool:
+    """Rewrite surface/index.html so the <script src="./app.js?v=...">
+    query string reflects the current hash of app.js.
+
+    Browsers cache assets aggressively by URL; changing the URL when
+    content changes is how every modern site avoids stale-JS bugs
+    without user intervention. GitHub Pages doesn't allow custom
+    Cache-Control headers, so URL versioning is the only lever.
+
+    Returns True if index.html was rewritten, False if no-op (hash
+    already current). Idempotent — calling repeatedly with no
+    underlying change leaves the file alone (no dirty diff for the
+    cron commit-back).
+    """
+    index = surface_dir / "index.html"
+    app_js = surface_dir / "app.js"
+    if not index.exists() or not app_js.exists():
+        return False
+
+    new_hash = _hash_app_js(app_js)
+    html = index.read_text()
+    new_html = _APP_JS_VERSION_RE.sub(rf'\1?v={new_hash}\2', html)
+    if new_html == html:
+        return False
+    index.write_text(new_html)
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate surface/surface.json")
     parser.add_argument("--out", type=Path,
@@ -660,7 +702,11 @@ def main() -> int:
     db.migrate()
     data = generate()
     out = write_surface_json(args.out, data)
-    print(f"wrote {out} — {data['vitals']['uptime_recent']}")
+    rewrote_index = update_index_html_version()
+    msg = f"wrote {out} — {data['vitals']['uptime_recent']}"
+    if rewrote_index:
+        msg += " · rewrote index.html (app.js hash changed)"
+    print(msg)
     return 0
 
 
