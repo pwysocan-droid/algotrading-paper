@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-05-22T15:27:31Z",
+  "generated_at": "2026-05-22T17:22:16Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-22T15:27:30.710019+00:00",
+    "last_run_iso": "2026-05-22T17:22:15.685854+00:00",
     "last_run_human": "0m 00s ago",
-    "last_run_human_date": "2026-05-22 · 15:27 UTC",
+    "last_run_human_date": "2026-05-22 · 17:22 UTC",
     "next_run_human": "59m 59s",
-    "uptime_recent": "55 of 55 ok · 100.0%",
+    "uptime_recent": "56 of 56 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "55 of 8064 expected · 28-day window",
+      "qual": "56 of 8064 expected · 28-day window",
       "figure": "0.7",
       "unit": "%",
-      "spark": "▆▃█▃▁▃▆▃",
+      "spark": "██▁▁▁▁▁█",
       "spark_class": null
     },
     {
@@ -32,7 +32,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 5 · open after week 4",
+      "qual": "curriculum day 6 · open after week 4",
       "figure": "0",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -41,7 +41,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "51",
+      "figure": "50",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -92,26 +92,26 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "45,455",
-      "delta": "+894",
+      "count": "45,544",
+      "delta": "+898",
       "delta_class": null,
-      "spark": "▁▂▄▅▅▅▇█",
+      "spark": "▁▂▃▄▅▅▆█",
       "spark_class": "growing"
     },
     {
       "name": "bar coverage",
       "count": "60%",
-      "delta": "-571",
+      "delta": "-572",
       "delta_class": "note",
-      "spark": "██▇▃▃▁▅▃",
+      "spark": "▇█▅▁▃▅▄▇",
       "spark_class": null
     },
     {
       "name": "cron runs",
-      "count": "55",
+      "count": "56",
       "delta": "+11",
       "delta_class": null,
-      "spark": "▆▃█▃▁▃▆▃",
+      "spark": "██▁▁▁▁▁█",
       "spark_class": null
     },
     {
