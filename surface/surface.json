@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-05-23T20:34:53Z",
+  "generated_at": "2026-05-23T21:44:44Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-23T20:34:52.680862+00:00",
-    "last_run_human": "0m 00s ago",
-    "last_run_human_date": "2026-05-23 · 20:34 UTC",
-    "next_run_human": "59m 59s",
-    "uptime_recent": "75 of 75 ok · 100.0%",
+    "last_run_iso": "2026-05-23T21:44:43.148793+00:00",
+    "last_run_human": "0m 01s ago",
+    "last_run_human_date": "2026-05-23 · 21:44 UTC",
+    "next_run_human": "59m 58s",
+    "uptime_recent": "76 of 76 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "75 of 8064 expected · 28-day window",
+      "qual": "76 of 8064 expected · 28-day window",
       "figure": "0.9",
       "unit": "%",
-      "spark": "▆▃▁▁▃▆▃█",
+      "spark": "█▁▁▅▅███",
       "spark_class": null
     },
     {
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "46,869",
-      "delta": "+1235",
+      "count": "46,939",
+      "delta": "+1245",
       "delta_class": null,
-      "spark": "▁▂▃▃▄▅▆█",
+      "spark": "▁▂▂▃▄▅▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "46869"
+      "value": "46939"
     },
     {
       "name": "bar coverage",
       "count": "81%",
-      "delta": "-280",
+      "delta": "-279",
       "delta_class": "note",
-      "spark": "█▃▁▅▇▇██",
+      "spark": "▇▁▄▇▆███",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "81"
     },
     {
       "name": "cron runs",
-      "count": "75",
+      "count": "76",
       "delta": "+18",
       "delta_class": null,
-      "spark": "▆▃▁▁▃▆▃█",
+      "spark": "█▁▁▅▅███",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "75"
+      "value": "76"
     },
     {
       "name": "llm calls",
@@ -142,13 +142,13 @@
     },
     {
       "name": "letters",
-      "count": "1",
-      "delta": "+1",
+      "count": "2",
+      "delta": "+2",
       "delta_class": null,
       "spark": "▁▁▁▁▁▁▁█",
       "spark_class": null,
       "key": "letters",
-      "value": "1"
+      "value": "2"
     },
     {
       "name": "reviews",

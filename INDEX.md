@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-23T20:34:53Z
+2026-05-23T21:44:43Z
 
 7 surfaces tracked
 
@@ -10,18 +10,18 @@ Phase 1  ·  Week 1
 
 | System uptime | Trades this week | Phase 2 gates | Days to phase 1 review |
 | :--- | :--- | :--- | :--- |
-| **0.9%** | **0** | **0 / 3** | **49** |
+| **1.0%** | **0** | **0 / 3** | **49** |
 | last 4w | paper | passed | ends 2026-07-12 |
 
 ## § 01 — Recently changed
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [PROJECT.md](PROJECT.md) | 2026-05-23T19:48:14Z | fetch run 2026-05-23T19:48:14Z |
-| [philosophy.md](philosophy.md) | 2026-05-23T19:48:14Z | fetch run 2026-05-23T19:48:14Z |
-| [decision-log.md](decision-log.md) | 2026-05-23T19:48:14Z | fetch run 2026-05-23T19:48:14Z |
-| [playbook.md](playbook.md) | 2026-05-23T19:48:14Z | fetch run 2026-05-23T19:48:14Z |
-| [roadmap.md](roadmap.md) | 2026-05-23T19:48:14Z | fetch run 2026-05-23T19:48:14Z |
+| [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
+| [decision-log.md](decision-log.md) | 2026-05-23T20:37:49Z | Log VPS cron migration decisi… |
+| [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
 ## § 02 — Pending decisions · 5 items
 
@@ -49,8 +49,8 @@ Phase 1  ·  Week 1
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
-| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-23T20:34:33Z | ok |
-| week status | [week-1-status.md](week-1-status.md) | 2026-05-23T20:34:33Z | ok |
+| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-23T21:38:00Z | ok |
+| week status | [week-1-status.md](week-1-status.md) | 2026-05-23T21:38:00Z | ok |
 | weekly A/B | — | — | not yet · Week 4 |
 | recommendations | — | — | not yet · Week 4 |
 | Friday adversarial review | — | — | first run · Week 1 |
