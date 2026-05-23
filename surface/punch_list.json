@@ -1,8 +1,8 @@
 {
   "summary": {
     "due_7d": 1,
-    "due_14d": 3,
-    "open": 7,
+    "due_14d": 2,
+    "open": 8,
     "done_this_week": 0
   },
   "gates": [
@@ -14,15 +14,6 @@
       "detail": "Bollinger and MA-crossover survive, or replaced",
       "kind": "gate",
       "promoted": true
-    },
-    {
-      "id": "gate:Scheduler migration decision · signals vs execute vs full stack",
-      "when": "10d",
-      "when_class": "urgent",
-      "thing": "Scheduler migration decision · signals vs execute vs full stack",
-      "detail": "GH cron cadence forces real scheduler before Phase 2; scope decided alongside strategy roster",
-      "kind": "gate",
-      "promoted": false
     }
   ],
   "ops": [
@@ -46,6 +37,15 @@
     }
   ],
   "log": [
+    {
+      "id": "log:Single-writer DB discipline entry",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Single-writer DB discipline entry",
+      "detail": "trader.db has one writer (the VPS); local repo is pull-only. Backfills/repairs run on the VPS. Prevents binary-merge conflicts and silent overwrite of local changes.",
+      "kind": "log",
+      "promoted": false
+    },
     {
       "id": "log:Variant-explosion-to-Day-1 entry",
       "when": "open",

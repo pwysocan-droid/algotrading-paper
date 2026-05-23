@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-23T22:00:05Z
+2026-05-23T22:05:04Z
 
 7 surfaces tracked
 
@@ -23,11 +23,9 @@ Phase 1  ·  Week 1
 | [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
-## § 02 — Pending decisions · 5 items
+## § 02 — Pending decisions · 4 items
 
 ▸ Week 2 strategy-roster review — Bollinger and MA-crossover survive, or replaced
-
-▸ Scheduler migration decision · signals vs execute vs full stack — GH cron cadence forces real scheduler before Phase 2; scope decided alongside strategy roster
 
 ▸ Friday adversarial review · #1 — first operational rhythm · bear case only
 

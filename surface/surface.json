@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-05-23T22:00:05Z",
+  "generated_at": "2026-05-23T22:05:04Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-23T22:00:04.346617+00:00",
+    "last_run_iso": "2026-05-23T22:05:03.723520+00:00",
     "last_run_human": "0m 01s ago",
-    "last_run_human_date": "2026-05-23 · 22:00 UTC",
+    "last_run_human_date": "2026-05-23 · 22:05 UTC",
     "next_run_human": "59m 58s",
-    "uptime_recent": "80 of 80 ok · 100.0%",
+    "uptime_recent": "81 of 81 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "80 of 8064 expected · 28-day window",
+      "qual": "81 of 8064 expected · 28-day window",
       "figure": "1.0",
       "unit": "%",
       "spark": "▂▁▁▂▃▂▃█",
@@ -57,14 +57,6 @@
       "promoted": true
     },
     {
-      "when": "10d",
-      "when_class": "urgent",
-      "thing": "Scheduler migration decision · signals vs execute vs full stack",
-      "detail": "GH cron cadence forces real scheduler before Phase 2; scope decided alongside strategy roster",
-      "kind": "gate",
-      "promoted": false
-    },
-    {
       "when": "5d",
       "when_class": "urgent",
       "thing": "Friday adversarial review · #1",
@@ -92,13 +84,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "70,793",
-      "delta": "+30392",
+      "count": "70,798",
+      "delta": "+30397",
       "delta_class": null,
       "spark": "▁▁▁▁▁▁▁█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "70793"
+      "value": "70798"
     },
     {
       "name": "bar coverage",
@@ -112,13 +104,13 @@
     },
     {
       "name": "cron runs",
-      "count": "80",
-      "delta": "+21",
+      "count": "81",
+      "delta": "+22",
       "delta_class": null,
       "spark": "▂▁▁▂▃▂▃█",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "80"
+      "value": "81"
     },
     {
       "name": "llm calls",
