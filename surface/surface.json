@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-05-23T15:34:25Z",
+  "generated_at": "2026-05-23T16:34:09Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-23T15:34:24.915004+00:00",
+    "last_run_iso": "2026-05-23T16:34:08.777365+00:00",
     "last_run_human": "0m 00s ago",
-    "last_run_human_date": "2026-05-23 · 15:34 UTC",
+    "last_run_human_date": "2026-05-23 · 16:34 UTC",
     "next_run_human": "59m 59s",
-    "uptime_recent": "70 of 70 ok · 100.0%",
+    "uptime_recent": "71 of 71 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "70 of 8064 expected · 28-day window",
+      "qual": "71 of 8064 expected · 28-day window",
       "figure": "0.9",
       "unit": "%",
-      "spark": "▁▅█▁▁▅▅█",
+      "spark": "▆▆█▁▃▆██",
       "spark_class": null
     },
     {
@@ -32,7 +32,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 6 · open after week 4",
+      "qual": "curriculum day 7 · open after week 4",
       "figure": "0",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -41,7 +41,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "50",
+      "figure": "49",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "46,571",
-      "delta": "+1116",
+      "count": "46,629",
+      "delta": "+1174",
       "delta_class": null,
-      "spark": "▁▂▃▄▅▆▆█",
+      "spark": "▁▂▃▃▄▅▆█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "46571"
+      "value": "46629"
     },
     {
       "name": "bar coverage",
-      "count": "78%",
-      "delta": "-324",
+      "count": "79%",
+      "delta": "-305",
       "delta_class": "note",
-      "spark": "▆█▇▁▄█▇█",
+      "spark": "▇█▇▁▅▇▆█",
       "spark_class": null,
       "key": "bar_coverage",
-      "value": "78"
+      "value": "79"
     },
     {
       "name": "cron runs",
-      "count": "70",
-      "delta": "+15",
+      "count": "71",
+      "delta": "+16",
       "delta_class": null,
-      "spark": "▁▅█▁▁▅▅█",
+      "spark": "▆▆█▁▃▆██",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "70"
+      "value": "71"
     },
     {
       "name": "llm calls",

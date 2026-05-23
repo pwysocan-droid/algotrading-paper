@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-23T15:34:25Z
+2026-05-23T16:34:09Z
 
 7 surfaces tracked
 
@@ -10,18 +10,18 @@ Phase 1  ·  Week 1
 
 | System uptime | Trades this week | Phase 2 gates | Days to phase 1 review |
 | :--- | :--- | :--- | :--- |
-| **0.9%** | **0** | **0 / 3** | **50** |
+| **0.9%** | **0** | **0 / 3** | **49** |
 | last 4w | paper | passed | ends 2026-07-12 |
 
 ## § 01 — Recently changed
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [PROJECT.md](PROJECT.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
-| [philosophy.md](philosophy.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
-| [decision-log.md](decision-log.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
-| [playbook.md](playbook.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
-| [roadmap.md](roadmap.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
+| [PROJECT.md](PROJECT.md) | 2026-05-23T15:34:25Z | fetch run 2026-05-23T15:34:25Z |
+| [philosophy.md](philosophy.md) | 2026-05-23T15:34:25Z | fetch run 2026-05-23T15:34:25Z |
+| [decision-log.md](decision-log.md) | 2026-05-23T15:34:25Z | fetch run 2026-05-23T15:34:25Z |
+| [playbook.md](playbook.md) | 2026-05-23T15:34:25Z | fetch run 2026-05-23T15:34:25Z |
+| [roadmap.md](roadmap.md) | 2026-05-23T15:34:25Z | fetch run 2026-05-23T15:34:25Z |
 
 ## § 02 — Pending decisions · 5 items
 
@@ -49,8 +49,8 @@ Phase 1  ·  Week 1
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
-| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-23T15:34:10Z | ok |
-| week status | [week-1-status.md](week-1-status.md) | 2026-05-23T15:34:10Z | ok |
+| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-23T16:33:51Z | ok |
+| week status | [week-1-status.md](week-1-status.md) | 2026-05-23T16:33:51Z | ok |
 | weekly A/B | — | — | not yet · Week 4 |
 | recommendations | — | — | not yet · Week 4 |
 | Friday adversarial review | — | — | first run · Week 1 |
