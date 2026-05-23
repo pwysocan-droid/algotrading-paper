@@ -295,6 +295,55 @@ discipline.
 
 ---
 
+## VPS cron architecture
+
+Superseded the GitHub Actions cron on 2026-05-23. See the decision-log
+entry of that date for the full reasoning; the short version: GitHub's
+free-tier `*/5` schedule delivered ~4% of expected invocations, which
+made the Phase 2 95%-uptime gate unachievable. The cron moved to a
+Hetzner CX22 VPS ($5.83/mo).
+
+**Where it runs.** A Hetzner CX22 VPS, Ubuntu 24.04, under the
+non-root `trader` user. The repo is cloned at
+`/home/trader/algotrading-paper`; system cron invokes
+`vps/cron-fetch.sh` every 5 minutes. The `.env` lives on the VPS
+(same four credentials as local), `chmod 600`. The VPS pushes to
+GitHub via a write-enabled deploy key.
+
+**What runs.** `vps/cron-fetch.sh` does the full pipeline:
+`git pull` → `fetch.py --minutes=90` → `render_index.py` →
+`scripts/generate_surface.py` → commit (`trader.db`, `INDEX.md`,
+`surface/surface.json`, `surface/punch_list.json`,
+`surface/index.html`) → push. Identical surface output to the old
+GitHub Actions job; it just fires reliably now.
+
+**How the operator's local repo stays in sync.** Same as before —
+`git pull` before doing any local work. The VPS commits as
+`algotrading-paper bot`; `git log --invert-grep --grep='^fetch run'`
+filters cron commits out when reviewing operator activity.
+
+**How to update the VPS.** `git pull` on the VPS, or just wait — the
+cron does a `git pull --rebase` at the start of every run, so code
+changes land within one cycle automatically. Full install / debug
+steps are in `vps/README.md`.
+
+**Failure modes and where to look.**
+- VPS down → no new `fetch run` commits; the live surface's
+  `cron stale` indicator fires after 90 min. Check the Hetzner
+  console.
+- Cron fires but `fetch.py` fails → a `runs` row with
+  `status='failed'` and `error_text`; the Python traceback is in
+  `vps/logs/cron-YYYY-MM-DD.log` on the VPS.
+- Push fails → data is safe (committed locally on the VPS), retried
+  next run; check the GitHub deploy key has write access.
+
+**GitHub Actions fallback.** `.github/workflows/fetch-and-commit.yml`
+still exists with its `schedule:` commented out; it's
+`workflow_dispatch`-able for a manual one-off or as a temporary
+fallback during VPS downtime.
+
+---
+
 ## Step 9 — Begin Week 1
 
 Once Steps 1–8 are complete, the repo is ready for the Week 1
