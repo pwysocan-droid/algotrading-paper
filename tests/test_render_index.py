@@ -470,6 +470,22 @@ def test_read_pending_items_preserves_hash_in_quoted_strings(tmp_repo: Path) -> 
     assert items == ["Friday adversarial review · #1"]
 
 
+def test_real_queue_files_parse_to_valid_records() -> None:
+    """Guard: the committed pending.md / decision_log_queue.md / build_queue.md
+    must each parse to ≥1 valid record with thing + kind. A malformed YAML edit
+    silently returns [] (blanking a surface section without erroring), so this
+    catches a fat-fingered operator edit before it ships."""
+    root = Path(render_index.__file__).resolve().parent
+    for fname in ("pending.md", "decision_log_queue.md", "build_queue.md"):
+        path = root / fname
+        assert path.exists(), f"{fname} missing"
+        recs = render_index.read_yaml_md_records(path)
+        assert len(recs) > 0, f"{fname} parsed to zero records — malformed YAML?"
+        for r in recs:
+            assert r.get("thing"), f"{fname}: record missing 'thing': {r!r}"
+            assert r.get("kind"), f"{fname}: record missing 'kind': {r.get('thing')!r}"
+
+
 def test_read_pending_records_returns_full_structure(tmp_repo: Path) -> None:
     """generate_surface.py consumes the structured form via this function."""
     (tmp_repo / "pending.md").write_text(
