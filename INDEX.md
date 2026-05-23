@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-05-23T14:52:00Z
+2026-05-23T15:34:25Z
 
 7 surfaces tracked
 
@@ -17,11 +17,11 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [decision-log.md](decision-log.md) | 2026-05-18T04:50:34Z | Log GH cron cadence mismatch:… |
-| [setup.md](setup.md) | 2026-05-17T15:25:14Z | Document the cron commit-back… |
-| [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
-| [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
-| [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
+| [PROJECT.md](PROJECT.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
+| [philosophy.md](philosophy.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
+| [decision-log.md](decision-log.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
+| [playbook.md](playbook.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
+| [roadmap.md](roadmap.md) | 2026-05-23T14:53:25Z | Session marker on live surfac… |
 
 ## § 02 — Pending decisions · 5 items
 
@@ -49,8 +49,8 @@ Phase 1  ·  Week 1
 
 | Surface | Latest | Generated | Status |
 | --- | --- | --- | --- |
-| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-03T00:13:20Z | ok |
-| week status | [week-1-status.md](week-1-status.md) | 2026-05-17T15:24:14Z | ok |
+| replay | [reports/2026-05-03-replay.md](reports/2026-05-03-replay.md) | 2026-05-23T15:34:10Z | ok |
+| week status | [week-1-status.md](week-1-status.md) | 2026-05-23T15:34:10Z | ok |
 | weekly A/B | — | — | not yet · Week 4 |
 | recommendations | — | — | not yet · Week 4 |
 | Friday adversarial review | — | — | first run · Week 1 |
