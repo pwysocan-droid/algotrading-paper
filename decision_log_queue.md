@@ -17,6 +17,11 @@ Each item:
 
 ---
 
+- thing: Single-writer DB discipline entry
+  detail: "trader.db has one writer (the VPS); local repo is pull-only. Backfills/repairs run on the VPS. Prevents binary-merge conflicts and silent overwrite of local changes."
+  when: open
+  kind: log
+
 - thing: Variant-explosion-to-Day-1 entry
   detail: names parameter-sweep vs factor-exploration distinction · 12 variants list
   when: open
