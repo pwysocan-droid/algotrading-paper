@@ -1,12 +1,19 @@
 name: fetch-and-commit
 
-# Every 5 minutes: fetch fresh bars from Alpaca, regenerate INDEX.md,
-# commit the SQLite DB + INDEX, push. Single workflow doing the full
-# cycle per decision-log entry 2026-05-17.
+# Scheduled cron DISABLED 2026-05-23 in favor of the Hetzner VPS cron
+# (see decision-log entry 2026-05-23 and vps/README.md). GitHub's
+# free-tier */5 schedule delivered ~4% of expected invocations, which
+# made the 95% uptime gate unachievable. The VPS runs the same pipeline
+# via vps/cron-fetch.sh under system cron.
+#
+# This workflow is preserved for manual trigger (workflow_dispatch) — a
+# one-off fetch, or a temporary fallback during VPS downtime. To
+# re-enable scheduled runs, uncomment the schedule block below (but per
+# the decision-log entry, this platform can't clear the uptime gate).
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'
+  # schedule:
+  #   - cron: '*/5 * * * *'   # disabled 2026-05-23 — see above
   workflow_dispatch:  # manual trigger for testing / on-demand fetches
 
 permissions:
