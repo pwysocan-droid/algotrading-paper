@@ -280,15 +280,14 @@ def read_pending_items(repo_root: Path = REPO_ROOT) -> list[str]:
     return items
 
 
-def read_pending_records(repo_root: Path = REPO_ROOT) -> list[dict]:
-    """Structured version of pending — used by generate_surface.py.
-
-    Returns the list of raw YAML records (each a dict with thing/detail/
-    when/kind/promoted). Skips malformed records silently.
+def read_yaml_md_records(path: Path) -> list[dict]:
+    """Parse a YAML-in-markdown queue file (pending.md, decision_log_queue.md,
+    build_queue.md). The YAML list lives after the last `---` separator;
+    everything above is documentation prose. Returns records that are dicts
+    with a 'thing' key. Missing file / empty body / malformed YAML → [].
     """
     import yaml
 
-    path = repo_root / "pending.md"
     if not path.exists():
         return []
     text = path.read_text()
@@ -300,6 +299,15 @@ def read_pending_records(repo_root: Path = REPO_ROOT) -> list[dict]:
     except yaml.YAMLError:
         return []
     return [r for r in records if isinstance(r, dict) and r.get("thing")]
+
+
+def read_pending_records(repo_root: Path = REPO_ROOT) -> list[dict]:
+    """Structured pending records — used by generate_surface.py.
+
+    Returns raw YAML records (each a dict with thing/detail/when/kind/
+    promoted). Skips malformed records silently.
+    """
+    return read_yaml_md_records(repo_root / "pending.md")
 
 
 def system_uptime_pct(conn: sqlite3.Connection, now: datetime, weeks: int = 4) -> float | None:

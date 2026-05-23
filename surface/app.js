@@ -106,6 +106,10 @@
     const row = fragment.firstElementChild;
     if (!row) return null;
     applyBindings(row, record);
+    // Session-marker support: accum records carry a stable key + raw value;
+    // expose them as data-* so applySessionMarkers can diff across visits.
+    if (record.key != null) row.dataset.key = record.key;
+    if (record.value != null) row.dataset.value = String(record.value);
     if (typeof rowClassFn === 'function') {
       const cls = rowClassFn(record);
       if (cls) row.classList.add(cls);
@@ -180,6 +184,56 @@
       cronIntervalMs = surface.vitals.cron_interval_seconds * 1000;
     }
     checkStale();
+
+    // Must run after the accum rows exist and their data-value attrs are set.
+    applySessionMarkers();
+  }
+
+  // ---------- session markers ----------
+  //
+  // Tracks what changed since the operator's previous *visit*. A visit is
+  // "new" when >1h has passed since the last recorded page load. On a new
+  // visit, accum rows whose value differs from the previous snapshot get a
+  // teal ‣ marker. Within an hour, reloads keep the markers (same session)
+  // so the operator can re-check without losing the indicators.
+
+  const SESSION_GAP_MS = 60 * 60 * 1000;
+  const SESSION_KEY = 'algotrading_paper_session_v1';
+
+  function applySessionMarkers() {
+    let prev;
+    try {
+      prev = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    } catch {
+      prev = null;
+    }
+
+    const now = Date.now();
+    const rows = $$(document, '.accum-row[data-key]');
+    const currentValues = {};
+    rows.forEach((row) => { currentValues[row.dataset.key] = row.dataset.value; });
+
+    const isNewSession = !prev || (now - prev.timestamp) > SESSION_GAP_MS;
+
+    if (isNewSession && prev) {
+      rows.forEach((row) => {
+        const before = prev.values ? prev.values[row.dataset.key] : undefined;
+        const after = row.dataset.value;
+        if (before !== undefined && before !== after) {
+          row.querySelector('.marker')?.classList.add('active');
+        }
+      });
+      const qual = $('#session-qualifier');
+      if (qual) {
+        const hoursAgo = Math.max(1, Math.round((now - prev.timestamp) / SESSION_GAP_MS));
+        qual.textContent = `since ${hoursAgo}h ago`;
+      }
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ timestamp: now, values: currentValues }));
+    } else if (!prev) {
+      // First visit ever — snapshot, no markers.
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ timestamp: now, values: currentValues }));
+    }
+    // Continuing session (<1h): leave existing markers as they are.
   }
 
   // The surface JSON only carries day-1 info in the qualifier. Derive a

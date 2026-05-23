@@ -1,0 +1,106 @@
+{
+  "summary": {
+    "due_7d": 1,
+    "due_14d": 3,
+    "open": 7,
+    "done_this_week": 0
+  },
+  "gates": [
+    {
+      "id": "gate:Week 2 strategy-roster review",
+      "when": "10d",
+      "when_class": "urgent",
+      "thing": "Week 2 strategy-roster review",
+      "detail": "Bollinger and MA-crossover survive, or replaced",
+      "kind": "gate",
+      "promoted": true
+    },
+    {
+      "id": "gate:Scheduler migration decision · signals vs execute vs full stack",
+      "when": "10d",
+      "when_class": "urgent",
+      "thing": "Scheduler migration decision · signals vs execute vs full stack",
+      "detail": "GH cron cadence forces real scheduler before Phase 2; scope decided alongside strategy roster",
+      "kind": "gate",
+      "promoted": false
+    }
+  ],
+  "ops": [
+    {
+      "id": "ops:Friday adversarial review · #1",
+      "when": "5d",
+      "when_class": "urgent",
+      "thing": "Friday adversarial review · #1",
+      "detail": "first operational rhythm · bear case only",
+      "kind": "ops",
+      "promoted": false
+    },
+    {
+      "id": "ops:Future-self letters · 2026-04-26 entries",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Future-self letters · 2026-04-26 entries",
+      "detail": "convention set, letters pending",
+      "kind": "ops",
+      "promoted": false
+    }
+  ],
+  "log": [
+    {
+      "id": "log:Variant-explosion-to-Day-1 entry",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Variant-explosion-to-Day-1 entry",
+      "detail": "names parameter-sweep vs factor-exploration distinction · 12 variants list",
+      "kind": "log",
+      "promoted": false
+    },
+    {
+      "id": "log:Shadow-signal schema + discipline entry",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Shadow-signal schema + discipline entry",
+      "detail": "exploration vs validation boundary · table schema · graduation criteria",
+      "kind": "log",
+      "promoted": false
+    },
+    {
+      "id": "log:.env.template exposure entry",
+      "when": "open",
+      "when_class": "open",
+      "thing": ".env.template exposure entry",
+      "detail": "caught, rotated, unlogged · post-incident write-up",
+      "kind": "log",
+      "promoted": false
+    }
+  ],
+  "build": [
+    {
+      "id": "build:Cron-variance row on surface",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Cron-variance row on surface",
+      "detail": "std dev of run intervals over 24h · add to generate_surface.py",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Shadow signals implementation",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Shadow signals implementation",
+      "detail": "post-Week-2 if scheduler migration ships first · schema in decision-log",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Bar-coverage steady-state verification",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Bar-coverage steady-state verification",
+      "detail": "confirm 70-90% target after 48h of --minutes=90 in effect",
+      "kind": "build",
+      "promoted": false
+    }
+  ]
+}

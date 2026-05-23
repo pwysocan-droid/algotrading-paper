@@ -56,6 +56,8 @@ from render_index import (
     compute_phase_1_review_target,
     get_curriculum_start,
     phase_2_gates_passed,
+    read_pending_records,
+    read_yaml_md_records,
     runs_in_window,
     system_uptime_pct,
     trades_this_week,
@@ -528,7 +530,85 @@ def build_accumulating(conn: sqlite3.Connection, repo_root: Path, now: datetime)
         "spark_class": "empty",
     })
 
+    # Session-marker support: a stable per-row key and the raw numeric value.
+    # app.js writes these as data-key / data-value so applySessionMarkers can
+    # diff against the operator's previous-visit snapshot. key = name with
+    # spaces → underscores (bars, bar_coverage, cron_runs, …); value = the
+    # count's digits ("41,871" → "41871", "15%" → "15", "—" → "0").
+    for r in rows:
+        r["key"] = r["name"].replace(" ", "_")
+        digits = re.sub(r"[^0-9]", "", r["count"])
+        r["value"] = digits if digits else "0"
+
     return rows
+
+
+# ─────────────────────── punch list ───────────────────────────────────
+
+
+def _punch_item(rec: dict) -> dict:
+    when = (rec.get("when") or "").strip()
+    if when == "open":
+        when_class: str | None = "open"
+    elif when.endswith("d"):
+        when_class = "urgent"
+    else:
+        when_class = None
+    return {
+        "id": f"{(rec.get('kind') or '').strip()}:{(rec.get('thing') or '').strip()}",
+        "when": when,
+        "when_class": when_class,
+        "thing": (rec.get("thing") or "").strip(),
+        "detail": (rec.get("detail") or "").strip() or None,
+        "kind": (rec.get("kind") or "").strip(),
+        "promoted": bool(rec.get("promoted")),
+    }
+
+
+def _when_days(when: str) -> int | None:
+    m = re.match(r"^(\d+)d$", when.strip())
+    return int(m.group(1)) if m else None
+
+
+def build_punch_summary(items: list[dict]) -> dict:
+    """due_7d / due_14d are cumulative (≤7 ⊂ ≤14). open counts when='open'.
+    done_this_week is always 0 here — it's localStorage-only, computed
+    client-side from the operator's done-toggles."""
+    due_7 = due_14 = open_count = 0
+    for it in items:
+        days = _when_days(it["when"])
+        if days is not None:
+            if days <= 7:
+                due_7 += 1
+            if days <= 14:
+                due_14 += 1
+        elif it["when"] == "open":
+            open_count += 1
+    return {"due_7d": due_7, "due_14d": due_14, "open": open_count, "done_this_week": 0}
+
+
+def build_punch_list(repo_root: Path = REPO_ROOT) -> dict:
+    """Punch list JSON: gates + ops from pending.md (by kind), log from
+    decision_log_queue.md, build from build_queue.md."""
+    pending = read_pending_records(repo_root)
+    gates = [_punch_item(r) for r in pending if (r.get("kind") or "").strip() == "gate"]
+    ops = [_punch_item(r) for r in pending if (r.get("kind") or "").strip() == "ops"]
+    log = [_punch_item(r) for r in read_yaml_md_records(repo_root / "decision_log_queue.md")]
+    build = [_punch_item(r) for r in read_yaml_md_records(repo_root / "build_queue.md")]
+    all_items = gates + ops + log + build
+    return {
+        "summary": build_punch_summary(all_items),
+        "gates": gates,
+        "ops": ops,
+        "log": log,
+        "build": build,
+    }
+
+
+def write_punch_list_json(out_path: Path, data: dict) -> Path:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+    return out_path
 
 
 _TIMETABLE_DAY_FMT = "%a %-m/%-d"
@@ -741,18 +821,28 @@ def update_index_html_version(surface_dir: Path = REPO_ROOT / "surface") -> bool
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate surface/surface.json")
+    parser = argparse.ArgumentParser(description="Generate surface/surface.json + punch_list.json")
     parser.add_argument("--out", type=Path,
                         default=REPO_ROOT / "surface" / "surface.json")
+    parser.add_argument("--punch-out", type=Path,
+                        default=REPO_ROOT / "surface" / "punch_list.json")
     args = parser.parse_args()
 
     db.migrate()
     data = generate()
     out = write_surface_json(args.out, data)
+
+    punch = build_punch_list()
+    punch_out = write_punch_list_json(args.punch_out, punch)
+
     rewrote_index = update_index_html_version()
-    msg = f"wrote {out} — {data['vitals']['uptime_recent']}"
+    s = punch["summary"]
+    msg = (
+        f"wrote {out} — {data['vitals']['uptime_recent']}\n"
+        f"wrote {punch_out} — due≤7d {s['due_7d']} · due≤14d {s['due_14d']} · open {s['open']}"
+    )
     if rewrote_index:
-        msg += " · rewrote index.html (app.js hash changed)"
+        msg += "\nrewrote index.html (app.js hash changed)"
     print(msg)
     return 0
 

@@ -177,6 +177,19 @@
     color: var(--fg-faint); letter-spacing: 0;
     margin-left: auto;
   }
+  /* Quiet underlined link in section qualifiers — just enough
+     affordance to read as clickable. */
+  .section-label .qualifier .ql-link {
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hairline-bright);
+    font-style: normal;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .section-label .qualifier .ql-link:hover {
+    color: var(--fg);
+    border-bottom-color: var(--fg-faint);
+  }
 
   /* PENDING */
   .pending { margin-bottom: 26px; }
@@ -225,9 +238,9 @@
   .accum { margin-bottom: 26px; }
   .accum-row {
     display: grid;
-    grid-template-columns: 1fr 80px 50px 90px;
+    grid-template-columns: 1fr 80px 12px 50px 90px;
     align-items: baseline;
-    gap: 14px; padding: 7px 0;
+    gap: 8px 14px; padding: 7px 0;
     font-family: 'JetBrains Mono', monospace;
   }
   .accum-row .name {
@@ -239,6 +252,19 @@
     text-align: right; letter-spacing: -0.01em; line-height: 1;
   }
   .accum-row .count.empty { color: var(--fg-ghost); }
+
+  /* Session marker — appears only when the row's value changed since
+     the operator's previous visit (>1h gap). Teal because change =
+     accumulation. */
+  .accum-row .marker {
+    font-size: 11px;
+    color: var(--teal);
+    text-align: center;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .accum-row .marker.active { opacity: 1; }
   .accum-row .delta {
     font-size: 10px; color: var(--teal);
     text-align: right; letter-spacing: 0; font-style: italic;
@@ -412,7 +438,7 @@
     <div class="section-label">
       <span class="idx">ii.</span>
       <span class="name">pending</span>
-      <span class="qualifier" data-bind="pending_qualifier">—</span>
+      <span class="qualifier"><span data-bind="pending_qualifier">—</span> · <a href="./punch-list.html" class="ql-link">all</a></span>
     </div>
     <div id="pending-rows"></div>
     <template id="pending-row-template">
@@ -432,13 +458,14 @@
     <div class="section-label">
       <span class="idx">iii.</span>
       <span class="name">accumulating</span>
-      <span class="qualifier">last 24h</span>
+      <span class="qualifier" id="session-qualifier">last 24h</span>
     </div>
     <div id="accum-rows"></div>
     <template id="accum-row-template">
       <div class="accum-row">
         <div class="name" data-bind="name"></div>
         <div class="count" data-bind="count" data-class-if-emdash="empty"></div>
+        <div class="marker">‣</div>
         <div class="delta" data-bind="delta" data-class="delta_class"></div>
         <div class="spark" data-bind="spark" data-class="spark_class"></div>
       </div>
@@ -468,6 +495,6 @@
     <div class="provenance">github.com/pwysocan-droid/algotrading-paper</div>
   </div>
 
-<script src="./app.js?v=dce1462adb2d"></script>
+<script src="./app.js?v=80d4ddd88425"></script>
 </body>
 </html>

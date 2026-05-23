@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>algotrading-paper · punch list</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --hairline: #1c1c1c;
+    --hairline-bright: #2a2a2a;
+    --fg: #e8e8e8;
+    --fg-dim: #888;
+    --fg-faint: #555;
+    --fg-ghost: #333;
+    --red: #EB0000;
+    --teal: #6ee7b7;
+    --teal-dim: #4ab895;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
+  }
+
+  body {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 20px 22px 48px;
+    min-height: 100vh;
+  }
+
+  /* === MASTHEAD === */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .masthead .title { font-size: 12px; font-weight: 500; color: var(--fg); }
+  .masthead .title .slash { color: var(--fg-faint); margin: 0 5px; }
+  .masthead .title .sub { color: var(--fg-dim); }
+  .masthead .nav { font-size: 10px; color: var(--fg-faint); letter-spacing: 0.04em; }
+  .masthead .nav a {
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hairline-bright);
+  }
+  .masthead .nav a:hover { color: var(--fg); }
+
+  .stale {
+    display: none;
+    margin-top: 5px;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--fg-faint);
+  }
+  .stale.visible { display: block; }
+
+  /* === SUMMARY BAR === */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .summary-stat .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fg-dim);
+    margin-bottom: 6px;
+  }
+  .summary-stat .value {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .summary-stat .value.urgent { color: var(--teal); }
+  .summary-stat .value.zero { color: var(--fg-ghost); }
+
+  /* === SECTION LABELS === */
+  .section-label {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 30px 0 14px;
+  }
+  .section-label .idx { font-size: 10px; color: var(--fg-faint); letter-spacing: 0.04em; }
+  .section-label .name {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--fg-dim);
+    letter-spacing: 0.12em;
+  }
+  .section-label .count {
+    font-size: 10px;
+    color: var(--fg-faint);
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  /* === TASK ROWS === */
+  .task-row {
+    display: grid;
+    grid-template-columns: 24px 50px 1fr 50px;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .task-row .checkbox {
+    font-size: 14px;
+    color: var(--fg-faint);
+    text-align: center;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+  .task-row .checkbox:hover { color: var(--fg-dim); }
+  .task-row.done .checkbox { color: var(--teal-dim); }
+  .task-row .when {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg);
+    text-align: left;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .task-row .when.urgent { color: var(--teal); }
+  .task-row .when.open {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--fg-faint);
+    font-style: italic;
+  }
+  .task-row .thing { font-size: 12px; color: var(--fg-dim); line-height: 1.45; }
+  .task-row .thing .detail {
+    display: block;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--fg-faint);
+    margin-top: 3px;
+    letter-spacing: 0;
+  }
+  .task-row.promoted .thing { color: var(--fg); font-size: 13px; }
+  .task-row .kind {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+    text-align: right;
+  }
+  .task-row .kind.gate { color: var(--fg-dim); }
+  .task-row.done .thing,
+  .task-row.done .when,
+  .task-row.done .kind {
+    color: var(--fg-ghost);
+    text-decoration: line-through;
+    text-decoration-color: var(--fg-ghost);
+  }
+  .section-empty {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--fg-ghost);
+    padding: 10px 0;
+  }
+
+  /* === FOOTER === */
+  .footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    text-align: center;
+  }
+  .footer .phrase {
+    font-style: italic;
+    font-size: 11px;
+    color: var(--fg-dim);
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  .footer .provenance {
+    margin-top: 16px;
+    font-size: 9px;
+    color: var(--fg-faint);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="masthead-text">
+      <div class="title">
+        algotrading-paper <span class="slash">/</span><span class="sub">punch list</span>
+      </div>
+      <div class="stale" id="stale-indicator"></div>
+    </div>
+    <div class="nav">
+      <a href="./">← live</a>
+    </div>
+  </div>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary">
+    <div class="summary-stat">
+      <div class="label">due ≤ 7d</div>
+      <div class="value" id="stat-due7">—</div>
+    </div>
+    <div class="summary-stat">
+      <div class="label">due ≤ 14d</div>
+      <div class="value" id="stat-due14">—</div>
+    </div>
+    <div class="summary-stat">
+      <div class="label">open</div>
+      <div class="value" id="stat-open">—</div>
+    </div>
+    <div class="summary-stat">
+      <div class="label">done · this wk</div>
+      <div class="value zero" id="stat-done">0</div>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  <div data-section="gates" data-idx="i." data-descriptor="pre-committed decisions">
+    <div class="section-label">
+      <span class="idx">i.</span>
+      <span class="name">gates</span>
+      <span class="count"></span>
+    </div>
+    <div class="rows"></div>
+  </div>
+
+  <div data-section="ops" data-idx="ii." data-descriptor="ready to do">
+    <div class="section-label">
+      <span class="idx">ii.</span>
+      <span class="name">ops</span>
+      <span class="count"></span>
+    </div>
+    <div class="rows"></div>
+  </div>
+
+  <div data-section="log" data-idx="iii." data-descriptor="entries to write">
+    <div class="section-label">
+      <span class="idx">iii.</span>
+      <span class="name">log</span>
+      <span class="count"></span>
+    </div>
+    <div class="rows"></div>
+  </div>
+
+  <div data-section="build" data-idx="iv." data-descriptor="deferred code work">
+    <div class="section-label">
+      <span class="idx">iv.</span>
+      <span class="name">build</span>
+      <span class="count"></span>
+    </div>
+    <div class="rows"></div>
+  </div>
+
+  <template id="task-row-template">
+    <div class="task-row">
+      <div class="checkbox">○</div>
+      <div class="when"></div>
+      <div class="thing">
+        <span class="thing-text"></span>
+        <span class="detail"></span>
+      </div>
+      <div class="kind"></div>
+    </div>
+  </template>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="phrase">the experiencing self runs · the remembering self decides</div>
+    <div class="provenance">github.com/pwysocan-droid/algotrading-paper</div>
+  </div>
+
+<script>
+  'use strict';
+
+  // Done-state is operator-side only: a Set of item IDs in localStorage.
+  // It never modifies pending.md or the queue files — purely a visual
+  // acknowledgment overlay. IDs that no longer match a JSON item are
+  // silently ignored, so removing an item from a queue file cleans up
+  // naturally on next load.
+  const DONE_KEY = 'algotrading_paper_punch_v1';
+  const SECTIONS = ['gates', 'ops', 'log', 'build'];
+
+  function loadDone() {
+    try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || '[]')); }
+    catch { return new Set(); }
+  }
+  function saveDone(set) {
+    localStorage.setItem(DONE_KEY, JSON.stringify([...set]));
+  }
+
+  function setStale(msg) {
+    const el = document.getElementById('stale-indicator');
+    if (!el) return;
+    if (msg) { el.textContent = msg; el.classList.add('visible'); }
+    else { el.classList.remove('visible'); el.textContent = ''; }
+  }
+
+  function makeRow(item) {
+    const tpl = document.getElementById('task-row-template');
+    const row = tpl.content.cloneNode(true).firstElementChild;
+
+    const box = row.querySelector('.checkbox');
+    box.dataset.id = item.id;
+
+    const when = row.querySelector('.when');
+    when.textContent = item.when || '';
+    if (item.when_class) when.classList.add(item.when_class);
+
+    row.querySelector('.thing-text').textContent = item.thing || '';
+    const detail = row.querySelector('.detail');
+    if (item.detail) detail.textContent = item.detail;
+    else detail.remove();
+
+    const kind = row.querySelector('.kind');
+    kind.textContent = item.kind || '';
+    if (item.kind === 'gate') kind.classList.add('gate');
+
+    if (item.promoted) row.classList.add('promoted');
+    return row;
+  }
+
+  function populate(data) {
+    const done = loadDone();
+
+    SECTIONS.forEach((sec) => {
+      const container = document.querySelector(`[data-section="${sec}"] .rows`);
+      const items = Array.isArray(data[sec]) ? data[sec] : [];
+      container.replaceChildren();
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'section-empty';
+        empty.textContent = 'none';
+        container.appendChild(empty);
+      } else {
+        items.forEach((item) => {
+          const row = makeRow(item);
+          if (done.has(item.id)) {
+            row.classList.add('done');
+            row.querySelector('.checkbox').textContent = '●';
+          }
+          container.appendChild(row);
+        });
+      }
+    });
+
+    // Summary bar from JSON (done_this_week is overridden client-side).
+    const s = data.summary || {};
+    setStat('stat-due7', s.due_7d, true);
+    setStat('stat-due14', s.due_14d, false);
+    setStat('stat-open', s.open, false);
+
+    updateSectionCounts();
+    updateDoneStat();
+  }
+
+  function setStat(id, value, urgentIfNonzero) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const n = (value == null) ? 0 : value;
+    el.textContent = String(n);
+    el.classList.toggle('zero', n === 0);
+    if (urgentIfNonzero) el.classList.toggle('urgent', n > 0);
+  }
+
+  function updateSectionCounts() {
+    document.querySelectorAll('[data-section]').forEach((sec) => {
+      const rows = [...sec.querySelectorAll('.task-row')];
+      const total = rows.length;
+      const doneN = rows.filter((r) => r.classList.contains('done')).length;
+      const descriptor = sec.dataset.descriptor;
+      const counter = sec.querySelector('.section-label .count');
+      if (!counter) return;
+      if (total === 0) { counter.textContent = `0 · ${descriptor}`; return; }
+      counter.textContent = doneN > 0
+        ? `${total - doneN} of ${total} · ${descriptor}`
+        : `${total} · ${descriptor}`;
+    });
+  }
+
+  function updateDoneStat() {
+    const allDone = document.querySelectorAll('.task-row.done').length;
+    setStat('stat-done', allDone, false);
+  }
+
+  document.addEventListener('click', (e) => {
+    const box = e.target.closest('.checkbox');
+    if (!box || !box.dataset.id) return;
+    const done = loadDone();
+    const row = box.closest('.task-row');
+    if (done.has(box.dataset.id)) {
+      done.delete(box.dataset.id);
+      row.classList.remove('done');
+      box.textContent = '○';
+    } else {
+      done.add(box.dataset.id);
+      row.classList.add('done');
+      box.textContent = '●';
+    }
+    saveDone(done);
+    updateSectionCounts();
+    updateDoneStat();
+  });
+
+  async function load() {
+    try {
+      const resp = await fetch(`./punch_list.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = JSON.parse(await resp.text());
+      populate(data);
+      setStale(null);
+    } catch (err) {
+      console.warn('punch list load failed:', err);
+      setStale('punch list stale · could not load punch_list.json');
+    }
+  }
+
+  load();
+</script>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-23T14:18:16Z",
+  "generated_at": "2026-05-23T14:52:01Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -7,9 +7,9 @@
   "kahneman": null,
   "vitals": {
     "last_run_iso": "2026-05-23T14:18:15.996906+00:00",
-    "last_run_human": "0m 00s ago",
+    "last_run_human": "33m 45s ago",
     "last_run_human_date": "2026-05-23 · 14:18 UTC",
-    "next_run_human": "59m 59s",
+    "next_run_human": "26m 14s",
     "uptime_recent": "69 of 69 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
@@ -19,7 +19,7 @@
       "qual": "69 of 8064 expected · 28-day window",
       "figure": "0.9",
       "unit": "%",
-      "spark": "▁▅█▅▁▁▅█",
+      "spark": "▅▅█▁▁▁█▅",
       "spark_class": null
     },
     {
@@ -95,24 +95,30 @@
       "count": "46,496",
       "delta": "+1131",
       "delta_class": null,
-      "spark": "▁▂▃▅▅▆▇█",
-      "spark_class": "growing"
+      "spark": "▁▂▄▄▅▅▇█",
+      "spark_class": "growing",
+      "key": "bars",
+      "value": "46496"
     },
     {
       "name": "bar coverage",
-      "count": "77%",
-      "delta": "-329",
+      "count": "75%",
+      "delta": "-364",
       "delta_class": "note",
-      "spark": "▇▇█▄▁▄▇▇",
-      "spark_class": null
+      "spark": "▆██▂▁▆▇▅",
+      "spark_class": null,
+      "key": "bar_coverage",
+      "value": "75"
     },
     {
       "name": "cron runs",
       "count": "69",
       "delta": "+15",
       "delta_class": null,
-      "spark": "▁▅█▅▁▁▅█",
-      "spark_class": null
+      "spark": "▅▅█▁▁▁█▅",
+      "spark_class": null,
+      "key": "cron_runs",
+      "value": "69"
     },
     {
       "name": "llm calls",
@@ -120,7 +126,9 @@
       "delta": "+0",
       "delta_class": "zero",
       "spark": "▁▁▁▁▁▁▁▁",
-      "spark_class": "empty"
+      "spark_class": "empty",
+      "key": "llm_calls",
+      "value": "0"
     },
     {
       "name": "decisions",
@@ -128,7 +136,9 @@
       "delta": "+0",
       "delta_class": "zero",
       "spark": "▁▁▁▁▁▁▁▁",
-      "spark_class": "empty"
+      "spark_class": "empty",
+      "key": "decisions",
+      "value": "0"
     },
     {
       "name": "letters",
@@ -136,7 +146,9 @@
       "delta": "+1",
       "delta_class": null,
       "spark": "▁▁▁▁▁▁▁█",
-      "spark_class": null
+      "spark_class": null,
+      "key": "letters",
+      "value": "1"
     },
     {
       "name": "reviews",
@@ -144,7 +156,9 @@
       "delta": "fri",
       "delta_class": "note",
       "spark": "▁▁▁▁▁▁▁▁",
-      "spark_class": "empty"
+      "spark_class": "empty",
+      "key": "reviews",
+      "value": "0"
     }
   ],
   "timetable": [

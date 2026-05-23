@@ -236,6 +236,32 @@ def test_bar_coverage_100pct_when_bars_complete(tmp_db: Path, tmp_repo: Path) ->
     assert cov["delta_class"] == "zero"
 
 
+def test_accumulating_rows_have_key_and_value(tmp_db: Path, tmp_repo: Path) -> None:
+    """Each accumulating row carries a stable session-marker key + raw value."""
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        rows = gs.build_accumulating(conn, tmp_repo, now)
+    keys = {r["key"] for r in rows}
+    assert {"bars", "bar_coverage", "cron_runs", "llm_calls", "decisions",
+            "letters", "reviews"} == keys
+    # value is digits-only; reviews count "—" → "0"
+    reviews = next(r for r in rows if r["key"] == "reviews")
+    assert reviews["value"] == "0"
+    bars = next(r for r in rows if r["key"] == "bars")
+    assert bars["value"].isdigit()
+
+
+def test_accumulating_value_strips_formatting(tmp_db: Path, tmp_repo: Path) -> None:
+    """'15%' → '15', commas stripped from large counts."""
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        rows = gs.build_accumulating(conn, tmp_repo, now)
+    cov = next(r for r in rows if r["key"] == "bar_coverage")
+    # count is like "0%" with no bars; value is the digits only
+    assert "%" not in cov["value"]
+    assert cov["value"].isdigit()
+
+
 def test_accumulating_zero_delta_marked_zero_class(tmp_db: Path, tmp_repo: Path) -> None:
     now = datetime(2026, 5, 17, 12, 0, tzinfo=timezone.utc)
     with db.connect(tmp_db) as conn:
@@ -530,3 +556,75 @@ def test_generate_writes_well_formed_json(tmp_db: Path, tmp_repo: Path) -> None:
     assert len(reloaded["accumulating"]) == 7
     assert reloaded["masthead"] == {"title": "algotrading-paper", "sub": "live"}
     assert reloaded["generated_at"].endswith("Z")
+
+
+# ─────────────────────────── punch list ───────────────────────────────
+
+
+def _write_pending(repo: Path, body: str) -> None:
+    (repo / "pending.md").write_text("# Pending\n\n---\n\n" + body)
+
+
+def test_punch_item_when_class_derivation() -> None:
+    assert gs._punch_item({"thing": "x", "when": "10d", "kind": "gate"})["when_class"] == "urgent"
+    assert gs._punch_item({"thing": "x", "when": "open", "kind": "ops"})["when_class"] == "open"
+    assert gs._punch_item({"thing": "x", "when": "", "kind": "log"})["when_class"] is None
+
+
+def test_punch_item_stable_id() -> None:
+    it = gs._punch_item({"thing": "Week 2 review", "kind": "gate"})
+    assert it["id"] == "gate:Week 2 review"
+
+
+def test_build_punch_summary_cumulative_bands() -> None:
+    items = [
+        {"when": "3d"}, {"when": "10d"}, {"when": "10d"},
+        {"when": "open"}, {"when": "open"},
+    ]
+    s = gs.build_punch_summary(items)
+    assert s["due_7d"] == 1       # only 3d
+    assert s["due_14d"] == 3      # 3d + 10d + 10d (cumulative)
+    assert s["open"] == 2
+    assert s["done_this_week"] == 0
+
+
+def test_build_punch_list_sections_from_sources(tmp_repo: Path) -> None:
+    _write_pending(tmp_repo,
+        "- thing: Roster review\n  when: 10d\n  kind: gate\n  promoted: true\n\n"
+        "- thing: Scheduler decision\n  when: 10d\n  kind: gate\n\n"
+        "- thing: Friday review\n  when: 5d\n  kind: ops\n\n"
+        "- thing: Future-self letters\n  when: open\n  kind: ops\n")
+    (tmp_repo / "decision_log_queue.md").write_text(
+        "# q\n\n---\n\n- thing: Shadow-signal schema\n  when: open\n  kind: log\n")
+    (tmp_repo / "build_queue.md").write_text(
+        "# q\n\n---\n\n- thing: Cron-variance row\n  when: open\n  kind: build\n")
+
+    pl = gs.build_punch_list(tmp_repo)
+    assert [i["thing"] for i in pl["gates"]] == ["Roster review", "Scheduler decision"]
+    assert [i["thing"] for i in pl["ops"]] == ["Friday review", "Future-self letters"]
+    assert [i["thing"] for i in pl["log"]] == ["Shadow-signal schema"]
+    assert [i["thing"] for i in pl["build"]] == ["Cron-variance row"]
+    assert pl["gates"][0]["promoted"] is True
+    assert pl["summary"]["due_7d"] == 1     # Friday 5d
+    assert pl["summary"]["due_14d"] == 3    # 5d + 10d + 10d
+    assert pl["summary"]["open"] == 3       # Future-self + Shadow-signal + Cron-variance
+
+
+def test_build_punch_list_empty_sources(tmp_repo: Path) -> None:
+    pl = gs.build_punch_list(tmp_repo)
+    assert pl["gates"] == []
+    assert pl["ops"] == []
+    assert pl["log"] == []
+    assert pl["build"] == []
+    assert pl["summary"] == {"due_7d": 0, "due_14d": 0, "open": 0, "done_this_week": 0}
+
+
+def test_write_punch_list_json_round_trip(tmp_repo: Path) -> None:
+    _write_pending(tmp_repo, "- thing: G\n  when: 10d\n  kind: gate\n")
+    pl = gs.build_punch_list(tmp_repo)
+    out = tmp_repo / "punch_list.json"
+    gs.write_punch_list_json(out, pl)
+    reloaded = json.loads(out.read_text())
+    for key in ("summary", "gates", "ops", "log", "build"):
+        assert key in reloaded
+    assert reloaded["gates"][0]["thing"] == "G"
