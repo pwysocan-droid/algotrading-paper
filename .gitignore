@@ -42,5 +42,8 @@ htmlcov/
 # ones, not every run artifact)
 runs/*.log
 
+# VPS cron logs — written on the Hetzner box, never committed back
+vps/logs/*.log
+
 # Local UI reference material
 html/
