@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-05-23T23:55:05Z",
+  "generated_at": "2026-05-24T00:00:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-23T23:55:04.238389+00:00",
+    "last_run_iso": "2026-05-24T00:00:04.930474+00:00",
     "last_run_human": "0m 01s ago",
-    "last_run_human_date": "2026-05-23 · 23:55 UTC",
+    "last_run_human_date": "2026-05-24 · 00:00 UTC",
     "next_run_human": "59m 58s",
-    "uptime_recent": "103 of 103 ok · 100.0%",
+    "uptime_recent": "104 of 104 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "103 of 8064 expected · 28-day window",
+      "qual": "104 of 8064 expected · 28-day window",
       "figure": "1.3",
       "unit": "%",
-      "spark": "▁▁▁▂▁▂▂█",
+      "spark": "▁▁▁▁▁▁▁█",
       "spark_class": null
     },
     {
@@ -84,33 +84,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "70,905",
-      "delta": "+30504",
+      "count": "70,910",
+      "delta": "+30509",
       "delta_class": null,
       "spark": "▁▁▁▁▁▁▁█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "70905"
+      "value": "70910"
     },
     {
       "name": "bar coverage",
       "count": "95%",
       "delta": "-78",
       "delta_class": "note",
-      "spark": "▇▁█▂▆██▆",
+      "spark": "▇▁█▁▆██▆",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "95"
     },
     {
       "name": "cron runs",
-      "count": "103",
-      "delta": "+42",
+      "count": "104",
+      "delta": "+43",
       "delta_class": null,
-      "spark": "▁▁▁▂▁▂▂█",
+      "spark": "▁▁▁▁▁▁▁█",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "103"
+      "value": "104"
     },
     {
       "name": "llm calls",
@@ -156,10 +156,10 @@
   "timetable": [
     {
       "when": "sun 5/17",
-      "what": "curriculum day 1 · now",
+      "what": "curriculum day 1",
       "tag": "●",
-      "tag_class": "teal",
-      "row_class": "now"
+      "tag_class": null,
+      "row_class": null
     },
     {
       "when": "fri 5/22",
