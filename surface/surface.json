@@ -1,22 +1,26 @@
 {
-  "generated_at": "2026-05-25T15:35:05Z",
+  "generated_at": "2026-05-25T15:40:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
-  "kahneman": null,
+  "kahneman": {
+    "trigger": "week 2 · sunk cost",
+    "body_html": "If Bollinger and MA-crossover should be replaced, they should be replaced — <em>regardless</em> of the time spent building support for them. The roster review is not a sentencing hearing.",
+    "attribution": "— after Arkes & Blumer, 1985"
+  },
   "vitals": {
-    "last_run_iso": "2026-05-25T15:35:03.977780+00:00",
+    "last_run_iso": "2026-05-25T15:40:04.628085+00:00",
     "last_run_human": "0m 01s ago",
-    "last_run_human_date": "2026-05-25 · 15:35 UTC",
+    "last_run_human_date": "2026-05-25 · 15:40 UTC",
     "next_run_human": "59m 58s",
-    "uptime_recent": "579 of 579 ok · 100.0%",
+    "uptime_recent": "580 of 580 ok · 100.0%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "579 of 8064 expected · 28-day window",
+      "qual": "580 of 8064 expected · 28-day window",
       "figure": "7.2",
       "unit": "%",
       "spark": "▅▅▅▅▅▅▅▅",
@@ -32,7 +36,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 8 · open after week 4",
+      "qual": "curriculum day 9 · open after week 4",
       "figure": "0",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -41,7 +45,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "48",
+      "figure": "47",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -84,33 +88,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "73,187",
+      "count": "73,192",
       "delta": "+1460",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "73187"
+      "value": "73192"
     },
     {
       "name": "bar coverage",
       "count": "96%",
       "delta": "-64",
       "delta_class": "note",
-      "spark": "▆▁█▄▄▃▁▃",
+      "spark": "▆▁█▃▅▄▁▃",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "96"
     },
     {
       "name": "cron runs",
-      "count": "579",
+      "count": "580",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "579"
+      "value": "580"
     },
     {
       "name": "llm calls",
