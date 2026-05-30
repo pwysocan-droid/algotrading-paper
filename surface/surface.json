@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-05-30T20:55:06Z",
+  "generated_at": "2026-05-30T21:00:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-30T20:55:04.316918+00:00",
-    "last_run_human": "0m 01s ago",
-    "last_run_human_date": "2026-05-30 · 20:55 UTC",
-    "next_run_human": "59m 58s",
-    "uptime_recent": "2064 of 2083 ok · 99.1%",
+    "last_run_iso": "2026-05-30T21:00:04.530078+00:00",
+    "last_run_human": "0m 02s ago",
+    "last_run_human_date": "2026-05-30 · 21:00 UTC",
+    "next_run_human": "59m 57s",
+    "uptime_recent": "2065 of 2084 ok · 99.1%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "2064 of 8064 expected · 28-day window",
+      "qual": "2065 of 8064 expected · 28-day window",
       "figure": "25.6",
       "unit": "%",
-      "spark": "▅▅▅▅▅▅▅▅",
+      "spark": "█▁▁▁▁▁▁▁",
       "spark_class": null
     },
     {
@@ -84,33 +84,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "80,486",
-      "delta": "+1404",
+      "count": "80,488",
+      "delta": "+1406",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "80486"
+      "value": "80488"
     },
     {
       "name": "bar coverage",
-      "count": "92%",
-      "delta": "-121",
+      "count": "91%",
+      "delta": "-124",
       "delta_class": "note",
-      "spark": "██▇▄▁▅▆▄",
+      "spark": "██▇▄▁▆▆▃",
       "spark_class": null,
       "key": "bar_coverage",
-      "value": "92"
+      "value": "91"
     },
     {
       "name": "cron runs",
-      "count": "2,083",
-      "delta": "+288",
+      "count": "2,084",
+      "delta": "+289",
       "delta_class": null,
-      "spark": "▅▅▅▅▅▅▅▅",
+      "spark": "█▁▁▁▁▁▁▁",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "2083"
+      "value": "2084"
     },
     {
       "name": "llm calls",
