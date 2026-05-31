@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-05-31T15:35:05Z",
+  "generated_at": "2026-05-31T15:40:05Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-05-31T15:35:04.479388+00:00",
+    "last_run_iso": "2026-05-31T15:40:04.116005+00:00",
     "last_run_human": "0m 01s ago",
-    "last_run_human_date": "2026-05-31 · 15:35 UTC",
+    "last_run_human_date": "2026-05-31 · 15:40 UTC",
     "next_run_human": "59m 58s",
-    "uptime_recent": "2288 of 2307 ok · 99.2%",
+    "uptime_recent": "2289 of 2308 ok · 99.2%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "2288 of 8064 expected · 28-day window",
+      "qual": "2289 of 8064 expected · 28-day window",
       "figure": "28.4",
       "unit": "%",
       "spark": "▅▅▅▅▅▅▅▅",
@@ -32,7 +32,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 14 · open after week 4",
+      "qual": "curriculum day 15 · open after week 4",
       "figure": "0",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -41,7 +41,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "42",
+      "figure": "41",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -84,33 +84,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "81,523",
+      "count": "81,528",
       "delta": "+1408",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "81523"
+      "value": "81528"
     },
     {
       "name": "bar coverage",
       "count": "92%",
-      "delta": "-115",
+      "delta": "-114",
       "delta_class": "note",
-      "spark": "▆▁▅█▃▅▆▆",
+      "spark": "▆▁▅█▂▅▆▆",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "92"
     },
     {
       "name": "cron runs",
-      "count": "2,307",
+      "count": "2,308",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "2307"
+      "value": "2308"
     },
     {
       "name": "llm calls",
