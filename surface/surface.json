@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-06-03T15:35:06Z",
+  "generated_at": "2026-06-03T15:40:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-06-03T15:35:04.154221+00:00",
+    "last_run_iso": "2026-06-03T15:40:04.319810+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-06-03 · 15:35 UTC",
+    "last_run_human_date": "2026-06-03 · 15:40 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "3152 of 3171 ok · 99.4%",
+    "uptime_recent": "3153 of 3172 ok · 99.4%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "3152 of 8064 expected · 28-day window",
+      "qual": "3153 of 8064 expected · 28-day window",
       "figure": "39.1",
       "unit": "%",
       "spark": "▅▅▅▅▅▅▅▅",
@@ -32,7 +32,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 17 · open after week 4",
+      "qual": "curriculum day 18 · open after week 4",
       "figure": "0",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -41,7 +41,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "39",
+      "figure": "38",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -84,13 +84,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "85,816",
+      "count": "85,821",
       "delta": "+1520",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "85816"
+      "value": "85821"
     },
     {
       "name": "bar coverage",
@@ -104,13 +104,13 @@
     },
     {
       "name": "cron runs",
-      "count": "3,171",
+      "count": "3,172",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "3171"
+      "value": "3172"
     },
     {
       "name": "llm calls",
