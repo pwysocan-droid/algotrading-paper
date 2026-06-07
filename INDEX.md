@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-06-07T02:30:04Z
+2026-06-07T02:35:04Z
 
 7 surfaces tracked
 
@@ -10,7 +10,7 @@ Phase 1  ·  Week 1
 
 | System uptime | Trades this week | Phase 2 gates | Days to phase 1 review |
 | :--- | :--- | :--- | :--- |
-| **51.4%** | **0** | **0 / 3** | **35** |
+| **51.5%** | **0** | **0 / 3** | **35** |
 | last 4w | paper | passed | ends 2026-07-12 |
 
 ## § 01 — Recently changed
