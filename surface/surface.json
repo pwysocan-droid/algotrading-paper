@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T15:35:07Z",
+  "generated_at": "2026-06-12T15:40:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,17 +10,17 @@
     "attribution": "— after Samuelson & Zeckhauser, 1988"
   },
   "vitals": {
-    "last_run_iso": "2026-06-12T15:35:04.247029+00:00",
+    "last_run_iso": "2026-06-12T15:40:04.700846+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-06-12 · 15:35 UTC",
+    "last_run_human_date": "2026-06-12 · 15:40 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "5744 of 5763 ok · 99.7%",
+    "uptime_recent": "5745 of 5764 ok · 99.7%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "5744 of 8064 expected · 28-day window",
+      "qual": "5745 of 8064 expected · 28-day window",
       "figure": "71.2",
       "unit": "%",
       "spark": "▅▅▅▅▅▅▅▅",
@@ -36,7 +36,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 26 · open after week 4",
+      "qual": "curriculum day 27 · open after week 4",
       "figure": "0",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -45,7 +45,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "30",
+      "figure": "29",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -88,13 +88,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "98,754",
+      "count": "98,759",
       "delta": "+1510",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "98754"
+      "value": "98759"
     },
     {
       "name": "bar coverage",
@@ -108,13 +108,13 @@
     },
     {
       "name": "cron runs",
-      "count": "5,763",
+      "count": "5,764",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "5763"
+      "value": "5764"
     },
     {
       "name": "llm calls",
