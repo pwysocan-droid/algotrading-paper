@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-13T07:20:06Z",
+  "generated_at": "2026-06-13T07:25:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,17 +10,17 @@
     "attribution": "— after Samuelson & Zeckhauser, 1988"
   },
   "vitals": {
-    "last_run_iso": "2026-06-13T07:20:03.894042+00:00",
+    "last_run_iso": "2026-06-13T07:25:04.551946+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-06-13 · 07:20 UTC",
+    "last_run_human_date": "2026-06-13 · 07:25 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "5933 of 5952 ok · 99.7%",
+    "uptime_recent": "5934 of 5953 ok · 99.7%",
     "cron_interval_seconds": 3600
   },
   "state": [
     {
       "name": "system uptime",
-      "qual": "5933 of 8064 expected · 28-day window",
+      "qual": "5934 of 8064 expected · 28-day window",
       "figure": "73.6",
       "unit": "%",
       "spark": "▅▅▅▅▅▅▅▅",
@@ -88,33 +88,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "99,671",
+      "count": "99,676",
       "delta": "+1488",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "99671"
+      "value": "99676"
     },
     {
       "name": "bar coverage",
       "count": "97%",
       "delta": "-37",
       "delta_class": "note",
-      "spark": "▆▇██▅▅▁▂",
+      "spark": "▆▇██▅▅▁▃",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "97"
     },
     {
       "name": "cron runs",
-      "count": "5,952",
+      "count": "5,953",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "5952"
+      "value": "5953"
     },
     {
       "name": "llm calls",
