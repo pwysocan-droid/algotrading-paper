@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T15:35:06Z",
+  "generated_at": "2026-06-23T15:40:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Samuelson & Zeckhauser, 1988"
   },
   "vitals": {
-    "last_run_iso": "2026-06-23T15:35:03.937815+00:00",
+    "last_run_iso": "2026-06-23T15:40:04.095267+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-06-23 · 15:35 UTC",
+    "last_run_human_date": "2026-06-23 · 15:40 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "8912 of 8931 ok · 99.8%",
+    "uptime_recent": "8913 of 8932 ok · 99.8%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -36,7 +36,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 37 · open after week 4",
+      "qual": "curriculum day 38 · open after week 4",
       "figure": "1",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -45,7 +45,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "19",
+      "figure": "18",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -88,33 +88,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "114,292",
+      "count": "114,297",
       "delta": "+1508",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "114292"
+      "value": "114297"
     },
     {
       "name": "bar coverage",
       "count": "99%",
       "delta": "-17",
       "delta_class": "note",
-      "spark": "▄▂██▅▅▇▁",
+      "spark": "▂▄█▇▇▅▇▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "99"
     },
     {
       "name": "cron runs",
-      "count": "8,931",
+      "count": "8,932",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "8931"
+      "value": "8932"
     },
     {
       "name": "llm calls",
