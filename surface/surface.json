@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-30T15:35:06Z",
+  "generated_at": "2026-06-30T15:40:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Samuelson & Zeckhauser, 1988"
   },
   "vitals": {
-    "last_run_iso": "2026-06-30T15:35:04.492815+00:00",
+    "last_run_iso": "2026-06-30T15:40:04.219170+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-06-30 · 15:35 UTC",
+    "last_run_human_date": "2026-06-30 · 15:40 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "10928 of 10947 ok · 99.8%",
+    "uptime_recent": "10929 of 10948 ok · 99.8%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -36,7 +36,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 44 · open after week 4",
+      "qual": "curriculum day 45 · open after week 4",
       "figure": "1",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -45,7 +45,7 @@
     {
       "name": "days to phase 1 review",
       "qual": "ends 2026-07-12",
-      "figure": "12",
+      "figure": "11",
       "unit": "",
       "spark": "█▇▆▅▄▃▂▁",
       "spark_class": null
@@ -88,13 +88,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "124,276",
+      "count": "124,281",
       "delta": "+1504",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "124276"
+      "value": "124281"
     },
     {
       "name": "bar coverage",
@@ -108,13 +108,13 @@
     },
     {
       "name": "cron runs",
-      "count": "10,947",
+      "count": "10,948",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "10947"
+      "value": "10948"
     },
     {
       "name": "llm calls",
