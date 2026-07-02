@@ -17,8 +17,14 @@ Usage (on the VPS):
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Running as `python scripts/backfill.py` only puts scripts/ on sys.path,
+# not the project root — same fix scripts/generate_surface.py already
+# needed for its `import db`.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import db
 from config import WATCHED_SYMBOLS
