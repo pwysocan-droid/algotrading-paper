@@ -140,8 +140,9 @@ def test_signal_on_last_bar_drops_no_entry_available(tmp_db: Path) -> None:
         del signals.STRATEGY_REGISTRY["fire_on_last"]
 
 
-def test_replay_null_variant_against_empty_registry(tmp_db: Path) -> None:
+def test_replay_null_variant_against_empty_registry(tmp_db: Path, monkeypatch) -> None:
     """replay --variant=null with empty STRATEGY_VARIANTS produces zero trades."""
+    monkeypatch.setattr(replay, "STRATEGY_VARIANTS", {})
     markdown, trades = replay.run_replay(variant_arg="null", period="30d", db_path=tmp_db)
     assert trades == []
     assert "0 trades" in markdown
@@ -149,7 +150,8 @@ def test_replay_null_variant_against_empty_registry(tmp_db: Path) -> None:
     assert "no data yet" not in markdown
 
 
-def test_replay_null_report_is_fully_formed_v1_pattern(tmp_db: Path) -> None:
+def test_replay_null_report_is_fully_formed_v1_pattern(tmp_db: Path, monkeypatch) -> None:
+    monkeypatch.setattr(replay, "STRATEGY_VARIANTS", {})
     markdown, _ = replay.run_replay(variant_arg="null", period="30d", db_path=tmp_db)
     assert "# algotrading-paper / replay" in markdown
     assert "Variant — null" in markdown

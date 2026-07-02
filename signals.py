@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import statistics
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,9 +48,111 @@ class Signal:
 
 StrategyFn = Callable[[list[BarRow], dict[str, Any], dict[str, Any]], Signal | None]
 
+
+def bollinger_strategy(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Textbook Bollinger Bands, mean-reversion (PROJECT.md line 311-312
+    confirms the reading: oversold = buy, overbought = sell).
+
+    Band = SMA(period) +/- stddev_mult * population-stdev(period). Buy when
+    the latest close is at or below the lower band; sell when at or above
+    the upper band. Population stdev (ddof=0), matching the common
+    charting-platform convention for this indicator.
+    """
+    period = int(params.get("period", 20))
+    stddev_mult = float(params.get("stddev", 2.0))
+    if len(bars) < period:
+        return None
+
+    closes = [b.close for b in bars[-period:]]
+    mean = sum(closes) / period
+    std = statistics.pstdev(closes)
+    upper = mean + stddev_mult * std
+    lower = mean - stddev_mult * std
+
+    last = bars[-1]
+    if last.close <= lower:
+        side = "buy"
+    elif last.close >= upper:
+        side = "sell"
+    else:
+        return None
+
+    return Signal(
+        symbol=last.symbol,
+        variant_name="",
+        strategy="bollinger",
+        side=side,
+        bar_timestamp=last.timestamp,
+        price_at_signal=last.close,
+        reasoning={
+            "period": period,
+            "stddev_mult": stddev_mult,
+            "mean": mean,
+            "std": std,
+            "upper": upper,
+            "lower": lower,
+            "close": last.close,
+        },
+    )
+
+
+def macross_strategy(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Textbook moving-average crossover.
+
+    Buy on a golden cross (fast SMA crosses above slow SMA); sell on a
+    death cross (fast crosses below slow). Needs slow+1 bars so the
+    crossing bar can be compared against the bar before it.
+    """
+    fast_n = int(params.get("fast", 12))
+    slow_n = int(params.get("slow", 26))
+    if fast_n >= slow_n:
+        raise ValueError(f"fast period ({fast_n}) must be < slow period ({slow_n})")
+    if len(bars) < slow_n + 1:
+        return None
+
+    closes = [b.close for b in bars]
+
+    def sma(values: list[float], n: int) -> float:
+        return sum(values[-n:]) / n
+
+    fast_now = sma(closes, fast_n)
+    slow_now = sma(closes, slow_n)
+    fast_prev = sma(closes[:-1], fast_n)
+    slow_prev = sma(closes[:-1], slow_n)
+
+    if fast_prev <= slow_prev and fast_now > slow_now:
+        side = "buy"
+    elif fast_prev >= slow_prev and fast_now < slow_now:
+        side = "sell"
+    else:
+        return None
+
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol,
+        variant_name="",
+        strategy="macross",
+        side=side,
+        bar_timestamp=last.timestamp,
+        price_at_signal=last.close,
+        reasoning={
+            "fast": fast_n,
+            "slow": slow_n,
+            "fast_now": fast_now,
+            "slow_now": slow_now,
+            "fast_prev": fast_prev,
+            "slow_prev": slow_prev,
+        },
+    )
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
-    # Strategies will be registered here in Week 2 after the roster review.
-    # e.g. "bollinger": bollinger_strategy
+    "bollinger": bollinger_strategy,
+    "macross": macross_strategy,
 }
 
 

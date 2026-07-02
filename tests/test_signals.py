@@ -11,7 +11,7 @@ import db
 import fetch
 import signals
 from config import StrategyVariant
-from signals import BarRow, Signal, run_all_variants
+from signals import BarRow, Signal, bollinger_strategy, macross_strategy, run_all_variants
 from tests.fixtures.bars import FakeBarSource, make_bar_series
 
 
@@ -41,11 +41,21 @@ def test_empty_registry_emits_zero_signals(populated_bars_db: Path) -> None:
     assert n == 0
 
 
-def test_default_registry_is_empty_for_week_1() -> None:
+def test_default_registry_has_only_the_two_project_md_defaults() -> None:
     from config import STRATEGY_VARIANTS
-    assert STRATEGY_VARIANTS == {}, (
-        "Week 1 expects an empty STRATEGY_VARIANTS — strategies land in Week 2"
+    assert set(STRATEGY_VARIANTS.keys()) == {"bollinger_default", "macross_default"}, (
+        "registry should hold exactly the two PROJECT.md defaults ahead of "
+        "the Week 2 roster review — parameter-sweep variants are a separate, "
+        "gated step"
     )
+    assert STRATEGY_VARIANTS["bollinger_default"]["params"] == {
+        "period": 20, "stddev": 2.0, "tp": 0.05, "sl": 0.03, "time_exit_hours": 24,
+    }
+    assert STRATEGY_VARIANTS["macross_default"]["params"] == {
+        "fast": 12, "slow": 26, "tp": 0.05, "sl": 0.03,
+    }
+    assert STRATEGY_VARIANTS["bollinger_default"]["enabled"] is True
+    assert STRATEGY_VARIANTS["macross_default"]["enabled"] is True
 
 
 def test_run_variant_with_disabled_variant_skips(populated_bars_db: Path) -> None:
@@ -126,3 +136,79 @@ def test_load_recent_bars_chronological_order(populated_bars_db: Path) -> None:
         bars = signals.load_recent_bars(conn, "BTC/USD", limit=12)
     timestamps = [b.timestamp for b in bars]
     assert timestamps == sorted(timestamps), "bars must be returned in ascending time order"
+
+
+def _bars_from_closes(closes: list[float]) -> list[BarRow]:
+    base = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    return [
+        BarRow(
+            symbol="BTC/USD",
+            timestamp=(base + timedelta(minutes=5 * i)).isoformat(),
+            open=c, high=c, low=c, close=c, volume=1.0,
+        )
+        for i, c in enumerate(closes)
+    ]
+
+
+class TestBollingerStrategy:
+    def test_insufficient_bars_returns_none(self) -> None:
+        bars = _bars_from_closes([10.0, 12.0])
+        assert bollinger_strategy(bars, {"period": 3, "stddev": 1.0}, {}) is None
+
+    def test_oversold_close_at_lower_band_buys(self) -> None:
+        # mean=12, pstdev=sqrt(8/3)=1.633 -> lower=10.367; close=10 <= lower
+        bars = _bars_from_closes([14.0, 12.0, 10.0])
+        sig = bollinger_strategy(bars, {"period": 3, "stddev": 1.0}, {})
+        assert sig is not None
+        assert sig.side == "buy"
+        assert sig.strategy == "bollinger"
+        assert sig.price_at_signal == 10.0
+
+    def test_overbought_close_at_upper_band_sells(self) -> None:
+        # mean=12, pstdev=1.633 -> upper=13.633; close=14 >= upper
+        bars = _bars_from_closes([10.0, 12.0, 14.0])
+        sig = bollinger_strategy(bars, {"period": 3, "stddev": 1.0}, {})
+        assert sig is not None
+        assert sig.side == "sell"
+
+    def test_close_inside_bands_emits_nothing(self) -> None:
+        # mean=11, pstdev=0.8165 -> band [10.18, 11.82]; close=11 is inside
+        bars = _bars_from_closes([10.0, 12.0, 11.0])
+        assert bollinger_strategy(bars, {"period": 3, "stddev": 1.0}, {}) is None
+
+    def test_default_params_used_when_missing(self) -> None:
+        bars = _bars_from_closes([100.0 + i for i in range(20)])
+        sig = bollinger_strategy(bars, {}, {})
+        assert sig is None or sig.reasoning["period"] == 20
+
+
+class TestMacrossStrategy:
+    def test_fast_must_be_less_than_slow(self) -> None:
+        bars = _bars_from_closes([10.0] * 5)
+        with pytest.raises(ValueError, match="must be <"):
+            macross_strategy(bars, {"fast": 26, "slow": 12}, {})
+
+    def test_insufficient_bars_returns_none(self) -> None:
+        bars = _bars_from_closes([10.0, 10.0, 10.0])  # need slow+1=4
+        assert macross_strategy(bars, {"fast": 2, "slow": 3}, {}) is None
+
+    def test_golden_cross_buys(self) -> None:
+        bars = _bars_from_closes([10.0, 10.0, 10.0, 20.0])
+        sig = macross_strategy(bars, {"fast": 2, "slow": 3}, {})
+        assert sig is not None
+        assert sig.side == "buy"
+        assert sig.strategy == "macross"
+
+    def test_death_cross_sells(self) -> None:
+        bars = _bars_from_closes([10.0, 10.0, 10.0, 0.0])
+        sig = macross_strategy(bars, {"fast": 2, "slow": 3}, {})
+        assert sig is not None
+        assert sig.side == "sell"
+
+    def test_flat_prices_emit_nothing(self) -> None:
+        bars = _bars_from_closes([10.0, 10.0, 10.0, 10.0])
+        assert macross_strategy(bars, {"fast": 2, "slow": 3}, {}) is None
+
+    def test_registered_in_strategy_registry(self) -> None:
+        assert signals.STRATEGY_REGISTRY["bollinger"] is bollinger_strategy
+        assert signals.STRATEGY_REGISTRY["macross"] is macross_strategy

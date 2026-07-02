@@ -33,6 +33,30 @@ ALPACA_DATA_BASE_URL: str = "https://data.alpaca.markets"
 
 BAR_TIMEFRAME_MINUTES: int = 5
 
-# Strategy registry — empty for Week 1 per the curriculum (PROJECT.md "Week 1").
-# Variants get added here in Week 2 after the strategy-roster review.
-STRATEGY_VARIANTS: dict[str, StrategyVariant] = {}
+# Strategy registry. The two defaults, per PROJECT.md "Strategy registry"
+# spec — registered ahead of the Week 2 roster review so replay.py can
+# produce real evidence for that decision instead of the review running
+# on zero data. No parameter-sweep variants here yet; that's the second,
+# gated step.
+STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
+    "bollinger_default": {
+        "strategy": "bollinger",
+        "params": {
+            "period": 20,
+            "stddev": 2.0,
+            "tp": 0.05,
+            "sl": 0.03,
+            "time_exit_hours": 24,
+        },
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": True,
+    },
+    "macross_default": {
+        "strategy": "macross",
+        "params": {"fast": 12, "slow": 26, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": True,
+    },
+}
