@@ -145,6 +145,38 @@ real money.
 
 ---
 
+## 2026-07-02 — Front-loaded all 12 variants on Day 1 (variant-explosion method record)
+
+Registered all 12 variants at once rather than the roadmap's phased
+Week-3 rollout. Recording why, because it worked and the reasoning
+should be reusable.
+
+**What:** all 12 variants registered and run in parallel on Day 1 of
+the pass, not staggered across weeks.
+
+**Why it was safe:** the shared position ceiling means variants
+compete for the same $1,000 cap — they don't add exposure. 99.6% of
+candidate signals were rejected by cooldown/exposure/concurrency;
+total exposure never breached. No risk cost to parallelism, so no
+reason to stagger.
+
+**What it bought:** one clean comparative table across the whole
+family in a single window, instead of three weeks of partial reads.
+Compressed the calendar without compressing the rigor.
+
+**The design finding:** the shared-ceiling architecture works as
+specified. Adding variants moved total P&L only through
+better/worse selection within the cap, not through added exposure —
+exactly the intended behavior.
+
+**Discipline note:** this is the capital discipline applied to
+method — the cheap part (paper backtest variants) spent recklessly,
+in parallel, because mistakes there cost nothing. The expensive part
+(the roster decision it fed) spent carefully, on the full 6-month
+window.
+
+---
+
 ## 2026-07-02 — The adaptation ladder: rung 6 is the goal, reached one rung at a time
 
 Committing the answer to "how radical should the system's
