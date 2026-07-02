@@ -18,6 +18,12 @@ Every call writes a row to the llm_calls table with the prompt (full +
 hash), response, model, latency, token counts, and a free-text
 called_from tag. Cost and performance are auditable from day one.
 
+Every call also carries BASE_SYSTEM_PROMPT (the distillation discipline,
+philosophy.md / decision-log.md 2026-07-02) as its base system prompt —
+not optional per-call. Role-specific instructions (e.g. the Friday
+adversarial reviewer's skeptic prompt) are passed via `system` and
+layered on top of the base, never in place of it.
+
 The default model is read from CLAUDE_MODEL env var (override) or falls
 back to the current production Sonnet ID per the Anthropic docs at the
 time of build. Do not hardcode the model in calling code — let
@@ -50,6 +56,31 @@ DEFAULT_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
 DEFAULT_MAX_TOKENS = 4096
 
 T = TypeVar("T", bound=BaseModel)
+
+
+# The distillation discipline — philosophy.md "The animating disciplines" /
+# decision-log.md 2026-07-02. Every call through this client carries this
+# as the base system prompt; it is not optional per-call. Callers that need
+# role-specific instructions (e.g. the Friday adversarial reviewer's
+# skeptic prompt) pass them via `system` — those are layered on top of this,
+# never a replacement for it.
+BASE_SYSTEM_PROMPT = """\
+Compression is the contribution, not the caveats.
+
+- Lead with the action. First line says what to do.
+- One recommendation, not seven considerations.
+- Cut meta-commentary. No narrating the process.
+- Don't hedge or pile on caveats — say the thing plainly.
+- Default to actionable; trust the reader to ask for more depth if they want it.\
+"""
+
+
+def _build_system(system: str | None) -> str:
+    """Compose the base distillation-discipline prompt with any caller-
+    supplied, role-specific system text layered after it."""
+    if not system:
+        return BASE_SYSTEM_PROMPT
+    return f"{BASE_SYSTEM_PROMPT}\n\n{system}"
 
 
 @dataclass
@@ -148,10 +179,9 @@ class ClaudeClient:
         kwargs: dict[str, Any] = {
             "model": self._model,
             "max_tokens": max_tokens,
+            "system": _build_system(system),
             "messages": [{"role": "user", "content": prompt}],
         }
-        if system:
-            kwargs["system"] = system
         msg = self._client.messages.create(**kwargs)
         latency_ms = int((time.perf_counter() - start) * 1000)
 
@@ -227,10 +257,9 @@ class ClaudeClient:
                 }
             ],
             "tool_choice": {"type": "tool", "name": tool_name},
+            "system": _build_system(system),
             "messages": [{"role": "user", "content": prompt}],
         }
-        if system:
-            kwargs["system"] = system
         msg = self._client.messages.create(**kwargs)
         latency_ms = int((time.perf_counter() - start) * 1000)
 

@@ -1,27 +1,23 @@
-"""Integration test for claude_client.py.
+"""Tests for claude_client.py.
 
-Calls the live Anthropic API with a trivial prompt and verifies:
-  - the response shape is what we expect
-  - the llm_calls table row was written with non-null fields
-
-Skipped if ANTHROPIC_API_KEY is not set in the environment, so the rest
-of the test suite stays green on machines without API access.
+Two groups:
+  - System-prompt composition (base distillation discipline + layered
+    role-specific text) — pure unit tests against a fake Anthropic client,
+    no network, no API key required.
+  - Integration smoke test against the live API — skipped if
+    ANTHROPIC_API_KEY is not set, so the rest of the suite stays green on
+    machines without API access.
 """
 
 from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 import db
-
-
-pytestmark = pytest.mark.skipif(
-    not os.environ.get("ANTHROPIC_API_KEY"),
-    reason="ANTHROPIC_API_KEY not set; skipping live API integration test",
-)
 
 
 @pytest.fixture
@@ -31,6 +27,139 @@ def tmp_db(tmp_path: Path) -> Path:
     return path
 
 
+class _FakeTextBlock:
+    def __init__(self, text: str) -> None:
+        self.type = "text"
+        self.text = text
+
+
+class _FakeToolUseBlock:
+    def __init__(self, name: str, input_: dict[str, Any]) -> None:
+        self.type = "tool_use"
+        self.name = name
+        self.input = input_
+
+
+class _FakeUsage:
+    def __init__(self, input_tokens: int, output_tokens: int) -> None:
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+
+
+class _FakeMessage:
+    def __init__(self, content: list[Any], stop_reason: str = "end_turn") -> None:
+        self.content = content
+        self.usage = _FakeUsage(10, 5)
+        self.stop_reason = stop_reason
+
+
+class _FakeMessagesEndpoint:
+    def __init__(self, response: _FakeMessage) -> None:
+        self._response = response
+        self.last_kwargs: dict[str, Any] | None = None
+
+    def create(self, **kwargs: Any) -> _FakeMessage:
+        self.last_kwargs = kwargs
+        return self._response
+
+
+class _FakeAnthropicClient:
+    def __init__(self, response: _FakeMessage) -> None:
+        self.messages = _FakeMessagesEndpoint(response)
+
+
+def _client_with_fake(tmp_db: Path, response: _FakeMessage):
+    from claude_client import ClaudeClient
+
+    client = ClaudeClient(api_key="sk-ant-test-fake-key", db_path=tmp_db)
+    fake = _FakeAnthropicClient(response)
+    client._client = fake  # bypass the real SDK entirely — no network call
+    return client, fake
+
+
+def test_build_system_with_no_caller_system_returns_base() -> None:
+    from claude_client import BASE_SYSTEM_PROMPT, _build_system
+
+    assert _build_system(None) == BASE_SYSTEM_PROMPT
+
+
+def test_build_system_layers_caller_system_after_base() -> None:
+    from claude_client import BASE_SYSTEM_PROMPT, _build_system
+
+    result = _build_system("Skeptic prompt: bear case only.")
+    assert result.startswith(BASE_SYSTEM_PROMPT)
+    assert result.endswith("Skeptic prompt: bear case only.")
+    assert BASE_SYSTEM_PROMPT in result
+
+
+def test_complete_always_sends_base_system_prompt(tmp_db: Path) -> None:
+    from claude_client import BASE_SYSTEM_PROMPT
+
+    response = _FakeMessage(content=[_FakeTextBlock("ok")])
+    client, fake = _client_with_fake(tmp_db, response)
+
+    client.complete(prompt="hi", called_from="test")
+
+    assert fake.messages.last_kwargs["system"] == BASE_SYSTEM_PROMPT
+
+
+def test_complete_layers_role_specific_system_on_base(tmp_db: Path) -> None:
+    from claude_client import BASE_SYSTEM_PROMPT
+
+    response = _FakeMessage(content=[_FakeTextBlock("ok")])
+    client, fake = _client_with_fake(tmp_db, response)
+
+    client.complete(prompt="hi", called_from="test", system="Skeptic prompt.")
+
+    sent_system = fake.messages.last_kwargs["system"]
+    assert sent_system.startswith(BASE_SYSTEM_PROMPT)
+    assert "Skeptic prompt." in sent_system
+
+
+def test_complete_structured_always_sends_base_system_prompt(tmp_db: Path) -> None:
+    from pydantic import BaseModel
+
+    from claude_client import BASE_SYSTEM_PROMPT
+
+    class Trivial(BaseModel):
+        ok: bool
+
+    response = _FakeMessage(
+        content=[_FakeToolUseBlock("submit_response", {"ok": True})]
+    )
+    client, fake = _client_with_fake(tmp_db, response)
+
+    client.complete_structured(prompt="hi", schema_cls=Trivial, called_from="test")
+
+    assert fake.messages.last_kwargs["system"] == BASE_SYSTEM_PROMPT
+
+
+def test_complete_structured_layers_role_specific_system_on_base(tmp_db: Path) -> None:
+    from pydantic import BaseModel
+
+    from claude_client import BASE_SYSTEM_PROMPT
+
+    class Trivial(BaseModel):
+        ok: bool
+
+    response = _FakeMessage(
+        content=[_FakeToolUseBlock("submit_response", {"ok": True})]
+    )
+    client, fake = _client_with_fake(tmp_db, response)
+
+    client.complete_structured(
+        prompt="hi", schema_cls=Trivial, called_from="test", system="Extractor prompt."
+    )
+
+    sent_system = fake.messages.last_kwargs["system"]
+    assert sent_system.startswith(BASE_SYSTEM_PROMPT)
+    assert "Extractor prompt." in sent_system
+
+
+@pytest.mark.skipif(
+    not os.environ.get("ANTHROPIC_API_KEY"),
+    reason="ANTHROPIC_API_KEY not set; skipping live API integration test",
+)
 def test_complete_smoke(tmp_db: Path) -> None:
     from claude_client import ClaudeClient
 
