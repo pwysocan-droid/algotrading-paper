@@ -103,6 +103,48 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-02 — Retire Bollinger and MA-crossover (Week 2 roster call, resolved on 6-month evidence)
+
+The falsifiable hypothesis committed at the reframe said: if neither
+base strategy clears the bar over a real window, replace them. The
+6-month replay cleared its throat. Retiring both.
+
+**The evidence.** 12 variants, 6-month window (2026-01-03 →
+2026-07-02), realistic constraints and fees. 1,371 trades placed /
+390,519 candidates (99.6% rejected by cooldown/exposure/concurrency).
+Net −$1,719.44 (−0.13%).
+
+Every variant with a real sample (n>100) is negative. The worst
+performer is `bollinger_default` itself — n=539, −$636.75. The more
+it trades, the more it loses. The only two in the black,
+`macross_slow` and `macross_default`, run on n=3 and n=13: noise, not
+signal. `bollinger_loose` (σ=2.5) fired zero times across all six
+months — too wide, period, not too wide for one regime.
+
+**The call.** Both base strategies are retired from the active
+roster. This is not a failure of the project — it is the project
+working. The strategies were always the control variable,
+deliberately banal (the Duchamp *Fountain* logic). The experiment
+was never "does Bollinger make money"; it was "does the epistemic
+infrastructure produce a clean, defensible negative when the signal
+isn't there." It did.
+
+**What replaces them:** deferred to the next phase — LLM-surfaced
+candidates, climbing the adaptation ladder (2026-07-02 entry below).
+The aggression half of the learning discipline runs next.
+
+**Considered and rejected:** keeping the strategies on the two
+noise-positive variants. Rejected — n=3 and n=13 is exactly the
+aggression-without-rigor failure mode `philosophy.md` names.
+Believing a 3-trade positive over a 539-trade negative would be
+declaring victory before the data finished speaking.
+
+**Gate status: unchanged.** No A/B-validated promotion exists; P&L
+is negative. Phase 2 gates not met. This entry does not authorize
+real money.
+
+---
+
 ## 2026-07-02 — The adaptation ladder: rung 6 is the goal, reached one rung at a time
 
 Committing the answer to "how radical should the system's
