@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-02T20:40:05Z
+2026-07-02T20:45:05Z
 
 7 surfaces tracked
 
@@ -17,10 +17,10 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
+| [philosophy.md](philosophy.md) | 2026-07-02T20:25:50Z | Merge the adaptation-ladder a… |
+| [decision-log.md](decision-log.md) | 2026-07-02T20:25:50Z | Merge the adaptation-ladder a… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
-| [decision-log.md](decision-log.md) | 2026-05-23T20:37:49Z | Log VPS cron migration decisi… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
-| [philosophy.md](philosophy.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
 ## § 02 — Pending decisions · 4 items

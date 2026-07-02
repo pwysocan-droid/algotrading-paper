@@ -1,20 +1,16 @@
 {
-  "generated_at": "2026-07-02T20:40:07Z",
+  "generated_at": "2026-07-02T20:45:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
-  "kahneman": {
-    "trigger": "no recent decisions · status quo bias",
-    "body_html": "Two weeks without a written decision is <em>not stability</em>. It is the absence of recorded choice.",
-    "attribution": "— after Samuelson & Zeckhauser, 1988"
-  },
+  "kahneman": null,
   "vitals": {
-    "last_run_iso": "2026-07-02T20:40:04.877785+00:00",
+    "last_run_iso": "2026-07-02T20:45:04.738161+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-02 · 20:40 UTC",
+    "last_run_human_date": "2026-07-02 · 20:45 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "11565 of 11584 ok · 99.8%",
+    "uptime_recent": "11566 of 11585 ok · 99.8%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -88,13 +84,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "127,449",
+      "count": "127,454",
       "delta": "+1512",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "127449"
+      "value": "127454"
     },
     {
       "name": "bar coverage",
@@ -108,13 +104,13 @@
     },
     {
       "name": "cron runs",
-      "count": "11,584",
+      "count": "11,585",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "11584"
+      "value": "11585"
     },
     {
       "name": "llm calls",
