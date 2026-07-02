@@ -19,7 +19,7 @@ import fetch
 import replay
 import signals
 from signals import BarRow, Signal
-from tests.fixtures.bars import FakeBarSource, make_bars_with_gap
+from tests.fixtures.bars import FakeBarSource, make_bar_series, make_bars_with_gap
 
 
 @pytest.fixture
@@ -423,3 +423,79 @@ def test_portfolio_constraints_frees_slot_after_position_exits() -> None:
     later = _sim_trade("SYM9/USD", "2026-05-01T01:00:00+00:00", "2026-05-01T01:30:00+00:00")
     out = replay.apply_portfolio_constraints(five + [later])
     assert all(t.accepted for t in out), "the 5 early positions exit before the 6th opens"
+
+
+# --- Bar coverage / continuity ----------------------------------------------
+
+
+def test_bars_summary_reports_zero_gaps_for_complete_coverage(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=timezone.utc)
+    bars = make_bar_series("BTC/USD", start, n=13)  # exactly covers a 1h window
+    _seed_bars(tmp_db, bars)
+    with db.connect(tmp_db) as conn:
+        rows = replay._bars_summary(conn, ["BTC/USD"], start, start + timedelta(hours=1))
+    row = rows[0]
+    assert row[0] == "BTC/USD"
+    assert row[1] == "13"
+    assert row[4] == "0", "13 bars at 5-min cadence over exactly 1h should show zero gaps"
+
+
+def test_bars_summary_reports_missing_bars_as_gaps(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=timezone.utc)
+    all_bars = make_bar_series("BTC/USD", start, n=13)
+    # drop 3 bars from the middle to simulate a data hole
+    seeded = all_bars[:5] + all_bars[8:]
+    _seed_bars(tmp_db, seeded)
+    with db.connect(tmp_db) as conn:
+        rows = replay._bars_summary(conn, ["BTC/USD"], start, start + timedelta(hours=1))
+    assert rows[0][1] == "10"
+    assert rows[0][4] == "3"
+
+
+def test_bars_summary_empty_symbol_shows_emdash_gaps(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        rows = replay._bars_summary(conn, ["BTC/USD"], start, start + timedelta(hours=1))
+    assert rows[0][1] == "0"
+    assert rows[0][4] == replay.EMDASH
+
+
+def test_check_coverage_full_coverage_has_no_gap(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=timezone.utc)
+    bars = make_bar_series("BTC/USD", start, n=13)
+    _seed_bars(tmp_db, bars)
+    with db.connect(tmp_db) as conn:
+        reports = replay.check_coverage(conn, ["BTC/USD"], start, start + timedelta(hours=1))
+    r = reports[0]
+    assert r.n_bars == 13
+    assert r.expected_bars == 13
+    assert r.coverage_pct == pytest.approx(100.0)
+    assert r.largest_gap_minutes == 0.0
+    assert r.largest_gap_start is None
+
+
+def test_check_coverage_finds_largest_gap(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=timezone.utc)
+    all_bars = make_bar_series("BTC/USD", start, n=13)
+    # one 3-bar hole (15 min) in the middle; coverage math still uses the full window
+    seeded = all_bars[:5] + all_bars[8:]
+    _seed_bars(tmp_db, seeded)
+    with db.connect(tmp_db) as conn:
+        reports = replay.check_coverage(conn, ["BTC/USD"], start, start + timedelta(hours=1))
+    r = reports[0]
+    assert r.n_bars == 10
+    assert r.expected_bars == 13
+    assert r.coverage_pct == pytest.approx(10 / 13 * 100.0)
+    assert r.largest_gap_minutes == pytest.approx(20.0)  # bars[4] to bars[8]: 4 steps * 5min
+    assert r.largest_gap_start == all_bars[4].timestamp
+    assert r.largest_gap_end == all_bars[8].timestamp
+
+
+def test_check_coverage_no_bars_at_all(tmp_db: Path) -> None:
+    start = datetime(2026, 5, 1, 0, 0, tzinfo=timezone.utc)
+    with db.connect(tmp_db) as conn:
+        reports = replay.check_coverage(conn, ["BTC/USD"], start, start + timedelta(hours=1))
+    r = reports[0]
+    assert r.n_bars == 0
+    assert r.coverage_pct == 0.0
+    assert r.largest_gap_minutes == 0.0

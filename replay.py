@@ -22,6 +22,7 @@ from typing import Any
 
 import db
 from config import (
+    BAR_TIMEFRAME_MINUTES,
     MAX_CONCURRENT_POSITIONS,
     MAX_POSITION_USD,
     MAX_TOTAL_EXPOSURE_USD,
@@ -326,6 +327,10 @@ def apply_portfolio_constraints(
 def _bars_summary(
     conn: sqlite3.Connection, symbols: list[str], start: datetime, end: datetime
 ) -> list[list[str]]:
+    """Per-symbol bar count/range for the report table. Gaps = missing bars
+    against the expected 5-min-cadence count over [start, end] — crypto
+    trades 24/7 so there's no market-hours exemption to account for.
+    """
     rows: list[list[str]] = []
     for symbol in symbols:
         result = conn.execute(
@@ -339,8 +344,70 @@ def _bars_summary(
         n = int(result["n"]) if result["n"] is not None else 0
         first_ts = result["first_ts"] if result["first_ts"] else EMDASH
         last_ts = result["last_ts"] if result["last_ts"] else EMDASH
-        rows.append([symbol, format_count(n), first_ts, last_ts, EMDASH])
+        if n > 0:
+            expected = int((end - start).total_seconds() // (BAR_TIMEFRAME_MINUTES * 60)) + 1
+            missing = max(0, expected - n)
+            gaps_str = format_count(missing)
+        else:
+            gaps_str = EMDASH
+        rows.append([symbol, format_count(n), first_ts, last_ts, gaps_str])
     return rows
+
+
+@dataclass
+class CoverageReport:
+    symbol: str
+    n_bars: int
+    expected_bars: int
+    coverage_pct: float
+    largest_gap_minutes: float
+    largest_gap_start: str | None
+    largest_gap_end: str | None
+
+
+def check_coverage(
+    conn: sqlite3.Connection, symbols: list[str], start: datetime, end: datetime
+) -> list[CoverageReport]:
+    """Real continuity check: per symbol, expected-vs-actual bar count AND
+    the single largest gap between consecutive bars (a count mismatch alone
+    can't distinguish "scattered thin gaps" from "one multi-day outage").
+    """
+    expected = int((end - start).total_seconds() // (BAR_TIMEFRAME_MINUTES * 60)) + 1
+    step = timedelta(minutes=BAR_TIMEFRAME_MINUTES)
+    out: list[CoverageReport] = []
+    for symbol in symbols:
+        rows = conn.execute(
+            """
+            SELECT timestamp FROM bars
+             WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?
+             ORDER BY timestamp ASC
+            """,
+            (symbol, start.isoformat(), end.isoformat()),
+        ).fetchall()
+        timestamps = [_parse_ts(r["timestamp"]) for r in rows]
+        n = len(timestamps)
+
+        largest_gap = timedelta(0)
+        gap_start: datetime | None = None
+        gap_end: datetime | None = None
+        for prev, cur in zip(timestamps, timestamps[1:]):
+            delta = cur - prev
+            if delta > step and delta > largest_gap:
+                largest_gap = delta
+                gap_start, gap_end = prev, cur
+
+        out.append(
+            CoverageReport(
+                symbol=symbol,
+                n_bars=n,
+                expected_bars=expected,
+                coverage_pct=(n / expected * 100.0) if expected else 0.0,
+                largest_gap_minutes=largest_gap.total_seconds() / 60.0,
+                largest_gap_start=gap_start.isoformat() if gap_start else None,
+                largest_gap_end=gap_end.isoformat() if gap_end else None,
+            )
+        )
+    return out
 
 
 def build_report_data(
