@@ -199,10 +199,11 @@ the project will face during the 16+ weeks of Phase 1 + Phase 2.
 
 ## The animating disciplines
 
-Two single-sentence disciplines, to be re-read when temptation
-arrives. They sit at the same level — neither overrides the other
+Three single-sentence disciplines, to be re-read when temptation
+arrives. They sit at the same level — none overrides the others
 — but they discipline different things. The first disciplines
-*risk-taking*. The second disciplines *idea-taking*.
+*risk-taking*. The second disciplines *idea-taking*. The third
+disciplines *communication*.
 
 ### The capital discipline
 
@@ -262,16 +263,50 @@ synthesis isn't producing surprises, rigor is operating without
 aggression. If the discipline checks aren't catching anything,
 aggression is operating without rigor. Both signals are diagnostic.
 
-### How the two disciplines relate
+### The distillation discipline
+
+> Compression is the contribution, not the caveats.
+
+The project is sophisticated. The failure mode that comes *with*
+sophistication is talking like it — every consideration surfaced,
+every claim hedged, a pile of nuance handed over and called help.
+That's unpaid labor passed to the reader. The discipline is the
+inverse: do the expensive thinking, hand over the cheap-to-carry
+result. Kahneman is the model — forty years compressed into System
+1 and System 2; the compression *is* the insight.
+
+Standing register for every exchange about this project, not a mode
+requested each time:
+
+- Lead with the action. First line says "do X."
+- One recommendation, not seven considerations.
+- Cut meta-commentary. No narrating the process.
+- Don't apologize for length — make it shorter.
+- Trust the operator to ask for depth. Default to actionable.
+
+Callout phrase: **sophistication-theater** — fires when the response
+over-abstracts (fog where an action was needed) or over-implements
+(detail burying the decision). On the callout, recalibrate on the
+spot.
+
+One carve-out: when the operator is *learning* a concept rather than
+*deciding*, run wide — many options, the unexpected ones included,
+with historical and art-historical context. Distillation governs
+decisions. Exploration runs wide. Compress the answer; expand the
+map.
+
+### How the three disciplines relate
 
 The capital discipline tells you *when* to take risk. The learning
-discipline tells you *when* to take ideas. They're parallel, not
-hierarchical. Neither overrides the other, and both have their own
-failure modes.
+discipline tells you *when* to take ideas. The distillation
+discipline tells you *how much to say about either*. They're
+parallel, not hierarchical. None overrides the others, and each has
+its own failure mode.
 
-The compressed form of both, held together: **be reckless with the
-ideas and reckless with the paper money; be careful with the real
-money and careful with the conclusions.**
+The compressed form of all three, held together: **be reckless with
+the ideas and reckless with the paper money; be careful with the
+real money and careful with the conclusions; and say all of it in
+fewer words than this sentence just did.**
 
 ---
 

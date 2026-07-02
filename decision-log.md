@@ -103,6 +103,144 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-02 — The adaptation ladder: rung 6 is the goal, reached one rung at a time
+
+Committing the answer to "how radical should the system's
+self-adjustment be" *before* the tuner goes online and the
+temptation arrives. The reframe's aspiration is rung 6 — an LLM
+surfacing genuinely novel strategy candidates. That remains the
+destination. This entry is about the path, not the target.
+
+Six rungs, banal to radical:
+
+1. **Static** — fixed rules, no feedback. The control arm. Never
+   retired; every higher rung is measured against it.
+2. **Human-promoted tuning** — walk-forward proposes, I promote
+   after an A/B win. (Week 4 machinery, already specced.)
+3. **Regime-conditional switching** — rules fixed, but which rule
+   fires depends on market state. The selector adapts, not the
+   strategy.
+4. **Online parameter adaptation** — parameters drift with recent
+   conditions, no human in the loop. Crosses the no-ML line if fit
+   from trade history; requires its own decision-log entry before
+   it's built.
+5. **Meta-strategy / ensemble weighting** — capital flows toward
+   whatever's working lately. The portfolio adapts though no single
+   strategy does.
+6. **LLM-proposed novel strategies** — Claude surfaces candidates
+   the canon missed; I falsify them. Maximum epistemological
+   aggression. The goal.
+
+**The rule that makes rung 6 survivable rather than reckless: climb
+one rung at a time, and only after the rung below produces a clean
+A/B result.** Radical is earned, not chosen.
+
+Why this and not "build toward rung 6 directly": rung 6 is exactly
+where novelty is easiest to mistake for edge — the
+aggression-without-rigor failure mode named in philosophy.md. LLM
+strategies with no disciplined rungs beneath them is a urinal from
+someone who can't draw. Duchamp painted the *Nude Descending a
+Staircase* before the readymade meant anything; the mastery is what
+earned the radical gesture. The ladder is not a brake on ambition —
+it's the structure that lets the ambition survive contact with a
+near-zero real edge.
+
+Current position: not yet at rung 2. The tuner isn't online. Do not
+design rung 5 while rung 1's simulator still overcounts trades.
+
+Considered and rejected: skipping to rung 6 on the strength of the
+reframe's ambition. Rejected because it inverts the reframe —
+"epistemological aggression *with* methodological rigor," not
+instead of it.
+
+---
+
+## 2026-07-02 — The distillation discipline (third animating discipline)
+
+Adding a third animating discipline alongside capital and learning.
+The first governs risk-taking, the second idea-taking, the third
+governs how the work gets communicated.
+
+> Compression is the contribution, not the caveats.
+
+The project is sophisticated. The failure mode that comes *with*
+sophistication is talking like it — every consideration surfaced,
+every claim hedged, a pile of nuance handed over and called help.
+That's unpaid labor passed to the reader. The discipline is the
+inverse: do the expensive thinking, hand over the cheap-to-carry
+result. Kahneman is the model — forty years compressed into System
+1 and System 2; the compression *is* the insight.
+
+Standing register for every exchange about this project, not a mode
+I request each time:
+
+- Lead with the action. First line says "do X."
+- One recommendation, not seven considerations.
+- Cut meta-commentary. No narrating the process.
+- Don't apologize for length — make it shorter.
+- Trust me to ask for depth. Default to actionable.
+
+Callout phrase: **sophistication-theater** — fires when Claude
+over-abstracts (fog where an action was needed) or over-implements
+(detail burying the decision). On the callout, recalibrate on the
+spot.
+
+One carve-out, per my stated preference: when I'm *learning* a
+concept rather than *deciding*, run wide — many options, the
+unexpected ones included, with historical and art-historical
+context. Distillation governs decisions. Exploration runs wide.
+Compress the answer; expand the map.
+
+Full text lives in philosophy.md under "The animating disciplines."
+
+---
+
+## 2026-07-02 — 47-day operator gap; VPS ran clean, curriculum did not move
+
+**What happened.** No commits landed by human hand between 2026-05-23
+(the W21 Friday review) and today. The Claude Code conversation that
+was working this project was lost, and the operator did not return
+until 2026-07-02. Reopening the project, the first read of the local
+clone (also 47 days stale) produced a wrong diagnosis — it looked like
+the VPS had died silently, since the local `trader.db` stopped at run
+84 on 2026-05-23T22:10. That diagnosis was corrected by checking the
+live repo on GitHub directly: **the VPS never stopped.**
+
+**The infrastructure's actual record, 2026-05-23 → 2026-07-02:**
+- 11,490+ `fetch run` commits, one every 5 minutes, zero gaps over ~1
+  hour anywhere in that window (the largest gaps in the entire
+  project history — 3–4h — are from 2026-05-18 to 2026-05-23, before
+  this window, and already priced into the original migration
+  decision)
+- `bars`: 70,803 → 127,391. `runs`: 84 → 11,574, all `status='ok'`
+- The 95%-uptime architectural gate (Phase 2 gate 1 of 3) is now
+  mechanically satisfied by this run — first of the three gates to
+  clear
+
+**What did not move, over the same 47 days:**
+- `signals`, `trades`, `decisions`, `llm_calls` — all still 0
+- `STRATEGY_VARIANTS` in `config.py` — still `{}`, unedited since Week 1
+- `pending.md`, `decision_log_queue.md`, `build_queue.md` — unedited;
+  every item on them is the same item flagged in the 2026-05-23
+  Friday review, now 47 days older
+- No Friday adversarial review has run since W21 (2026-05-23) — the
+  weekly discipline that review itself said would prove the
+  methodology dead if it slipped, slipped
+
+**Reading.** The 2026-05-23 review's bear case predicted this exact
+shape and named it explicitly: *"the infrastructure was the
+project."* It's now had 47 additional days of unbroken confirmation.
+The VPS migration was unambiguously the right call — it is carrying
+Phase 2 gate 1 without anyone touching it — but a monitoring system
+with nobody reading its output is not a substitute for the operator
+showing up. Phase 1 review is 9 days out (2026-07-12) with zero
+trades on record for the entire phase.
+
+This entry is a correction and a status snapshot, not a new decision.
+The open items are unchanged from 2026-05-23; they are just older.
+
+---
+
 ## 2026-05-23 — Migrating cron from GitHub Actions to Hetzner VPS
 
 **Findings from six days of cron data (2026-05-17 to 2026-05-23):**
