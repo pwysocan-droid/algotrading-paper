@@ -41,21 +41,30 @@ def test_empty_registry_emits_zero_signals(populated_bars_db: Path) -> None:
     assert n == 0
 
 
-def test_default_registry_has_only_the_two_project_md_defaults() -> None:
+def test_default_registry_has_the_two_defaults_plus_ten_sweep_variants() -> None:
     from config import STRATEGY_VARIANTS
-    assert set(STRATEGY_VARIANTS.keys()) == {"bollinger_default", "macross_default"}, (
-        "registry should hold exactly the two PROJECT.md defaults ahead of "
-        "the Week 2 roster review — parameter-sweep variants are a separate, "
-        "gated step"
+    expected = {
+        "bollinger_default", "macross_default",
+        "bollinger_tight", "bollinger_loose", "bollinger_long",
+        "bollinger_quick", "bollinger_verytight",
+        "macross_fast", "macross_slow", "macross_veryfast",
+        "macross_veryslow", "macross_balanced",
+    }
+    assert set(STRATEGY_VARIANTS.keys()) == expected, (
+        "registry should hold the 2 PROJECT.md defaults plus the 10 Week-3 "
+        "parameter-sweep variants (12 total)"
     )
+    assert len(STRATEGY_VARIANTS) == 12
     assert STRATEGY_VARIANTS["bollinger_default"]["params"] == {
         "period": 20, "stddev": 2.0, "tp": 0.05, "sl": 0.03, "time_exit_hours": 24,
     }
     assert STRATEGY_VARIANTS["macross_default"]["params"] == {
         "fast": 12, "slow": 26, "tp": 0.05, "sl": 0.03,
     }
-    assert STRATEGY_VARIANTS["bollinger_default"]["enabled"] is True
-    assert STRATEGY_VARIANTS["macross_default"]["enabled"] is True
+    assert all(v.get("enabled") is True for v in STRATEGY_VARIANTS.values()), (
+        "all 12 variants should be enabled for the replay pass"
+    )
+    assert all(v["strategy"] in ("bollinger", "macross") for v in STRATEGY_VARIANTS.values())
 
 
 def test_run_variant_with_disabled_variant_skips(populated_bars_db: Path) -> None:

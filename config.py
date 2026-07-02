@@ -44,10 +44,25 @@ ALPACA_DATA_BASE_URL: str = "https://data.alpaca.markets"
 BAR_TIMEFRAME_MINUTES: int = 5
 
 # Strategy registry. The two defaults, per PROJECT.md "Strategy registry"
-# spec — registered ahead of the Week 2 roster review so replay.py can
-# produce real evidence for that decision instead of the review running
-# on zero data. No parameter-sweep variants here yet; that's the second,
-# gated step.
+# spec, plus the Week 3 parameter-sweep variants (roadmap.md Week 3 /
+# decision_log_queue.md "Variant-explosion-to-Day-1"), registered together
+# ahead of the Week 2 roster review so replay.py's evidence covers both
+# questions at once: which base strategy, and which parameterization.
+#
+# bollinger_tight/loose/long/quick and macross_fast/slow are named verbatim
+# in PROJECT.md's Week 3 spec ("Examples: ..."). bollinger_verytight,
+# macross_veryfast, macross_veryslow, and macross_balanced are NOT in any
+# project doc — added here to reach the 10-variant target, following the
+# same single-parameter-perturbation-from-default pattern as the named
+# ones. Flagging the split so it's auditable, not silently blended in.
+#
+# All variants share tp=0.05/sl=0.03 with the defaults — Week 3 doesn't
+# specify per-variant risk parameters, and note replay.py's simulate_exit
+# currently reads TAKE_PROFIT_PCT/STOP_LOSS_PCT from config globals, not
+# from variant["params"], so a variant with different tp/sl wouldn't
+# actually get it honored in backtest yet. Doesn't affect this batch since
+# all values match the global defaults, but it's a real gap if a future
+# variant wants different risk parameters.
 STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
     "bollinger_default": {
         "strategy": "bollinger",
@@ -68,5 +83,77 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "context_keys": [],
         "enabled": True,
         "phase_qualified": True,
+    },
+    # --- Bollinger parameter sweep (5) ---
+    "bollinger_tight": {
+        "strategy": "bollinger",
+        "params": {"period": 20, "stddev": 1.5, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "bollinger_loose": {
+        "strategy": "bollinger",
+        "params": {"period": 20, "stddev": 2.5, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "bollinger_long": {
+        "strategy": "bollinger",
+        "params": {"period": 40, "stddev": 2.0, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "bollinger_quick": {
+        "strategy": "bollinger",
+        "params": {"period": 10, "stddev": 2.0, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "bollinger_verytight": {  # not in PROJECT.md — extends the tight/loose pattern
+        "strategy": "bollinger",
+        "params": {"period": 20, "stddev": 1.0, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    # --- MA-crossover parameter sweep (5) ---
+    "macross_fast": {
+        "strategy": "macross",
+        "params": {"fast": 5, "slow": 15, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "macross_slow": {
+        "strategy": "macross",
+        "params": {"fast": 20, "slow": 50, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "macross_veryfast": {  # not in PROJECT.md — extends the fast/slow pattern
+        "strategy": "macross",
+        "params": {"fast": 3, "slow": 8, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "macross_veryslow": {  # not in PROJECT.md — extends the fast/slow pattern
+        "strategy": "macross",
+        "params": {"fast": 30, "slow": 90, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
+    "macross_balanced": {  # not in PROJECT.md — midpoint between default and fast
+        "strategy": "macross",
+        "params": {"fast": 8, "slow": 21, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
     },
 }
