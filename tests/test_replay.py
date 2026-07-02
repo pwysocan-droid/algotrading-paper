@@ -214,3 +214,212 @@ def test_simulate_exit_time_exit(tmp_db: Path) -> None:
 def test_replay_invalid_period_raises(tmp_db: Path) -> None:
     with pytest.raises(ValueError, match="period must end in 'd'"):
         replay.run_replay(variant_arg="null", period="30", db_path=tmp_db)
+
+
+# --- Slippage --------------------------------------------------------------
+
+
+class TestApplySlippage:
+    def test_zero_pct_is_noop(self) -> None:
+        assert replay._apply_slippage(100.0, "buy", "entry", 0.0) == 100.0
+
+    def test_buy_entry_worse_is_higher(self) -> None:
+        assert replay._apply_slippage(100.0, "buy", "entry", 0.01) == pytest.approx(101.0)
+
+    def test_buy_exit_worse_is_lower(self) -> None:
+        assert replay._apply_slippage(100.0, "buy", "exit", 0.01) == pytest.approx(99.0)
+
+    def test_sell_entry_worse_is_lower(self) -> None:
+        assert replay._apply_slippage(100.0, "sell", "entry", 0.01) == pytest.approx(99.0)
+
+    def test_sell_exit_worse_is_higher(self) -> None:
+        assert replay._apply_slippage(100.0, "sell", "exit", 0.01) == pytest.approx(101.0)
+
+
+# --- Fees + slippage wired into replay_variant ------------------------------
+
+
+def test_replay_variant_defaults_to_zero_cost(tmp_db: Path) -> None:
+    """replay_variant's own defaults stay 0 — the look-ahead-bias tests above
+    depend on exact bar-open prices and must not be perturbed by this change."""
+    base = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    bars = make_bars_with_gap(
+        symbol="BTC/USD", start=base, closes=[100.0, 100.0], next_opens=[110.0, 110.0]
+    )
+    _seed_bars(tmp_db, bars)
+
+    def fire_once(bars_so_far: list[BarRow], params: dict, ctx: dict) -> Signal | None:
+        if len(bars_so_far) - 1 == 0:
+            last = bars_so_far[-1]
+            return Signal(
+                symbol=last.symbol, variant_name="", strategy="fire_once", side="buy",
+                bar_timestamp=last.timestamp, price_at_signal=last.close, reasoning={},
+            )
+        return None
+
+    signals.STRATEGY_REGISTRY["fire_once"] = fire_once
+    try:
+        variant = {
+            "strategy": "fire_once", "params": {}, "context_keys": [],
+            "enabled": True, "phase_qualified": False,
+        }
+        with db.connect(tmp_db) as conn:
+            plain = replay.replay_variant(
+                conn, "v", variant, ["BTC/USD"],
+                base - timedelta(minutes=1), base + timedelta(hours=1),
+            )
+            costed = replay.replay_variant(
+                conn, "v", variant, ["BTC/USD"],
+                base - timedelta(minutes=1), base + timedelta(hours=1),
+                fee_pct=0.0025, slippage_pct=0.01,
+            )
+        assert len(plain) == 1 and len(costed) == 1
+        p, c = plain[0], costed[0]
+
+        assert p.entry_price == 110.0, "zero-cost default must match the raw bar open exactly"
+        assert p.fees_usd == 0.0
+
+        # buy entry worse = higher; buy exit worse = lower
+        assert c.entry_price == pytest.approx(p.entry_price * 1.01)
+        assert c.exit_price == pytest.approx(p.exit_price * 0.99)
+
+        expected_fees = (c.entry_price + c.exit_price) * c.qty * 0.0025
+        assert c.fees_usd == pytest.approx(expected_fees)
+
+        gross = (c.exit_price - c.entry_price) * c.qty
+        assert c.pnl_usd == pytest.approx(gross - expected_fees)
+    finally:
+        del signals.STRATEGY_REGISTRY["fire_once"]
+
+
+def test_run_replay_defaults_apply_config_fee_and_slippage(
+    tmp_db: Path, monkeypatch
+) -> None:
+    """The CLI/report path (run_replay), unlike replay_variant, must use the
+    real config assumptions by default, not zero."""
+    base = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    bars = make_bars_with_gap(
+        symbol="BTC/USD", start=base, closes=[100.0, 100.0], next_opens=[110.0, 110.0]
+    )
+    _seed_bars(tmp_db, bars)
+
+    def fire_once(bars_so_far: list[BarRow], params: dict, ctx: dict) -> Signal | None:
+        if len(bars_so_far) - 1 == 0:
+            last = bars_so_far[-1]
+            return Signal(
+                symbol=last.symbol, variant_name="", strategy="fire_once", side="buy",
+                bar_timestamp=last.timestamp, price_at_signal=last.close, reasoning={},
+            )
+        return None
+
+    signals.STRATEGY_REGISTRY["fire_once"] = fire_once
+    variant = {
+        "strategy": "fire_once", "params": {}, "context_keys": [],
+        "enabled": True, "phase_qualified": False,
+    }
+    monkeypatch.setattr(replay, "STRATEGY_VARIANTS", {"fire_once_default": variant})
+    try:
+        # period must cover `base` (2026-05-01) relative to the real wall-clock
+        # `now` run_replay uses internally — a fixed generous window, not "30d".
+        days_since_base = (datetime.now(timezone.utc) - base).days + 2
+        markdown, trades = replay.run_replay(
+            variant_arg="null", period=f"{days_since_base}d", db_path=tmp_db
+        )
+        assert len(trades) == 1
+        assert trades[0].fees_usd > 0.0, "run_replay must apply the real config fee, not 0"
+        assert trades[0].entry_price != 110.0, "run_replay must apply real slippage"
+    finally:
+        del signals.STRATEGY_REGISTRY["fire_once"]
+
+
+# --- Portfolio constraints (mirrors execute.py.check_limits) ---------------
+
+
+def _sim_trade(
+    symbol: str,
+    entry_ts: str,
+    exit_ts: str,
+    entry_price: float = 100.0,
+    qty: float = 2.0,
+    variant: str = "v",
+) -> "replay.SimulatedTrade":
+    return replay.SimulatedTrade(
+        variant_name=variant,
+        strategy="s",
+        symbol=symbol,
+        side="buy",
+        signal_bar_timestamp=entry_ts,
+        entry_bar_timestamp=entry_ts,
+        entry_price=entry_price,
+        qty=qty,
+        exit_bar_timestamp=exit_ts,
+        exit_price=entry_price,
+        exit_reason="time_exit",
+        pnl_usd=0.0,
+        pnl_pct=0.0,
+    )
+
+
+def test_portfolio_constraints_empty_input() -> None:
+    assert replay.apply_portfolio_constraints([]) == []
+
+
+def test_portfolio_constraints_rejects_within_cooldown() -> None:
+    t1 = _sim_trade("BTC/USD", "2026-05-01T00:00:00+00:00", "2026-05-01T00:30:00+00:00")
+    t2 = _sim_trade("BTC/USD", "2026-05-01T00:30:00+00:00", "2026-05-01T01:00:00+00:00")
+    out = replay.apply_portfolio_constraints([t1, t2])
+    by_ts = {t.entry_bar_timestamp: t for t in out}
+    assert by_ts[t1.entry_bar_timestamp].accepted is True
+    assert by_ts[t2.entry_bar_timestamp].accepted is False
+    assert "cooldown" in by_ts[t2.entry_bar_timestamp].reject_reason
+
+
+def test_portfolio_constraints_allows_after_cooldown_elapses() -> None:
+    t1 = _sim_trade("BTC/USD", "2026-05-01T00:00:00+00:00", "2026-05-01T00:05:00+00:00")
+    t2 = _sim_trade("BTC/USD", "2026-05-01T02:00:00+00:00", "2026-05-01T02:30:00+00:00")
+    out = replay.apply_portfolio_constraints([t1, t2])
+    assert all(t.accepted for t in out)
+
+
+def test_portfolio_constraints_rejects_over_concurrent_cap() -> None:
+    five = [
+        _sim_trade(f"SYM{i}/USD", "2026-05-01T00:00:00+00:00", "2026-05-01T10:00:00+00:00")
+        for i in range(5)
+    ]
+    sixth = _sim_trade("SYM5/USD", "2026-05-01T00:00:00+00:00", "2026-05-01T10:00:00+00:00")
+    out = replay.apply_portfolio_constraints(five + [sixth])
+    assert sum(1 for t in out if t.accepted) == 5
+    rejected = [t for t in out if not t.accepted]
+    assert len(rejected) == 1
+    assert "concurrent" in rejected[0].reject_reason
+
+
+def test_portfolio_constraints_rejects_over_exposure_cap() -> None:
+    # $250 notional each (entry_price=100, qty=2.5); 4 of them hit the $1,000 cap exactly
+    four = [
+        _sim_trade(
+            f"SYM{i}/USD", "2026-05-01T00:00:00+00:00", "2026-05-01T10:00:00+00:00",
+            entry_price=100.0, qty=2.5,
+        )
+        for i in range(4)
+    ]
+    fifth = _sim_trade(
+        "SYM4/USD", "2026-05-01T00:00:00+00:00", "2026-05-01T10:00:00+00:00",
+        entry_price=100.0, qty=2.5,
+    )
+    out = replay.apply_portfolio_constraints(four + [fifth])
+    accepted = [t for t in out if t.accepted]
+    rejected = [t for t in out if not t.accepted]
+    assert len(accepted) == 4
+    assert len(rejected) == 1
+    assert "exposure" in rejected[0].reject_reason
+
+
+def test_portfolio_constraints_frees_slot_after_position_exits() -> None:
+    five = [
+        _sim_trade(f"SYM{i}/USD", "2026-05-01T00:00:00+00:00", "2026-05-01T00:30:00+00:00")
+        for i in range(5)
+    ]
+    later = _sim_trade("SYM9/USD", "2026-05-01T01:00:00+00:00", "2026-05-01T01:30:00+00:00")
+    out = replay.apply_portfolio_constraints(five + [later])
+    assert all(t.accepted for t in out), "the 5 early positions exit before the 6th opens"

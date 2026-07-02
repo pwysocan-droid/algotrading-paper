@@ -28,6 +28,16 @@ TAKE_PROFIT_PCT: float = 0.05
 TIME_EXIT_HOURS: int = 24
 SYMBOL_COOLDOWN_HOURS: int = 1
 
+# Backtest realism. TAKER_FEE_PCT is sourced: PROJECT.md "Honest expectations"
+# ("0.25% Alpaca crypto fees... every round-trip costs ~$1" on a $200 position),
+# charged on notional at both entry and exit. SLIPPAGE_PCT is NOT sourced from
+# any project doc — no slippage assumption exists anywhere in PROJECT.md,
+# decision-log.md, or roadmap.md. 0.05%/side is a conservative placeholder for
+# liquid crypto pairs on 5-min bars; treat it as unconfirmed until it gets its
+# own decision-log entry.
+TAKER_FEE_PCT: float = 0.0025
+SLIPPAGE_PCT: float = 0.0005
+
 ALPACA_PAPER_BASE_URL: str = "https://paper-api.alpaca.markets"
 ALPACA_DATA_BASE_URL: str = "https://data.alpaca.markets"
 

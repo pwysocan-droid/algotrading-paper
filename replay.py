@@ -22,10 +22,15 @@ from typing import Any
 
 import db
 from config import (
+    MAX_CONCURRENT_POSITIONS,
     MAX_POSITION_USD,
+    MAX_TOTAL_EXPOSURE_USD,
+    SLIPPAGE_PCT,
     STOP_LOSS_PCT,
     STRATEGY_VARIANTS,
+    SYMBOL_COOLDOWN_HOURS,
     TAKE_PROFIT_PCT,
+    TAKER_FEE_PCT,
     TIME_EXIT_HOURS,
     WATCHED_SYMBOLS,
 )
@@ -55,8 +60,31 @@ class SimulatedTrade:
     exit_bar_timestamp: str | None = None
     exit_price: float | None = None
     exit_reason: str | None = None  # 'take_profit' | 'stop_loss' | 'time_exit'
-    pnl_usd: float | None = None
+    pnl_usd: float | None = None  # net of fees when fee_pct > 0
     pnl_pct: float | None = None
+    fees_usd: float = 0.0
+    accepted: bool = True  # set by apply_portfolio_constraints
+    reject_reason: str | None = None
+
+
+def _parse_ts(ts: str) -> datetime:
+    dt = datetime.fromisoformat(ts)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _apply_slippage(price: float, side: str, leg: str, slippage_pct: float) -> float:
+    """Slippage always works against the trader — never a favorable fill.
+
+    buy+entry or sell+exit: you're paying, so the worse fill is higher.
+    sell+entry or buy+exit: you're receiving, so the worse fill is lower.
+    """
+    if slippage_pct == 0.0:
+        return price
+    if (side == "buy" and leg == "entry") or (side == "sell" and leg == "exit"):
+        return price * (1.0 + slippage_pct)
+    return price * (1.0 - slippage_pct)
 
 
 def load_bars_in_range(
@@ -147,12 +175,23 @@ def replay_variant(
     start: datetime,
     end: datetime,
     position_usd: float = MAX_POSITION_USD,
+    fee_pct: float = 0.0,
+    slippage_pct: float = 0.0,
 ) -> list[SimulatedTrade]:
     """Run a strategy variant in backtest mode over [start, end].
 
     Look-ahead-bias guard: for a signal generated at bar N's close, the entry
     price is the OPEN of bar N+1, not bar N's close. If bar N is the last bar
     in the window the signal is dropped (no future bar available).
+
+    fee_pct/slippage_pct default to 0.0 so callers that test signal timing
+    (e.g. the look-ahead-bias guard) get exact bar-open prices unless they
+    opt in. run_replay passes the real config values explicitly.
+
+    Portfolio constraints (cooldown, exposure, concurrent-position caps) are
+    NOT applied here — this produces unconstrained candidate trades for one
+    variant. Call apply_portfolio_constraints() on the merged, multi-variant
+    list to get what the live system would actually place.
     """
     if not variant.get("enabled", False):
         return []
@@ -171,21 +210,29 @@ def replay_variant(
             if sig is None:
                 continue
             entry_bar = bars[i + 1]
-            entry_price = entry_bar.open
+            entry_price = _apply_slippage(entry_bar.open, sig.side, "entry", slippage_pct)
             qty = position_usd / entry_price
             forward = bars[i + 2 :]
-            exit_ts, exit_price, exit_reason = simulate_exit(
+            exit_ts, raw_exit_price, exit_reason = simulate_exit(
                 forward, entry_price=entry_price, side=sig.side
+            )
+            exit_price = (
+                _apply_slippage(raw_exit_price, sig.side, "exit", slippage_pct)
+                if raw_exit_price is not None
+                else None
             )
             pnl_usd: float | None = None
             pnl_pct: float | None = None
+            fees_usd = 0.0
             if exit_price is not None:
+                fees_usd = (entry_price + exit_price) * qty * fee_pct
                 if sig.side == "buy":
-                    pnl_usd = (exit_price - entry_price) * qty
+                    gross = (exit_price - entry_price) * qty
                     pnl_pct = (exit_price / entry_price - 1.0) * 100.0
                 else:
-                    pnl_usd = (entry_price - exit_price) * qty
+                    gross = (entry_price - exit_price) * qty
                     pnl_pct = (1.0 - exit_price / entry_price) * 100.0
+                pnl_usd = gross - fees_usd
             out.append(
                 SimulatedTrade(
                     variant_name=variant_name,
@@ -201,9 +248,79 @@ def replay_variant(
                     exit_reason=exit_reason,
                     pnl_usd=pnl_usd,
                     pnl_pct=pnl_pct,
+                    fees_usd=fees_usd,
                 )
             )
     return out
+
+
+def apply_portfolio_constraints(
+    trades: list[SimulatedTrade],
+    max_concurrent: int = MAX_CONCURRENT_POSITIONS,
+    max_exposure_usd: float = MAX_TOTAL_EXPOSURE_USD,
+    cooldown_hours: int = SYMBOL_COOLDOWN_HOURS,
+) -> list[SimulatedTrade]:
+    """Mirror execute.py's check_limits across the merged, time-ordered stream
+    of every variant's candidate trades. Position limits are portfolio-wide,
+    not per-variant (roadmap.md Week 3: "the execution layer enforces the
+    overall position limits across the entire portfolio of variants").
+
+    Walks candidates in entry_bar_timestamp order, maintaining an in-memory
+    ledger of currently-open simulated positions. At each candidate: first
+    frees any ledger position whose exit has already happened by now, then
+    applies the same three checks execute.py.check_limits applies, in the
+    same order (concurrent count, total exposure, symbol cooldown). Cooldown
+    is checked against the most recent ACCEPTED trade's entry time on that
+    symbol, matching execute.py.last_trade_for_symbol — which only ever sees
+    placed trades, since rejected signals never reach the `trades` table.
+
+    Mutates and returns `trades` (sets .accepted / .reject_reason on each);
+    order is NOT preserved — callers needing original order should copy first.
+    """
+    ordered = sorted(trades, key=lambda t: (t.entry_bar_timestamp, t.variant_name, t.symbol))
+    open_positions: list[SimulatedTrade] = []
+    last_entry_by_symbol: dict[str, datetime] = {}
+
+    for t in ordered:
+        now = _parse_ts(t.entry_bar_timestamp)
+
+        open_positions = [
+            p for p in open_positions
+            if p.exit_bar_timestamp is None or _parse_ts(p.exit_bar_timestamp) > now
+        ]
+
+        if len(open_positions) >= max_concurrent:
+            t.accepted = False
+            t.reject_reason = (
+                f"{len(open_positions)} concurrent positions open; max {max_concurrent}"
+            )
+            continue
+
+        current_exposure = sum(p.qty * p.entry_price for p in open_positions)
+        intended = t.qty * t.entry_price
+        if current_exposure + intended > max_exposure_usd:
+            t.accepted = False
+            t.reject_reason = (
+                f"exposure ${current_exposure:.2f} + ${intended:.2f} "
+                f"exceeds ${max_exposure_usd:.2f}"
+            )
+            continue
+
+        last_entry = last_entry_by_symbol.get(t.symbol)
+        if last_entry is not None and now - last_entry < timedelta(hours=cooldown_hours):
+            t.accepted = False
+            t.reject_reason = (
+                f"{t.symbol} traded within last {cooldown_hours}h "
+                f"(at {last_entry.isoformat()}); cooldown not elapsed"
+            )
+            continue
+
+        t.accepted = True
+        t.reject_reason = None
+        open_positions.append(t)
+        last_entry_by_symbol[t.symbol] = now
+
+    return ordered
 
 
 def _bars_summary(
@@ -237,12 +354,17 @@ def build_report_data(
     bars_rows: list[list[str]],
     run_phases: list[list[str]],
 ) -> dict[str, Any]:
-    n_trades = len(trades)
+    candidates = trades
+    accepted = [t for t in trades if t.accepted]
+    rejected = [t for t in trades if not t.accepted]
+    n_trades = len(accepted)
     total_pnl: float | None = None
+    total_fees: float = 0.0
     pnl_pct: float | None = None
     if n_trades > 0:
-        total_pnl = sum(t.pnl_usd for t in trades if t.pnl_usd is not None)
-        pcts = [t.pnl_pct for t in trades if t.pnl_pct is not None]
+        total_pnl = sum(t.pnl_usd for t in accepted if t.pnl_usd is not None)
+        total_fees = sum(t.fees_usd for t in accepted)
+        pcts = [t.pnl_pct for t in accepted if t.pnl_pct is not None]
         if pcts:
             pnl_pct = sum(pcts) / len(pcts)
     else:
@@ -254,7 +376,7 @@ def build_report_data(
 
     stats = [
         Stat("Variants registered", variants_value, f"{n_variants} enabled"),
-        Stat("Trades in period", format_count(n_trades), "paper"),
+        Stat("Trades in period", format_count(n_trades), "paper, placed"),
         Stat("P&L", format_currency(total_pnl), format_pct(pnl_pct)),
         Stat("System uptime", "100%", "last 4w"),
     ]
@@ -265,7 +387,7 @@ def build_report_data(
     else:
         per_variant_rows = []
         for name, variant in STRATEGY_VARIANTS.items():
-            v_trades = [t for t in trades if t.variant_name == name]
+            v_trades = [t for t in accepted if t.variant_name == name]
             n = len(v_trades)
             v_pnl = sum(t.pnl_usd for t in v_trades if t.pnl_usd is not None) if v_trades else 0.0
             v_pcts = [t.pnl_pct for t in v_trades if t.pnl_pct is not None]
@@ -290,6 +412,19 @@ def build_report_data(
             "Empty state — no strategy variants are registered. This is expected "
             "for Week 1; Bollinger and MA-crossover (or Week-0-surfaced "
             "replacements) come online in Week 2 after the strategy-roster review."
+        )
+    elif candidates:
+        n_candidates = len(candidates)
+        n_rejected = len(rejected)
+        reject_pct = (n_rejected / n_candidates * 100.0) if n_candidates else 0.0
+        notes = (
+            f"{format_count(n_candidates)} candidate signals; "
+            f"{format_count(n_rejected)} rejected ({reject_pct:.1f}%) by portfolio "
+            f"constraints (cooldown / exposure cap / concurrent-position cap — "
+            f"mirrors execute.py.check_limits) before ever reaching execution. "
+            f"{format_currency(total_fees)} in fees deducted from the {format_count(n_trades)} "
+            f"placed trades' P&L. Slippage assumption is unconfirmed — see config.py "
+            f"SLIPPAGE_PCT comment."
         )
 
     subtitle = (
@@ -337,8 +472,17 @@ def run_replay(
     variant_arg: str,
     period: str = "30d",
     db_path: Path | None = None,
+    fee_pct: float = TAKER_FEE_PCT,
+    slippage_pct: float = SLIPPAGE_PCT,
+    apply_constraints: bool = True,
 ) -> tuple[str, list[SimulatedTrade]]:
-    """Run replay end-to-end. Returns (markdown_report, simulated_trades)."""
+    """Run replay end-to-end. Returns (markdown_report, simulated_trades).
+
+    fee_pct/slippage_pct default to the real config assumptions — this is
+    the CLI/report path, unlike replay_variant's zero defaults. Set
+    apply_constraints=False to get raw unconstrained candidates (e.g. for
+    comparing against the constrained result).
+    """
     if not period.endswith("d"):
         raise ValueError(f"period must end in 'd' (e.g. '30d'), got {period!r}")
     days = int(period[:-1])
@@ -356,7 +500,8 @@ def run_replay(
                     continue
                 trades.extend(
                     replay_variant(
-                        conn, name, variant, WATCHED_SYMBOLS, start, end
+                        conn, name, variant, WATCHED_SYMBOLS, start, end,
+                        fee_pct=fee_pct, slippage_pct=slippage_pct,
                     )
                 )
         else:
@@ -366,17 +511,30 @@ def run_replay(
                     f"Use --variant=null to replay all enabled variants."
                 )
             v = STRATEGY_VARIANTS[variant_arg]
-            trades = replay_variant(conn, variant_arg, v, WATCHED_SYMBOLS, start, end)
+            trades = replay_variant(
+                conn, variant_arg, v, WATCHED_SYMBOLS, start, end,
+                fee_pct=fee_pct, slippage_pct=slippage_pct,
+            )
 
         bars_rows = _bars_summary(conn, WATCHED_SYMBOLS, start, end)
+
+    if apply_constraints and trades:
+        trades = apply_portfolio_constraints(trades)
+
+    n_accepted = sum(1 for t in trades if t.accepted)
+    n_rejected = len(trades) - n_accepted
 
     finished = datetime.now(timezone.utc)
     elapsed_s = (finished - started).total_seconds()
 
     run_phases: list[list[str]] = [
         ["fetch", fetch_status, "0.0s", "no fetch this run"],
-        ["signals", signals_status, "0.0s", f"{len(trades)} simulated trades"],
-        ["execute", execute_status, "0.0s", "replay does not call execute"],
+        ["signals", signals_status, "0.0s", f"{len(trades)} candidate signals"],
+        [
+            "execute", execute_status, "0.0s",
+            f"{n_accepted} placed, {n_rejected} rejected — constraints simulated "
+            f"in-memory (mirrors execute.py.check_limits); execute.py itself not called",
+        ],
         ["analytics", analytics_status, f"{elapsed_s:.2f}s", "report rendered"],
     ]
 
