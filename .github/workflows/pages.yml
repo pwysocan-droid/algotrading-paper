@@ -3,12 +3,24 @@ name: Deploy Pages
 # Replaces the legacy "deploy from branch" Pages build, which failed
 # ~1-in-3 runs with "Deployment failed, try again later" — a concurrency
 # collision from the VPS cron pushing to main every 5 minutes, each push
-# spinning up an overlapping deployment. concurrency.cancel-in-progress
-# below is GitHub's documented fix: a new push cancels the stale
-# in-flight deployment instead of racing it.
+# racing an overlapping deployment.
+#
+# concurrency.cancel-in-progress (below) turned out to be necessary but
+# not sufficient: GitHub's Pages deployment *backend* still rejects a new
+# deployment if the previous one hasn't settled, independent of Actions-
+# level concurrency. Empirically, 5 minutes apart isn't enough breathing
+# room; still failed ~30-45% of runs with cancel-in-progress alone.
+#
+# Fix: debounce in the first step. Skip the deploy (clean success, not a
+# failure) if the last successful deploy was under DEBOUNCE_MINUTES ago.
+# Deliberately NOT using `on: schedule` to get a slower cadence — GitHub
+# Actions schedules on this repo are already documented (decision-log.md
+# 2026-05-18) as unreliable at anything near 5-15 min ("5-min schedules
+# on public repos with bot-only commits operate at 3-5%"). Same lesson
+# applied here: stay on the reliable push trigger, throttle ourselves.
 #
 # Artifact is the whole repo root, matching the legacy build's behavior
-# exactly, so existing links (e.g. .../algotrading-paper/surface/) keep
+# exactly — existing links (e.g. .../algotrading-paper/surface/) keep
 # working unchanged.
 
 on:
@@ -24,6 +36,10 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
+
+env:
+  DEBOUNCE_MINUTES: 10
 
 jobs:
   deploy:
@@ -32,10 +48,45 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Debounce against the last successful deploy
+        id: debounce
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LAST_SUCCESS=$(gh run list \
+            --repo "${{ github.repository }}" \
+            --workflow="Deploy Pages" \
+            --status=success \
+            --limit=1 \
+            --json createdAt \
+            --jq '.[0].createdAt // empty')
+
+          if [ -z "$LAST_SUCCESS" ]; then
+            echo "no prior successful deploy found — proceeding"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LAST_EPOCH=$(date -d "$LAST_SUCCESS" +%s)
+          NOW_EPOCH=$(date -u +%s)
+          MINUTES_SINCE=$(( (NOW_EPOCH - LAST_EPOCH) / 60 ))
+          echo "minutes since last successful deploy: ${MINUTES_SINCE}"
+
+          if [ "$MINUTES_SINCE" -lt "$DEBOUNCE_MINUTES" ]; then
+            echo "within ${DEBOUNCE_MINUTES}min debounce window — skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.debounce.outputs.skip != 'true'
       - uses: actions/configure-pages@v5
+        if: steps.debounce.outputs.skip != 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.debounce.outputs.skip != 'true'
         with:
           path: "."
       - id: deployment
+        if: steps.debounce.outputs.skip != 'true'
         uses: actions/deploy-pages@v4
