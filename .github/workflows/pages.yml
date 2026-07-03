@@ -1,0 +1,41 @@
+name: Deploy Pages
+
+# Replaces the legacy "deploy from branch" Pages build, which failed
+# ~1-in-3 runs with "Deployment failed, try again later" — a concurrency
+# collision from the VPS cron pushing to main every 5 minutes, each push
+# spinning up an overlapping deployment. concurrency.cancel-in-progress
+# below is GitHub's documented fix: a new push cancels the stale
+# in-flight deployment instead of racing it.
+#
+# Artifact is the whole repo root, matching the legacy build's behavior
+# exactly, so existing links (e.g. .../algotrading-paper/surface/) keep
+# working unchanged.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+      - id: deployment
+        uses: actions/deploy-pages@v4
