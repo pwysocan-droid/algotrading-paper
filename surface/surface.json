@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-06T23:55:06Z",
+  "generated_at": "2026-07-07T00:00:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-06T23:55:04.157298+00:00",
+    "last_run_iso": "2026-07-07T00:00:05.073287+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-06 · 23:55 UTC",
+    "last_run_human_date": "2026-07-07 · 00:00 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "12754 of 12773 ok · 99.9%",
+    "uptime_recent": "12755 of 12774 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -88,13 +88,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "260,623",
+      "count": "260,628",
       "delta": "+1509",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "260623"
+      "value": "260628"
     },
     {
       "name": "bar coverage",
@@ -108,13 +108,13 @@
     },
     {
       "name": "cron runs",
-      "count": "12,773",
+      "count": "12,774",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "12773"
+      "value": "12774"
     },
     {
       "name": "llm calls",
@@ -195,10 +195,10 @@
     },
     {
       "when": "mon 7/6",
-      "what": "week 7 · LLM news sentiment · now",
+      "what": "week 7 · LLM news sentiment",
       "tag": "build",
-      "tag_class": "teal",
-      "row_class": "now"
+      "tag_class": "build",
+      "row_class": null
     },
     {
       "when": "sun 7/12",
