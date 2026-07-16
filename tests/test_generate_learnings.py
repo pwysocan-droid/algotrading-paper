@@ -122,3 +122,75 @@ def test_corrupt_existing_ledger_regenerates(sandbox: Path) -> None:
     (sandbox / "surface" / "learnings.json").write_text("not json")
     fake = _FakeClient(EXTRACTION)
     assert gl.generate(client=fake, now=datetime(2026, 7, 16, tzinfo=timezone.utc)) is True
+
+
+# --- Idea foundry ------------------------------------------------------------
+
+
+def test_foundry_prompt_embeds_registry_and_lenses(tmp_path, monkeypatch):
+    from scripts import idea_foundry as f
+
+    registry = {
+        "failure_lessons": ["FEE FLOOR: lesson text"],
+        "ideas": [
+            {"name": "old_idea", "lineage": "retail X", "verdict": "dead",
+             "epitaph": "it died because Y"},
+        ],
+    }
+    prompt = f.build_prompt(registry)
+    assert "FEE FLOOR: lesson text" in prompt
+    assert "old_idea" in prompt and "it died because Y" in prompt
+    for key, _ in f.LENSES:
+        assert key in prompt
+    assert "kill_criterion" in prompt
+
+
+def test_foundry_round_numbering(tmp_path, monkeypatch):
+    from scripts import idea_foundry as f
+
+    monkeypatch.setattr(f, "FOUNDRY_DIR", tmp_path)
+    assert f._next_round_number() == 1
+    (tmp_path / "round-001.json").write_text("{}")
+    (tmp_path / "round-002.json").write_text("{}")
+    assert f._next_round_number() == 3
+
+
+def test_foundry_round_writes_artifacts(tmp_path, monkeypatch):
+    from scripts import idea_foundry as f
+    from scripts.idea_foundry import FoundryIdea, FoundryRound
+
+    monkeypatch.setattr(f, "FOUNDRY_DIR", tmp_path)
+    monkeypatch.setattr(f, "REGISTRY_PATH", tmp_path / "dead-ideas.json")
+    (tmp_path / "dead-ideas.json").write_text(json.dumps({
+        "failure_lessons": ["lesson"], "ideas": [],
+    }))
+
+    round_obj = FoundryRound(
+        round_thesis="Explore the unexplored.",
+        ideas=[
+            FoundryIdea(
+                name=f"idea_{k}", lens=lens_key,
+                mechanism="m", lineage_check="not a descendant of anything",
+                entry_rule="do x", params={"p": 1},
+                expected_fire_rate="0.1/day", fee_survival="moves >1%",
+                kill_criterion="edge/slot < 0",
+            )
+            for k, (lens_key, _) in enumerate(f.LENSES)
+        ],
+    )
+
+    class _R:
+        parsed = round_obj
+        model = "claude-test"
+
+    class _C:
+        def complete_structured(self, **kw):
+            assert kw["called_from"] == "idea_foundry"
+            return _R()
+
+    out = f.run_round(client=_C(), now=datetime(2026, 7, 17, tzinfo=timezone.utc))
+    assert out.name == "round-001.md"
+    assert (tmp_path / "round-001.json").exists()
+    md = out.read_text()
+    assert "Explore the unexplored." in md
+    assert "idea_0" in md and "Kill criterion" in md

@@ -103,6 +103,49 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-16 — The foundry: the aggressive-iteration phase begins
+
+The operator named the design intent tonight, and the record supports
+it: the sequence was always **canon first → documented failure →
+aggressive multi-perspective iteration toward ways of working that
+didn't exist in this context before.** The textbook strategies were
+the control variable; the gauntlet's five canon-descended candidates
+were the second control. Both have now failed on the record with
+named mechanisms (fee floor, constraint dominance, gross-positive/
+fee-negative). The substrate the aggression phase needed — the
+failure evidence — exists. This entry starts the phase.
+
+**The mechanism: the idea foundry** (scripts/idea_foundry.py).
+Recurring synthesis rounds, each producing 5 ideas from 5 mandatory
+DIFFERENT lenses (information theory, cross-domain imports,
+microstructure-from-OHLCV, behavioral/calendar, meta-self-referential
+— the system observing itself), each idea forbidden from descending
+from any lineage in the dead-ideas registry
+(reviews/foundry/dead-ideas.json), each required to engage the
+failure lessons and to state its own kill criterion. Rounds are
+falsified by the automated gauntlet; deaths get epitaphs in the
+registry; the registry constrains the next round. Iteration
+compounds instead of repeating.
+
+**Resolving the tension with the adaptation ladder:** the ladder's
+one-rung-at-a-time discipline governs the LIVE roster, which stays
+at 3 arms (placebo + 2). The foundry is backtest-only exploration —
+rung-1 territory, where the capital discipline explicitly licenses
+recklessness ("spend the cheap part recklessly": a foundry round
+costs ~$0.50 of synthesis and some compute). Wild in the lab,
+boring in production. An idea only touches the live roster by
+out-scoring a live arm in the gauntlet AND surviving the same
+registration discipline as everything else.
+
+**Failure mode this entry pre-names:** foundry theater — rounds that
+generate exotic-sounding ideas that are dead lineages wearing
+costumes. The lineage_check field and the Friday review's drift
+check are the guards: if two consecutive rounds produce only
+registry-shaped deaths with no novel mechanism, the foundry prompt
+is the problem, and that gets its own entry.
+
+---
+
 ## 2026-07-16 — Gauntlet results: every candidate negative net of fees; top 2 registered as A/B arms, not winners
 
 The five LLM-surfaced candidates (reviews/candidates-2026-07-16.md) ran
