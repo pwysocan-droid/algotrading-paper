@@ -39,3 +39,8 @@ the resolution is non-trivial).
   detail: caught, rotated, unlogged
   when: open
   kind: log
+
+- thing: "Nightly skeptic · 2026-07-16"
+  detail: "The pipeline is a metronome with no conductor. Seven consecutive clean runs, 81–82 bars added eac..."
+  when: open
+  kind: ops
