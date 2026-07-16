@@ -48,32 +48,34 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Debounce against the last successful deploy
+      - name: Debounce against live site freshness
         id: debounce
-        env:
-          GH_TOKEN: ${{ github.token }}
+        # Measures what we actually care about — how stale the deployed
+        # site is — instead of workflow-run history. The previous
+        # implementation checked the last *successful run*, but skipped
+        # runs also conclude success, so after one deploy every later
+        # run saw a fresh "success" and skipped: the site froze
+        # (discovered 2026-07-16 serving 3-day-old data). Site age is
+        # self-correcting: fresh → skip; stale or unreachable → deploy.
         run: |
-          LAST_SUCCESS=$(gh run list \
-            --repo "${{ github.repository }}" \
-            --workflow="Deploy Pages" \
-            --status=success \
-            --limit=1 \
-            --json createdAt \
-            --jq '.[0].createdAt // empty')
+          GENERATED_AT=$(curl -sf --max-time 15 \
+            "https://pwysocan-droid.github.io/algotrading-paper/surface/surface.json?t=$(date +%s)" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['generated_at'])" \
+            2>/dev/null || echo "")
 
-          if [ -z "$LAST_SUCCESS" ]; then
-            echo "no prior successful deploy found — proceeding"
+          if [ -z "$GENERATED_AT" ]; then
+            echo "live site unreachable or unparsable — deploying"
             echo "skip=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          LAST_EPOCH=$(date -d "$LAST_SUCCESS" +%s)
+          SITE_EPOCH=$(date -d "$GENERATED_AT" +%s 2>/dev/null || echo 0)
           NOW_EPOCH=$(date -u +%s)
-          MINUTES_SINCE=$(( (NOW_EPOCH - LAST_EPOCH) / 60 ))
-          echo "minutes since last successful deploy: ${MINUTES_SINCE}"
+          MINUTES_STALE=$(( (NOW_EPOCH - SITE_EPOCH) / 60 ))
+          echo "live surface.json is ${MINUTES_STALE}min old (${GENERATED_AT})"
 
-          if [ "$MINUTES_SINCE" -lt "$DEBOUNCE_MINUTES" ]; then
-            echo "within ${DEBOUNCE_MINUTES}min debounce window — skipping"
+          if [ "$MINUTES_STALE" -lt "$DEBOUNCE_MINUTES" ]; then
+            echo "site fresh (< ${DEBOUNCE_MINUTES}min) — skipping"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
