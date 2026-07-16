@@ -1,28 +1,28 @@
 {
   "summary": {
     "due_7d": 1,
-    "due_14d": 2,
-    "open": 9,
+    "due_14d": 1,
+    "open": 10,
     "done_this_week": 0
   },
   "gates": [
     {
-      "id": "gate:Week 2 strategy-roster review",
-      "when": "10d",
-      "when_class": "urgent",
-      "thing": "Week 2 strategy-roster review",
-      "detail": "Bollinger and MA-crossover survive, or replaced",
+      "id": "gate:Phase 1 review — OVERDUE",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Phase 1 review — OVERDUE",
+      "detail": "review date 2026-07-12 passed unwritten · phase1-review.md decides extend-or-archive",
       "kind": "gate",
       "promoted": true
     }
   ],
   "ops": [
     {
-      "id": "ops:Friday adversarial review · #1",
-      "when": "5d",
+      "id": "ops:Friday adversarial review · #2",
+      "when": "1d",
       "when_class": "urgent",
-      "thing": "Friday adversarial review · #1",
-      "detail": "first operational rhythm · bear case only",
+      "thing": "Friday adversarial review · #2",
+      "detail": "last full review W21 (2026-05-23) · Fridays 07-03 and 07-10 were missed · next 2026-07-17",
       "kind": "ops",
       "promoted": false
     },
@@ -31,7 +31,7 @@
       "when": "open",
       "when_class": "open",
       "thing": "Future-self letters · 2026-04-26 entries",
-      "detail": "convention set, letters pending",
+      "detail": "convention set, letters pending since April",
       "kind": "ops",
       "promoted": false
     },

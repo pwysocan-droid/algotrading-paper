@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-16T21:10:05Z
+2026-07-16T21:15:05Z
 
 7 surfaces tracked
 
@@ -25,13 +25,13 @@ Phase 1  ·  Week 1
 
 ## § 02 — Pending decisions · 5 items
 
-▸ Week 2 strategy-roster review — Bollinger and MA-crossover survive, or replaced
+▸ Phase 1 review — OVERDUE — review date 2026-07-12 passed unwritten · phase1-review.md decides extend-or-archive
 
-▸ Friday adversarial review · #1 — first operational rhythm · bear case only
+▸ Friday adversarial review · #2 — last full review W21 (2026-05-23) · Fridays 07-03 and 07-10 were missed · next 2026-07-17
 
-▸ Future-self letters · 2026-04-26 entries — convention set, letters pending
+▸ Decision-log entry · .env.template exposure — caught, rotated, unlogged since May · nightly skeptic's first TOMORROW pick
 
-▸ Decision-log entry · .env.template exposure — caught, rotated, unlogged
+▸ Future-self letters · 2026-04-26 entries — convention set, letters pending since April
 
 ▸ Nightly skeptic · 2026-07-16 — The pipeline is a metronome with no conductor. Seven consecutive clean runs, 81–82 bars added eac...
 
