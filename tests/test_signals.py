@@ -50,7 +50,15 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "macross_fast", "macross_slow", "macross_veryfast",
         "macross_veryslow", "macross_balanced",
     }
-    assert set(STRATEGY_VARIANTS.keys()) == retired | {"null_baseline"}
+    candidates = {
+        "liquidation_cascade_reclaim", "btc_leads_alt_lag_capture",
+        "dead_zone_range_break", "volume_thrust_regime_shift",
+        "weekend_illiquidity_momentum",
+    }
+    assert set(STRATEGY_VARIANTS.keys()) == retired | candidates | {"null_baseline"}
+    assert all(
+        STRATEGY_VARIANTS[name].get("enabled") is False for name in candidates
+    ), "candidates stay disabled until the gauntlet's top-2 registration"
 
     assert STRATEGY_VARIANTS["null_baseline"]["enabled"] is True, (
         "the placebo arm is the only live variant (phase1-review.md § 5 term 1)"
@@ -263,3 +271,218 @@ class TestNullStrategy:
 
     def test_empty_bars_returns_none(self) -> None:
         assert signals.null_strategy([], {"p": 1.0}, {}) is None
+
+
+# --- LLM-surfaced candidates (reviews/candidates-2026-07-16.md) ---------------
+
+
+def _bar(symbol: str, ts: str, o: float, h: float, l: float, c: float, v: float) -> BarRow:
+    return BarRow(symbol=symbol, timestamp=ts, open=o, high=h, low=l, close=c, volume=v)
+
+
+def _flat_series(symbol: str, n: int, price: float = 100.0, vol: float = 100.0,
+                 start_iso: str = "2026-07-13T00:00:00+00:00") -> list[BarRow]:
+    from datetime import datetime, timedelta
+    start = datetime.fromisoformat(start_iso)
+    out = []
+    for i in range(n):
+        ts = (start + timedelta(minutes=5 * i)).isoformat()
+        out.append(_bar(symbol, ts, price, price + 0.01, price - 0.01, price, vol))
+    return out
+
+
+class TestCascadeReclaim:
+    def _setup(self, reclaim_close: float, last_vol: float = 200.0) -> list[BarRow]:
+        bars = _flat_series("BTC/USD", 300)
+        # inject mild noise so sigma > 0 but small
+        for i in range(50, 250):
+            b = bars[i]
+            bars[i] = _bar(b.symbol, b.timestamp, 100.0, 100.06, 99.94,
+                           100.0 + (0.03 if i % 2 else -0.03), 100.0)
+        # cascade bar at -3: huge red bar, wide range
+        b = bars[-3]
+        bars[-3] = _bar(b.symbol, b.timestamp, 100.0, 100.5, 89.0, 90.0, 400.0)
+        # pre-cascade bar high defines the reclaim level (~100.01)
+        b = bars[-2]
+        bars[-2] = _bar(b.symbol, b.timestamp, 90.0, 95.0, 89.5, 94.0, 150.0)
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 94.0, reclaim_close + 0.5,
+                        93.5, reclaim_close, last_vol)
+        return bars
+
+    def test_fires_on_confirmed_reclaim(self) -> None:
+        bars = self._setup(reclaim_close=101.0)
+        sig = signals.liquidation_cascade_reclaim(bars, {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_silent_without_reclaim(self) -> None:
+        bars = self._setup(reclaim_close=95.0)  # never reclaims pre-spike high
+        assert signals.liquidation_cascade_reclaim(bars, {}, {}) is None
+
+    def test_silent_without_volume(self) -> None:
+        bars = self._setup(reclaim_close=101.0, last_vol=50.0)
+        assert signals.liquidation_cascade_reclaim(bars, {}, {}) is None
+
+    def test_silent_on_calm_series(self) -> None:
+        assert signals.liquidation_cascade_reclaim(_flat_series("BTC/USD", 300), {}, {}) is None
+
+
+class TestBtcLag:
+    def _alt_and_btc(self, btc_jump: float, alt_jump: float, alt_vol: float = 200.0):
+        alt = _flat_series("SOL/USD", 40, price=100.0)
+        btc = _flat_series("BTC/USD", 40, price=60000.0)
+        # BTC impulses over last 3 bars to a 6-bar closing high
+        for k, mult in ((4, 1.0), (3, 1.004), (2, 1.008), (1, 1.0 + btc_jump)):
+            b = btc[-k]
+            px = 60000.0 * mult
+            btc[-k] = _bar(b.symbol, b.timestamp, px, px + 5, px - 5, px, 100.0)
+        a = alt[-1]
+        alt_px = 100.0 * (1.0 + alt_jump)
+        alt[-1] = _bar(a.symbol, a.timestamp, alt_px, alt_px + 0.1, alt_px - 0.1, alt_px, alt_vol)
+        return alt, btc
+
+    def test_fires_when_alt_lags_btc_impulse(self) -> None:
+        alt, btc = self._alt_and_btc(btc_jump=0.015, alt_jump=0.002)
+        sig = signals.btc_leads_alt_lag_capture(alt, {}, {"btc_bars": btc})
+        assert sig is not None and sig.side == "buy"
+
+    def test_silent_when_alt_already_moved(self) -> None:
+        alt, btc = self._alt_and_btc(btc_jump=0.015, alt_jump=0.012)
+        assert signals.btc_leads_alt_lag_capture(alt, {}, {"btc_bars": btc}) is None
+
+    def test_silent_without_btc_context(self) -> None:
+        alt, _ = self._alt_and_btc(btc_jump=0.015, alt_jump=0.002)
+        assert signals.btc_leads_alt_lag_capture(alt, {}, {}) is None
+
+    def test_silent_for_non_alt_symbols(self) -> None:
+        alt, btc = self._alt_and_btc(btc_jump=0.015, alt_jump=0.002)
+        eth = [_bar("ETH/USD", b.timestamp, b.open, b.high, b.low, b.close, b.volume) for b in alt]
+        assert signals.btc_leads_alt_lag_capture(eth, {}, {"btc_bars": btc}) is None
+
+    def test_no_lookahead_into_btc_future(self) -> None:
+        alt, btc = self._alt_and_btc(btc_jump=0.015, alt_jump=0.002)
+        # BTC bars strictly after the alt's latest timestamp must be ignored:
+        from datetime import datetime, timedelta
+        future_ts = (datetime.fromisoformat(alt[-1].timestamp) + timedelta(minutes=5)).isoformat()
+        crazy = _bar("BTC/USD", future_ts, 90000.0, 90001.0, 89999.0, 90000.0, 100.0)
+        sig_with = signals.btc_leads_alt_lag_capture(alt, {}, {"btc_bars": btc})
+        sig_with_future = signals.btc_leads_alt_lag_capture(alt, {}, {"btc_bars": btc + [crazy]})
+        assert (sig_with is None) == (sig_with_future is None)
+
+
+class TestDeadzoneBreak:
+    def _session(self, coil_pct: float = 0.01, break_close: float | None = None,
+                 break_vol: float = 300.0):
+        # bars from 00:00 to 08:00 UTC same day + enough history before
+        from datetime import datetime, timedelta
+        start = datetime.fromisoformat("2026-07-13T00:00:00+00:00") - timedelta(hours=24)
+        bars = []
+        i = 0
+        t = start
+        while t < datetime.fromisoformat("2026-07-14T08:05:00+00:00"):
+            hour = t.hour
+            day = t.date().isoformat()
+            if day == "2026-07-14" and 0 <= hour < 6:
+                lo, hi = 100.0, 100.0 * (1 + coil_pct)
+                px = (lo + hi) / 2
+                bars.append(_bar("ETH/USD", t.isoformat(), px, hi, lo, px, 40.0))  # thin
+            else:
+                bars.append(_bar("ETH/USD", t.isoformat(), 100.0, 100.4, 99.6, 100.0, 100.0))
+            t += timedelta(minutes=5)
+            i += 1
+        if break_close is not None:
+            last = bars[-1]
+            bars[-1] = _bar("ETH/USD", last.timestamp, 100.0, break_close + 0.2,
+                            99.9, break_close, break_vol)
+        return bars
+
+    def test_fires_on_clean_session_break(self) -> None:
+        bars = self._session(coil_pct=0.01, break_close=102.0)
+        sig = signals.dead_zone_range_break(bars, {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_silent_when_coil_too_wide(self) -> None:
+        bars = self._session(coil_pct=0.03, break_close=104.0)
+        assert signals.dead_zone_range_break(bars, {}, {}) is None
+
+    def test_silent_without_volume_expansion(self) -> None:
+        bars = self._session(coil_pct=0.01, break_close=102.0, break_vol=50.0)
+        assert signals.dead_zone_range_break(bars, {}, {}) is None
+
+    def test_silent_outside_session_window(self) -> None:
+        bars = self._session(coil_pct=0.01, break_close=102.0)
+        # shift everything +12h so the latest bar lands ~20:00 UTC
+        from datetime import datetime, timedelta
+        shifted = [
+            _bar(b.symbol,
+                 (datetime.fromisoformat(b.timestamp) + timedelta(hours=12)).isoformat(),
+                 b.open, b.high, b.low, b.close, b.volume)
+            for b in bars
+        ]
+        assert signals.dead_zone_range_break(shifted, {}, {}) is None
+
+
+class TestVolThrust:
+    def _setup(self, confirm_close: float, thrust_vol: float = 600.0):
+        bars = _flat_series("LINK/USD", 300, price=100.0, vol=100.0)
+        # natural volume noise so the z-score denominator is realistic
+        for i in range(len(bars)):
+            b = bars[i]
+            bars[i] = _bar(b.symbol, b.timestamp, b.open, b.high, b.low, b.close,
+                           100.0 + (i % 20))
+        # rising drift so close > vwap at the end
+        for i in range(250, 298):
+            b = bars[i]
+            px = 100.0 + (i - 250) * 0.02
+            bars[i] = _bar(b.symbol, b.timestamp, px, px + 0.05, px - 0.05, px + 0.02,
+                           100.0 + (i % 20))
+        # thrust bar at -2: big volume, up body >= 0.8%
+        b = bars[-2]
+        bars[-2] = _bar(b.symbol, b.timestamp, 101.0, 102.2, 100.9, 102.0, thrust_vol)
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 102.0, confirm_close + 0.1,
+                        101.8, confirm_close, 150.0)
+        return bars
+
+    def test_fires_on_confirmed_thrust(self) -> None:
+        sig = signals.volume_thrust_regime_shift(self._setup(confirm_close=102.4), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_silent_when_confirmation_rejects(self) -> None:
+        assert signals.volume_thrust_regime_shift(self._setup(confirm_close=101.5), {}, {}) is None
+
+    def test_silent_without_thrust_volume(self) -> None:
+        assert signals.volume_thrust_regime_shift(
+            self._setup(confirm_close=102.4, thrust_vol=120.0), {}, {}
+        ) is None
+
+
+class TestWeekendMomentum:
+    def _setup(self, start_iso: str, mom: float = 0.02):
+        # 2026-07-18 is a Saturday
+        bars = _flat_series("AVAX/USD", 90, price=100.0, start_iso=start_iso)
+        # strong steady climb over the last 13 bars, green persistence
+        for k in range(13, 0, -1):
+            i = len(bars) - k
+            b = bars[i]
+            px = 100.0 * (1 + mom * (13 - k) / 12)
+            bars[i] = _bar(b.symbol, b.timestamp, px - 0.05, px + 0.05, px - 0.1, px, 100.0)
+        return bars
+
+    def test_fires_on_weekend_momentum(self) -> None:
+        bars = self._setup("2026-07-18T00:00:00+00:00", mom=0.02)
+        sig = signals.weekend_illiquidity_momentum(bars, {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_silent_on_weekday(self) -> None:
+        bars = self._setup("2026-07-13T00:00:00+00:00", mom=0.02)  # Monday
+        assert signals.weekend_illiquidity_momentum(bars, {}, {}) is None
+
+    def test_silent_below_momentum_threshold(self) -> None:
+        bars = self._setup("2026-07-18T00:00:00+00:00", mom=0.005)
+        assert signals.weekend_illiquidity_momentum(bars, {}, {}) is None
+
+
+def test_all_candidates_registered() -> None:
+    for key in ("cascade_reclaim", "btc_lag", "deadzone_break", "vol_thrust", "weekend_momentum"):
+        assert key in signals.STRATEGY_REGISTRY

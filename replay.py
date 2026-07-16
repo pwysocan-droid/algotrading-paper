@@ -201,6 +201,18 @@ def replay_variant(
     fn = get_strategy_fn(strategy_name)
     params = variant.get("params", {})
 
+    # Cross-symbol context (context_keys=['btc_bars']): preload BTC bars
+    # once; per step, slice to timestamps <= the signal bar's timestamp so
+    # the look-ahead guard holds for the context series too.
+    wants_btc = "btc_bars" in variant.get("context_keys", [])
+    btc_bars: list[BarRow] = []
+    btc_ts: list[str] = []
+    if wants_btc:
+        import bisect
+
+        btc_bars = load_bars_in_range(conn, "BTC/USD", start, end)
+        btc_ts = [b.timestamp for b in btc_bars]
+
     out: list[SimulatedTrade] = []
     for symbol in symbols:
         bars = load_bars_in_range(conn, symbol, start, end)
@@ -208,7 +220,13 @@ def replay_variant(
             continue
         for i in range(len(bars) - 1):
             window = bars[: i + 1]
-            sig: Signal | None = fn(window, params, {})
+            ctx: dict[str, Any] = {}
+            if wants_btc:
+                import bisect
+
+                cut = bisect.bisect_right(btc_ts, window[-1].timestamp)
+                ctx["btc_bars"] = btc_bars[:cut]
+            sig: Signal | None = fn(window, params, ctx)
             if sig is None:
                 continue
             entry_bar = bars[i + 1]
