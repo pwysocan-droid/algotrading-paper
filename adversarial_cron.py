@@ -30,7 +30,7 @@ trader.db write). See vps/cron-skeptic.sh and vps/crontab.txt.
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import db
@@ -156,9 +156,9 @@ def run_nightly(
     prompt = build_prompt(runs, pending, ts)
 
     if client is None:
-        from claude_client import ClaudeClient
+        from claude_client import ClaudeClient, model_for_role
 
-        client = ClaudeClient(db_path=db_path)
+        client = ClaudeClient(model=model_for_role("nightly"), db_path=db_path)
     result = client.complete(prompt, called_from="adversarial_cron", system=SKEPTIC_SYSTEM)
 
     out_dir = repo_root / "reviews" / "nightly"
@@ -179,9 +179,145 @@ def run_nightly(
     return out_path
 
 
+def _extract_template_prompt(template_path: Path) -> str:
+    """The 4G prompt lives in the template file's fenced code block —
+    the file is the spec, so read it rather than duplicating it here."""
+    text = template_path.read_text()
+    start = text.index("```\n") + 4
+    end = text.index("\n```", start)
+    return text[start:end]
+
+
+def _gather_friday_inputs(
+    conn: sqlite3.Connection, week_start: datetime, repo_root: Path
+) -> dict[str, str]:
+    since = week_start.isoformat()
+
+    trades = conn.execute(
+        """
+        SELECT variant_name, symbol, side, entry_price, exit_price,
+               exit_reason, pnl_usd, pnl_pct, entry_time, exit_time
+          FROM trades WHERE entry_time >= ? ORDER BY entry_time DESC
+        """,
+        (since,),
+    ).fetchall()
+    trade_lines = [
+        "  " + " | ".join(str(r[k]) for k in r.keys()) for r in trades
+    ] or ["  (no trades this week — zero rows)"]
+
+    runs = conn.execute(
+        "SELECT status, COUNT(*) AS n FROM runs WHERE started_at >= ? GROUP BY status",
+        (since,),
+    ).fetchall()
+    runs_lines = [f"  {r['status']}: {r['n']}" for r in runs] or ["  (no runs)"]
+
+    decisions = conn.execute(
+        "SELECT action, COUNT(*) AS n FROM decisions WHERE decided_at >= ? GROUP BY action",
+        (since,),
+    ).fetchall()
+    decision_lines = [f"  {r['action']}: {r['n']}" for r in decisions] or [
+        "  (no decisions — execution layer has never run live)"
+    ]
+    reasons = conn.execute(
+        """
+        SELECT DISTINCT reason FROM decisions
+         WHERE decided_at >= ? AND action = 'rejected' LIMIT 5
+        """,
+        (since,),
+    ).fetchall()
+    if reasons:
+        decision_lines.append("  top rejection reasons:")
+        decision_lines.extend(f"    - {r['reason']}" for r in reasons)
+
+    # Promotions: none can exist until compare.py + the promotion flow are
+    # built (recommendations table is empty), so report honestly.
+    n_promoted = conn.execute(
+        "SELECT COUNT(*) AS n FROM recommendations WHERE promoted = 1"
+    ).fetchone()["n"]
+    promotions = (
+        f"{n_promoted} promoted recommendations exist"
+        if n_promoted
+        else "none — no promotion machinery has run yet"
+    )
+
+    # Prior bear case: the newest reviews/*-friday.md
+    prior_files = sorted((repo_root / "reviews").glob("*-friday.md"))
+    if prior_files:
+        prior = prior_files[-1].read_text()
+    else:
+        prior = "none — first Friday review"
+
+    return {
+        "TRADE_HISTORY_TABLE": "\n".join(trade_lines),
+        "RUNS_LOG_SUMMARY": "\n".join(runs_lines),
+        "DECISIONS_TABLE": "\n".join(decision_lines),
+        "PROMOTIONS_THIS_WEEK": promotions,
+        "PRIOR_BEAR_CASE": prior,
+    }
+
+
+def run_friday(
+    client=None,
+    db_path: Path | None = None,
+    repo_root: Path = REPO_ROOT,
+    now: datetime | None = None,
+) -> Path:
+    """Generate the full 4G Friday bear-case review from the committed
+    template (reviews/templates/friday-bear-case.md), filled with the
+    week's real data, saved verbatim per the template's operator notes.
+    """
+    ts = now or datetime.now(timezone.utc)
+    iso = ts.isocalendar()
+    week_label = f"{iso.year}-W{iso.week:02d}"
+    week_start = ts - timedelta(days=7)
+
+    prompt_template = _extract_template_prompt(
+        repo_root / "reviews" / "templates" / "friday-bear-case.md"
+    )
+
+    with db.connect(db_path) as conn:
+        inputs = _gather_friday_inputs(conn, week_start, repo_root)
+
+    prompt = prompt_template
+    prompt = prompt.replace("{{WEEK_NUMBER - 1}}", str(iso.week - 1))
+    prompt = prompt.replace("{{WEEK_NUMBER}}", str(iso.week))
+    prompt = prompt.replace(
+        "{{WEEK_RANGE}}", f"{week_start.date().isoformat()} → {ts.date().isoformat()}"
+    )
+    for key, value in inputs.items():
+        prompt = prompt.replace("{{" + key + "}}", value)
+
+    if client is None:
+        from claude_client import ClaudeClient, model_for_role
+
+        client = ClaudeClient(model=model_for_role("review"), db_path=db_path)
+    result = client.complete(
+        prompt, called_from="friday_bear_case", max_tokens=8192
+    )
+
+    out_path = repo_root / "reviews" / f"{week_label}-friday.md"
+    # Verbatim per the template's operator notes — editing defeats the
+    # methodology. Only a provenance footer is appended.
+    out_path.write_text(
+        f"{result.text}\n\n---\n\n"
+        f"machine-generated · model {result.model} · called_from friday_bear_case "
+        f"· logged to llm_calls\n"
+    )
+    return out_path
+
+
 def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Adversarial reviews (nightly + Friday)")
+    parser.add_argument(
+        "--friday", action="store_true",
+        help="run the full 4G Friday bear-case review instead of the nightly skeptic",
+    )
+    args = parser.parse_args()
+
     db.migrate()
-    path = run_nightly()
+    path = run_friday() if args.friday else run_nightly()
     print(f"wrote {path}")
     return 0
 

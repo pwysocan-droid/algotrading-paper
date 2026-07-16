@@ -50,10 +50,36 @@ import db
 load_dotenv()
 
 
-# Verified against https://platform.claude.com/docs/en/docs/about-claude/models/overview
-# at build time (2026-05-02). Current production Sonnet alias.
-DEFAULT_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
+# Model routing per LLM role — decision-log 2026-07-16 (build queue: "Model
+# routing per LLM role"). The nightly skeptic runs 365x/yr on a small prompt
+# where Haiku is plenty; the weekly review and candidate synthesis are where
+# depth pays, so they get the frontier default. IDs verified against the
+# platform model catalog on 2026-07-16 (Haiku 4.5 $1/$5 per MTok, Opus 4.8
+# $5/$25 per MTok).
+#
+# Resolution order per role: CLAUDE_MODEL_<ROLE> env > CLAUDE_MODEL env >
+# the per-role default below. CLAUDE_MODEL alone (the pre-existing override)
+# still pins every role to one model, preserving old behavior for anyone
+# relying on it.
+ROLE_MODEL_DEFAULTS = {
+    "nightly": "claude-haiku-4-5",
+    "review": "claude-opus-4-8",
+    "synthesis": "claude-opus-4-8",
+}
+DEFAULT_MODEL = os.environ.get("CLAUDE_MODEL", "claude-opus-4-8")
 DEFAULT_MAX_TOKENS = 4096
+
+
+def model_for_role(role: str) -> str:
+    """Resolve the model for a named LLM role (see ROLE_MODEL_DEFAULTS)."""
+    env_override = os.environ.get(f"CLAUDE_MODEL_{role.upper()}")
+    if env_override:
+        return env_override
+    global_override = os.environ.get("CLAUDE_MODEL")
+    if global_override:
+        return global_override
+    return ROLE_MODEL_DEFAULTS.get(role, DEFAULT_MODEL)
+
 
 T = TypeVar("T", bound=BaseModel)
 

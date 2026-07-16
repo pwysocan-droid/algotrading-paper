@@ -26,7 +26,10 @@ class _FakeClient:
         self.last_system: str | None = None
         self.last_called_from: str | None = None
 
-    def complete(self, prompt: str, called_from: str, *, system: str | None = None) -> _FakeResult:
+    def complete(
+        self, prompt: str, called_from: str, *,
+        system: str | None = None, max_tokens: int | None = None,
+    ) -> _FakeResult:
         self.last_prompt = prompt
         self.last_system = system
         self.last_called_from = called_from
@@ -162,3 +165,114 @@ def test_long_first_line_truncated(repo: Path, tmp_db: Path) -> None:
     nightly = [r for r in records if str(r["thing"]).startswith("Nightly skeptic")][0]
     assert len(nightly["detail"]) == 100
     assert nightly["detail"].endswith("...")
+
+
+# --- Model routing --------------------------------------------------------
+
+
+def test_model_for_role_defaults() -> None:
+    from claude_client import model_for_role
+
+    assert model_for_role("nightly") == "claude-haiku-4-5"
+    assert model_for_role("review") == "claude-opus-4-8"
+    assert model_for_role("synthesis") == "claude-opus-4-8"
+
+
+def test_model_for_role_env_overrides(monkeypatch) -> None:
+    from claude_client import model_for_role
+
+    monkeypatch.setenv("CLAUDE_MODEL_NIGHTLY", "claude-sonnet-5")
+    assert model_for_role("nightly") == "claude-sonnet-5"
+
+    monkeypatch.delenv("CLAUDE_MODEL_NIGHTLY")
+    monkeypatch.setenv("CLAUDE_MODEL", "claude-sonnet-4-6")
+    assert model_for_role("nightly") == "claude-sonnet-4-6"
+    assert model_for_role("review") == "claude-sonnet-4-6"
+
+
+# --- Friday review --------------------------------------------------------
+
+
+FRIDAY_TEMPLATE = """# Friday adversarial review — bear case prompt template
+
+Docs prose.
+
+## The prompt
+
+```
+You are running the Friday adversarial review for week {{WEEK_NUMBER}}
+({{WEEK_RANGE}}). Prior week: {{WEEK_NUMBER - 1}}.
+
+Trades:
+{{TRADE_HISTORY_TABLE}}
+
+Runs: {{RUNS_LOG_SUMMARY}}
+Decisions: {{DECISIONS_TABLE}}
+Promotions: {{PROMOTIONS_THIS_WEEK}}
+Prior bear case: {{PRIOR_BEAR_CASE}}
+```
+
+## Operator notes (do not include in the prompt to Claude)
+
+- notes here
+"""
+
+
+@pytest.fixture
+def friday_repo(repo: Path) -> Path:
+    tmpl_dir = repo / "reviews" / "templates"
+    tmpl_dir.mkdir(parents=True)
+    (tmpl_dir / "friday-bear-case.md").write_text(FRIDAY_TEMPLATE)
+    return repo
+
+
+def test_run_friday_fills_template_and_writes_review(friday_repo: Path, tmp_db: Path) -> None:
+    fake = _FakeClient(text="The bear case: nothing traded.")
+    now = datetime(2026, 7, 17, 3, 34, tzinfo=timezone.utc)  # ISO week 29, a Friday
+
+    out = adversarial_cron.run_friday(client=fake, db_path=tmp_db, repo_root=friday_repo, now=now)
+
+    assert out == friday_repo / "reviews" / "2026-W29-friday.md"
+    content = out.read_text()
+    assert "The bear case: nothing traded." in content
+    assert "machine-generated" in content
+
+    assert fake.last_called_from == "friday_bear_case"
+    prompt = fake.last_prompt
+    assert "{{" not in prompt, "all template placeholders must be filled"
+    assert "week 29" in prompt
+    assert "Prior week: 28." in prompt
+    assert "none — first Friday review" in prompt
+    assert "no promotion machinery has run yet" in prompt
+
+
+def test_run_friday_uses_prior_review_for_drift_check(friday_repo: Path, tmp_db: Path) -> None:
+    (friday_repo / "reviews" / "2026-W21-friday.md").write_text("Prior bear case body W21.")
+    fake = _FakeClient()
+    now = datetime(2026, 7, 17, tzinfo=timezone.utc)
+
+    adversarial_cron.run_friday(client=fake, db_path=tmp_db, repo_root=friday_repo, now=now)
+
+    assert "Prior bear case body W21." in fake.last_prompt
+
+
+def test_run_friday_includes_week_trades(friday_repo: Path, tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        conn.execute(
+            "INSERT INTO signals (symbol, variant_name, strategy, side, bar_timestamp,"
+            " price_at_signal, reasoning_json, emitted_at)"
+            " VALUES ('BTC/USD', 'null_baseline', 'null', 'buy', '2026-07-15T00:00:00+00:00',"
+            " 100.0, '{}', '2026-07-15T00:00:00+00:00')"
+        )
+        conn.execute(
+            "INSERT INTO trades (signal_id, variant_name, symbol, side, qty, entry_price,"
+            " entry_time, is_real_money, status)"
+            " VALUES (1, 'null_baseline', 'BTC/USD', 'buy', 2.0, 100.0,"
+            " '2026-07-15T00:00:00+00:00', 0, 'open')"
+        )
+    fake = _FakeClient()
+    now = datetime(2026, 7, 17, tzinfo=timezone.utc)
+
+    adversarial_cron.run_friday(client=fake, db_path=tmp_db, repo_root=friday_repo, now=now)
+
+    assert "null_baseline" in fake.last_prompt

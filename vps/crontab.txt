@@ -10,3 +10,9 @@
 # 03:32 sits between the 03:30 and 03:35 fetch cycles so the two jobs
 # never race each other's git operations.
 32 3 * * * /home/trader/algotrading-paper/vps/cron-skeptic.sh >> /home/trader/algotrading-paper/vps/logs/cron-master.log 2>&1
+
+# Fridays at 03:34 UTC: full 4G bear-case review (adversarial_cron.py
+# --friday). Two minutes after the skeptic slot so the jobs never
+# overlap; a missed Friday review is a Phase 1b archive trigger
+# (phase1-review.md § 5), so this runs from cron, not operator memory.
+34 3 * * 5 /home/trader/algotrading-paper/vps/cron-friday.sh >> /home/trader/algotrading-paper/vps/logs/cron-master.log 2>&1
