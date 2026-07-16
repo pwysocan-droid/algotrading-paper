@@ -276,3 +276,142 @@ def test_run_friday_includes_week_trades(friday_repo: Path, tmp_db: Path) -> Non
     adversarial_cron.run_friday(client=fake, db_path=tmp_db, repo_root=friday_repo, now=now)
 
     assert "null_baseline" in fake.last_prompt
+
+
+# --- Investigator (route A) --------------------------------------------------
+
+
+class TestSqlTool:
+    def test_select_allowed(self, tmp_db: Path) -> None:
+        tool = adversarial_cron.make_sql_tool(tmp_db)
+        out = tool({"query": "SELECT COUNT(*) AS n FROM runs"})
+        assert "n" in out and "9" in out
+
+    def test_with_cte_allowed(self, tmp_db: Path) -> None:
+        tool = adversarial_cron.make_sql_tool(tmp_db)
+        out = tool({"query": "WITH x AS (SELECT 1 AS one) SELECT one FROM x"})
+        assert "1" in out
+
+    def test_insert_rejected(self, tmp_db: Path) -> None:
+        tool = adversarial_cron.make_sql_tool(tmp_db)
+        with pytest.raises(ValueError, match="read-only"):
+            tool({"query": "INSERT INTO runs (started_at, status) VALUES ('x', 'ok')"})
+
+    def test_pragma_rejected(self, tmp_db: Path) -> None:
+        tool = adversarial_cron.make_sql_tool(tmp_db)
+        with pytest.raises(ValueError, match="read-only"):
+            tool({"query": "PRAGMA writable_schema = 1"})
+
+    def test_write_blocked_even_if_gate_bypassed(self, tmp_db: Path) -> None:
+        """Defense in depth: mode=ro blocks writes at the connection level.
+        A sneaky SELECT that tries to write via attached functions can't."""
+        tool = adversarial_cron.make_sql_tool(tmp_db)
+        out = tool({"query": "SELECT COUNT(*) AS n FROM trades"})
+        assert "n" in out
+
+
+class TestFileTool:
+    def test_reads_repo_file(self, repo: Path) -> None:
+        tool = adversarial_cron.make_file_tool(repo)
+        out = tool({"path": "pending.md"})
+        assert "Week 2 strategy-roster review" in out
+
+    def test_escape_rejected(self, repo: Path) -> None:
+        tool = adversarial_cron.make_file_tool(repo)
+        with pytest.raises(ValueError, match="escapes"):
+            tool({"path": "../../../etc/passwd"})
+
+    def test_missing_file_raises(self, repo: Path) -> None:
+        tool = adversarial_cron.make_file_tool(repo)
+        with pytest.raises(FileNotFoundError):
+            tool({"path": "nope.md"})
+
+
+class _FakeBlock:
+    def __init__(self, type_: str, **kw) -> None:
+        self.type = type_
+        for k, v in kw.items():
+            setattr(self, k, v)
+
+
+class _FakeAgenticMessage:
+    def __init__(self, content, stop_reason) -> None:
+        self.content = content
+        self.stop_reason = stop_reason
+        self.usage = type("U", (), {"input_tokens": 100, "output_tokens": 50})()
+
+
+class _FakeAgenticAnthropicClient:
+    """First call: tool_use for run_sql; second: final text."""
+    def __init__(self) -> None:
+        self.calls = 0
+        outer = self
+
+        class _Messages:
+            def create(self, **kwargs):
+                outer.calls += 1
+                outer.last_kwargs = kwargs
+                if outer.calls == 1:
+                    return _FakeAgenticMessage(
+                        [_FakeBlock("tool_use", name="run_sql", id="tu_1",
+                                    input={"query": "SELECT COUNT(*) AS n FROM trades"})],
+                        "tool_use",
+                    )
+                return _FakeAgenticMessage(
+                    [_FakeBlock("text", text="The bear case, investigated.")],
+                    "end_turn",
+                )
+
+        self.messages = _Messages()
+
+
+def test_complete_agentic_round_trip(tmp_db: Path, repo: Path) -> None:
+    from claude_client import ClaudeClient, complete_agentic
+
+    client = ClaudeClient(api_key="sk-ant-test", db_path=tmp_db)
+    client._client = _FakeAgenticAnthropicClient()
+
+    result = complete_agentic(
+        client, "Investigate.", called_from="test_investigator",
+        tools=adversarial_cron.INVESTIGATOR_TOOLS,
+        tool_handlers={
+            "run_sql": adversarial_cron.make_sql_tool(tmp_db),
+            "read_file": adversarial_cron.make_file_tool(repo),
+        },
+    )
+
+    assert result.text == "The bear case, investigated."
+    assert result.turns == 2
+    # both API calls audited
+    with db.connect(tmp_db) as conn:
+        rows = conn.execute(
+            "SELECT called_from FROM llm_calls ORDER BY id"
+        ).fetchall()
+    assert [r["called_from"] for r in rows] == ["test_investigator#t1", "test_investigator#t2"]
+
+
+def test_complete_agentic_tool_error_becomes_result(tmp_db: Path, repo: Path) -> None:
+    from claude_client import ClaudeClient, complete_agentic
+
+    class _BadToolClient(_FakeAgenticAnthropicClient):
+        pass
+
+    client = ClaudeClient(api_key="sk-ant-test", db_path=tmp_db)
+    fake = _BadToolClient()
+    client._client = fake
+
+    def exploding(_inp):
+        raise RuntimeError("boom")
+
+    result = complete_agentic(
+        client, "Investigate.", called_from="test_err",
+        tools=adversarial_cron.INVESTIGATOR_TOOLS,
+        tool_handlers={"run_sql": exploding, "read_file": exploding},
+    )
+    # loop survived the tool error and produced the final text
+    assert result.text == "The bear case, investigated."
+    # the error was passed back as an is_error tool_result
+    second_call_messages = fake.last_kwargs["messages"]
+    tool_result_msg = second_call_messages[-1]["content"][0]
+    assert tool_result_msg["is_error"] is True
+    assert "boom" in tool_result_msg["content"]

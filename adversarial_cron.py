@@ -306,6 +306,144 @@ def run_friday(
     return out_path
 
 
+# ── The investigator (route A) ──────────────────────────────────────────
+# Upgrades the Friday review from form letter to analyst: instead of
+# receiving a fixed data dump, the model queries trader.db and reads repo
+# files itself, then writes. Manual tool loop via claude_client.
+# complete_agentic — every API call audited in llm_calls.
+
+INVESTIGATOR_TOOLS = [
+    {
+        "name": "run_sql",
+        "description": (
+            "Run a read-only SELECT (or WITH...SELECT) against trader.db. "
+            "Tables: bars, signals, trades, decisions, runs, recommendations, "
+            "llm_calls, context_data. Returns up to 200 rows as text. "
+            "Use this to gather trade history, run stats, decision breakdowns."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "A single SELECT statement"}},
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "read_file",
+        "description": (
+            "Read a repo file (path relative to the repo root), e.g. "
+            "pending.md, decision-log.md, reviews/2026-W29-friday.md, "
+            "reports/gauntlet-2026-07-16.md. Returns up to 20000 chars."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"path": {"type": "string"}},
+            "required": ["path"],
+        },
+    },
+]
+
+
+def make_sql_tool(db_path: Path | None = None):
+    """Read-only by construction: URI mode=ro plus a SELECT/WITH gate."""
+    def run_sql(inp: dict) -> str:
+        query = str(inp.get("query", "")).strip().rstrip(";")
+        head = query.lstrip("( ").split(None, 1)[0].upper() if query else ""
+        if head not in ("SELECT", "WITH"):
+            raise ValueError("read-only: only SELECT/WITH queries are allowed")
+        path = db_path or (REPO_ROOT / "trader.db")
+        conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(query).fetchmany(200)
+        finally:
+            conn.close()
+        if not rows:
+            return "(no rows)"
+        cols = rows[0].keys()
+        lines = [" | ".join(cols)]
+        lines += [" | ".join(str(r[c]) for c in cols) for r in rows]
+        out = "\n".join(lines)
+        return out[:8000] + ("\n...(truncated)" if len(out) > 8000 else "")
+    return run_sql
+
+
+def make_file_tool(repo_root: Path = REPO_ROOT):
+    def read_file(inp: dict) -> str:
+        rel = str(inp.get("path", ""))
+        target = (repo_root / rel).resolve()
+        root = repo_root.resolve()
+        if not target.is_relative_to(root):
+            raise ValueError("path escapes the repo root")
+        if not target.is_file():
+            raise FileNotFoundError(rel)
+        text = target.read_text(errors="replace")
+        return text[:20000] + ("\n...(truncated)" if len(text) > 20000 else "")
+    return read_file
+
+
+def run_friday_investigated(
+    client=None,
+    db_path: Path | None = None,
+    repo_root: Path = REPO_ROOT,
+    now: datetime | None = None,
+) -> Path:
+    """The analyst version of the Friday review: same 4G template as the
+    spec, but the {{...}} inputs are gathered by the model itself via
+    read-only tools. Falls back to run_friday() at the call site."""
+    ts = now or datetime.now(timezone.utc)
+    iso = ts.isocalendar()
+    week_label = f"{iso.year}-W{iso.week:02d}"
+    week_start = ts - timedelta(days=7)
+
+    template_prompt = _extract_template_prompt(
+        repo_root / "reviews" / "templates" / "friday-bear-case.md"
+    )
+    prompt = (
+        f"Today is {ts.date().isoformat()} (ISO week {iso.week}). The week "
+        f"under review is {week_start.date().isoformat()} → {ts.date().isoformat()}.\n\n"
+        "You are the INVESTIGATOR for this week's 4G Friday review. The "
+        "template below contains {{PLACEHOLDER}} inputs that are NOT "
+        "pre-filled: gather them yourself with the run_sql and read_file "
+        "tools before writing anything. At minimum: the week's trades "
+        "(entry/exit/pnl by variant), runs status counts, decisions "
+        "placed-vs-rejected with top rejection reasons, the prior Friday "
+        "review file (newest reviews/*-friday.md before this week), and "
+        "pending.md. Investigate anything suspicious the numbers surface — "
+        "you may run additional queries and read decision-log.md or recent "
+        "reports. Then produce the review exactly per the template's four "
+        "mandatory sections plus the final weaken/strengthen sentence.\n\n"
+        "--- TEMPLATE ---\n\n" + template_prompt
+    )
+
+    if client is None:
+        from claude_client import ClaudeClient, model_for_role
+
+        client = ClaudeClient(model=model_for_role("review"), db_path=db_path)
+    from claude_client import complete_agentic
+
+    result = complete_agentic(
+        client,
+        prompt,
+        called_from="friday_bear_case_investigated",
+        tools=INVESTIGATOR_TOOLS,
+        tool_handlers={
+            "run_sql": make_sql_tool(db_path),
+            "read_file": make_file_tool(repo_root),
+        },
+        system=SKEPTIC_SYSTEM,
+        max_tokens=8192,
+        max_turns=10,
+    )
+
+    out_path = repo_root / "reviews" / f"{week_label}-friday.md"
+    out_path.write_text(
+        f"{result.text}\n\n---\n\n"
+        f"machine-generated (investigator, {result.turns} turns) · model {result.model} "
+        f"· called_from friday_bear_case_investigated · logged to llm_calls\n"
+    )
+    return out_path
+
+
 def main() -> int:
     import argparse
 
@@ -317,7 +455,16 @@ def main() -> int:
     args = parser.parse_args()
 
     db.migrate()
-    path = run_friday() if args.friday else run_nightly()
+    if args.friday:
+        # Investigator first; static template as fallback — a missed
+        # Friday review is a Phase 1b archive trigger, so belt and braces.
+        try:
+            path = run_friday_investigated()
+        except Exception as exc:
+            print(f"investigator failed ({type(exc).__name__}: {exc}); falling back to static review")
+            path = run_friday()
+    else:
+        path = run_nightly()
     print(f"wrote {path}")
     return 0
 

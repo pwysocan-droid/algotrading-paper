@@ -330,6 +330,123 @@ class ClaudeClient:
         )
 
 
+@dataclass
+class AgenticResult:
+    text: str
+    model: str
+    turns: int
+    total_tokens: int | None
+    latency_ms: int
+
+
+def _summarize_content(content: list) -> str:
+    parts = []
+    for block in content:
+        if getattr(block, "type", None) == "text":
+            parts.append(block.text)
+        elif getattr(block, "type", None) == "tool_use":
+            parts.append(f"[tool_use {block.name}: {json.dumps(block.input, default=str)[:500]}]")
+    return "\n".join(parts)
+
+
+def complete_agentic(
+    client: "ClaudeClient",
+    prompt: str,
+    called_from: str,
+    *,
+    tools: list[dict],
+    tool_handlers: dict[str, Any],
+    system: str | None = None,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
+    max_turns: int = 8,
+    log: bool = True,
+) -> AgenticResult:
+    """Manual tool-use loop with the same audit discipline as complete():
+    every API call writes its own llm_calls row. The investigator pattern —
+    the model queries and reads before it writes, instead of receiving a
+    fixed data dump.
+
+    Tool handlers are plain callables input_dict -> str; exceptions become
+    is_error tool results so the model can adapt. On the final allowed turn
+    tools are withheld (tool_choice none) to force a written answer.
+    """
+    messages: list[dict] = [{"role": "user", "content": prompt}]
+    start = time.perf_counter()
+    turns = 0
+    total_tokens = 0
+    tokens_known = True
+
+    while True:
+        turns += 1
+        final_turn = turns >= max_turns
+        kwargs: dict[str, Any] = {
+            "model": client.model,
+            "max_tokens": max_tokens,
+            "system": _build_system(system),
+            "tools": tools,
+            "messages": messages,
+        }
+        if final_turn:
+            kwargs["tool_choice"] = {"type": "none"}
+        msg = client._client.messages.create(**kwargs)
+
+        usage = getattr(msg, "usage", None)
+        p_tok = getattr(usage, "input_tokens", None) if usage else None
+        c_tok = getattr(usage, "output_tokens", None) if usage else None
+        if p_tok is not None and c_tok is not None:
+            total_tokens += p_tok + c_tok
+        else:
+            tokens_known = False
+        if log:
+            last_user = messages[-1]["content"]
+            _log_call(
+                prompt=(
+                    last_user if isinstance(last_user, str)
+                    else json.dumps(last_user, default=str)[:20000]
+                ),
+                response_text=_summarize_content(msg.content),
+                model=client.model,
+                latency_ms=int((time.perf_counter() - start) * 1000),
+                prompt_tokens=p_tok,
+                completion_tokens=c_tok,
+                total_tokens=(p_tok or 0) + (c_tok or 0) if p_tok is not None else None,
+                called_from=f"{called_from}#t{turns}",
+                db_path=client._db_path,
+            )
+
+        if msg.stop_reason != "tool_use":
+            text = "".join(b.text for b in msg.content if b.type == "text")
+            return AgenticResult(
+                text=text,
+                model=client.model,
+                turns=turns,
+                total_tokens=total_tokens if tokens_known else None,
+                latency_ms=int((time.perf_counter() - start) * 1000),
+            )
+
+        tool_results = []
+        for block in msg.content:
+            if block.type != "tool_use":
+                continue
+            handler = tool_handlers.get(block.name)
+            try:
+                if handler is None:
+                    raise KeyError(f"no handler for tool {block.name!r}")
+                result = str(handler(block.input))
+                is_error = False
+            except Exception as exc:  # surfaced to the model, not fatal
+                result = f"{type(exc).__name__}: {exc}"
+                is_error = True
+            tool_results.append({
+                "type": "tool_result",
+                "tool_use_id": block.id,
+                "content": result,
+                "is_error": is_error,
+            })
+        messages.append({"role": "assistant", "content": msg.content})
+        messages.append({"role": "user", "content": tool_results})
+
+
 if __name__ == "__main__":
     import argparse
 
