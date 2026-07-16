@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>algotrading-paper · learnings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --hairline: #1c1c1c;
+    --hairline-bright: #2a2a2a;
+    --fg: #e8e8e8;
+    --fg-dim: #888;
+    --fg-faint: #555;
+    --fg-ghost: #333;
+    --red: #EB0000;
+    --teal: #6ee7b7;
+    --teal-dim: #4ab895;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
+  }
+
+  body {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 18px 22px 40px;
+    min-height: 100vh;
+  }
+
+  /* MASTHEAD */
+  .masthead { margin-bottom: 20px; }
+  .masthead .title { font-size: 12px; font-weight: 500; color: var(--fg); }
+  .masthead .title .slash { color: var(--fg-faint); margin: 0 5px; font-weight: 400; }
+  .masthead .title .sub { color: var(--fg-dim); font-weight: 400; }
+  .masthead .timestamp {
+    margin-top: 5px; font-size: 10px;
+    color: var(--fg-faint); letter-spacing: 0.02em;
+  }
+  .masthead .back {
+    margin-top: 4px; font-size: 10px;
+  }
+  .masthead .back a {
+    color: var(--fg-dim); text-decoration: none;
+    border-bottom: 1px solid var(--hairline-bright);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .masthead .back a:hover { color: var(--fg); border-bottom-color: var(--fg-faint); }
+
+  /* VITALS */
+  .vitals {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 28px; margin-bottom: 26px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--hairline);
+  }
+  .vital .label {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--fg-dim); margin-bottom: 5px;
+  }
+  .vital .value {
+    font-size: 18px; font-weight: 500;
+    letter-spacing: -0.02em; color: var(--fg); line-height: 1;
+  }
+  .vital .sub {
+    margin-top: 4px; font-style: italic; font-size: 10px;
+    color: var(--fg-faint); letter-spacing: 0;
+  }
+
+  /* SECTION LABELS */
+  .section-label {
+    display: flex; align-items: baseline;
+    gap: 12px; margin-bottom: 10px;
+  }
+  .section-label .idx { font-size: 10px; color: var(--fg-faint); letter-spacing: 0.04em; }
+  .section-label .name {
+    font-size: 10px; text-transform: uppercase;
+    font-weight: 500; color: var(--fg-dim); letter-spacing: 0.12em;
+  }
+  .section-label .qualifier {
+    font-style: italic; font-size: 10px;
+    color: var(--fg-faint); letter-spacing: 0; margin-left: auto;
+  }
+
+  .section { margin-bottom: 26px; }
+
+  /* QUESTIONS — the five pre-registered knowledge-success criteria */
+  .q-row {
+    padding: 10px 0 9px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .q-row:first-of-type { border-top: 1px solid var(--hairline); }
+  .q-row .q-head {
+    display: grid; grid-template-columns: 1fr 72px;
+    gap: 14px; align-items: baseline;
+  }
+  .q-row .question { font-size: 11px; color: var(--fg); line-height: 1.45; letter-spacing: 0.01em; }
+  .q-row .status {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em;
+    text-align: right;
+  }
+  .q-row .status.answered { color: var(--teal); }
+  .q-row .status.partial { color: var(--fg-dim); }
+  .q-row .status.untested { color: var(--fg-ghost); }
+  .q-row .summary {
+    margin-top: 5px; font-size: 10px; font-style: italic;
+    color: var(--fg-faint); line-height: 1.5; letter-spacing: 0;
+  }
+  .q-row .evidence {
+    margin-top: 3px; font-size: 9px;
+    color: var(--fg-ghost); letter-spacing: 0.02em;
+  }
+
+  /* TRIGGERS — phase 1b countdown */
+  .trig-row {
+    display: grid; grid-template-columns: 50px 1fr 56px;
+    align-items: baseline; gap: 14px;
+    padding: 9px 0 8px; border-bottom: 1px solid var(--hairline);
+  }
+  .trig-row:first-of-type { border-top: 1px solid var(--hairline); }
+  .trig-row .when {
+    font-size: 18px; font-weight: 500; color: var(--fg);
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .trig-row .when.done { font-size: 12px; color: var(--teal); }
+  .trig-row .when.overdue { color: var(--red); }
+  .trig-row .thing { font-size: 11px; color: var(--fg-dim); line-height: 1.4; }
+  .trig-row .thing .detail {
+    display: block; font-style: italic; font-size: 10px;
+    color: var(--fg-faint); margin-top: 2px; letter-spacing: 0;
+  }
+  .trig-row .tag {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--fg-faint); text-align: right;
+  }
+  .trig-row .tag.done { color: var(--teal-dim); }
+  .trig-row .tag.overdue { color: var(--red); }
+
+  /* HYPOTHESES */
+  .hyp-row {
+    padding: 9px 0 8px; border-bottom: 1px solid var(--hairline);
+  }
+  .hyp-row:first-of-type { border-top: 1px solid var(--hairline); }
+  .hyp-row .h-head {
+    display: grid; grid-template-columns: 1fr 110px;
+    gap: 14px; align-items: baseline;
+  }
+  .hyp-row .commitment { font-size: 11px; color: var(--fg-dim); line-height: 1.45; }
+  .hyp-row .status {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.1em; text-align: right;
+  }
+  .hyp-row .status.resolved-for { color: var(--teal); }
+  .hyp-row .status.resolved-against { color: var(--red); }
+  .hyp-row .status.open { color: var(--fg-dim); }
+  .hyp-row .status.overdue { color: var(--red); }
+  .hyp-row .resolution {
+    margin-top: 4px; font-size: 10px; font-style: italic;
+    color: var(--fg-faint); line-height: 1.5; letter-spacing: 0;
+  }
+  .hyp-row .source { margin-top: 2px; font-size: 9px; color: var(--fg-ghost); }
+
+  /* LEARNINGS */
+  .learn-row {
+    display: grid; grid-template-columns: 14px 1fr 76px;
+    gap: 10px; align-items: baseline;
+    padding: 7px 0; border-bottom: 1px solid var(--hairline);
+  }
+  .learn-row:first-of-type { border-top: 1px solid var(--hairline); }
+  .learn-row .glyph { font-size: 11px; line-height: 1.4; }
+  .learn-row .glyph.validated { color: var(--teal-dim); }
+  .learn-row .glyph.pending { color: var(--fg-faint); }
+  .learn-row .glyph.falsified { color: var(--red); }
+  .learn-row .claim { font-size: 10px; color: var(--fg-dim); line-height: 1.5; }
+  .learn-row .claim .ev {
+    display: block; font-size: 9px; color: var(--fg-ghost);
+    margin-top: 1px; letter-spacing: 0.02em;
+  }
+  .learn-row .status {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--fg-faint); text-align: right;
+  }
+  .learn-row .status.validated { color: var(--teal-dim); }
+  .learn-row .status.falsified { color: var(--red); }
+  .learn-row .status .check {
+    display: block; font-style: italic; text-transform: none;
+    letter-spacing: 0; color: var(--fg-ghost); margin-top: 1px;
+  }
+  .learn-row .status .check.overdue { color: var(--red); }
+
+  /* LLM TELEMETRY */
+  .llm-row {
+    display: grid; grid-template-columns: 1fr 44px 70px 60px;
+    align-items: baseline; gap: 8px 14px; padding: 7px 0;
+  }
+  .llm-row .name { font-size: 10px; color: var(--fg-dim); letter-spacing: 0.02em; }
+  .llm-row .name .model {
+    display: block; font-size: 9px; font-style: italic;
+    color: var(--fg-ghost); margin-top: 1px; letter-spacing: 0;
+  }
+  .llm-row .calls, .llm-row .tokens {
+    font-size: 13px; font-weight: 500; color: var(--fg);
+    text-align: right; letter-spacing: -0.01em;
+  }
+  .llm-row .cost { font-size: 11px; color: var(--fg-dim); text-align: right; }
+  .llm-empty {
+    padding: 12px 0; font-size: 10px; font-style: italic;
+    color: var(--fg-ghost); text-align: center;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 48px; padding-top: 24px;
+    border-top: 1px solid var(--hairline); text-align: center;
+  }
+  .footer .phrase {
+    font-style: italic; font-size: 11px;
+    color: var(--fg-dim); line-height: 1.5;
+    letter-spacing: 0; max-width: 300px; margin: 0 auto;
+  }
+  .footer .provenance {
+    margin-top: 16px; font-size: 9px;
+    color: var(--fg-faint); letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+  <div class="masthead">
+    <div class="masthead-text">
+      <div class="title">
+        algotrading-paper<span class="slash">/</span><span class="sub">learnings</span>
+      </div>
+      <div class="timestamp" id="timestamp">—</div>
+      <div class="back"><a href="./index.html">← live surface</a></div>
+    </div>
+  </div>
+
+  <div class="vitals">
+    <div class="vital">
+      <div class="label">questions answered</div>
+      <div class="value" id="q-score">—</div>
+      <div class="sub">of the five pre-registered criteria</div>
+    </div>
+    <div class="vital">
+      <div class="label">phase 1b ends</div>
+      <div class="value" id="phase-days">—</div>
+      <div class="sub" id="phase-sub">hard stop 2026-08-14</div>
+    </div>
+  </div>
+
+  <!-- i. THE FIVE QUESTIONS -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">i.</span>
+      <span class="name">knowledge success</span>
+      <span class="qualifier">philosophy.md · pre-registered</span>
+    </div>
+    <div id="q-rows"></div>
+  </div>
+
+  <!-- ii. PHASE 1B TRIGGERS -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">ii.</span>
+      <span class="name">archive triggers</span>
+      <span class="qualifier">phase1-review.md § 5 · any two missed = archive</span>
+    </div>
+    <div id="trig-rows"></div>
+  </div>
+
+  <!-- iii. HYPOTHESES -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">iii.</span>
+      <span class="name">falsifiable hypotheses</span>
+      <span class="qualifier" id="hyp-qualifier">—</span>
+    </div>
+    <div id="hyp-rows"></div>
+  </div>
+
+  <!-- iv. LEARNINGS -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">iv.</span>
+      <span class="name">learnings</span>
+      <span class="qualifier" id="learn-qualifier">mined from decision-log.md</span>
+    </div>
+    <div id="learn-rows"></div>
+  </div>
+
+  <!-- v. LLM BACKBONE -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">v.</span>
+      <span class="name">llm backbone</span>
+      <span class="qualifier" id="llm-qualifier">llm_calls · audited</span>
+    </div>
+    <div id="llm-rows"></div>
+  </div>
+
+  <div class="footer">
+    <div class="phrase">a losing strategy that produces clear answers is more valuable than a winning strategy that doesn't</div>
+    <div class="provenance">github.com/pwysocan-droid/algotrading-paper</div>
+  </div>
+
+<script>
+// Phase 1b archive triggers — dates from phase1-review.md § 5.
+// `done` flips by evidence where the data can prove it (see wire()).
+const TRIGGERS = [
+  { due: '2026-07-24', thing: 'live loop closes (null variant)',
+    detail: 'signals → decisions → trades on the VPS cron', key: 'live_loop' },
+  { due: '2026-07-31', thing: 'LLM-surfaced roster registered',
+    detail: 'top 2 candidates + null, scored by edge per constraint slot', key: 'roster' },
+  { due: '2026-07-31', thing: 'learnings become data',
+    detail: 'this page · ledger extracted nightly on log changes', key: 'ledger' },
+  { due: 'weekly', thing: 'Friday review runs machine-scheduled',
+    detail: 'a missed Friday is itself a trigger', key: 'friday' },
+  { due: '2026-08-14', thing: 'phase 1b review — hard stop',
+    detail: 'gate 2 re-posed against the new roster', key: 'review' },
+];
+
+const HARD_STOP = new Date('2026-08-14T00:00:00Z');
+
+function daysUntil(iso) {
+  return Math.ceil((new Date(iso + 'T00:00:00Z') - Date.now()) / 86400000);
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+async function fetchJson(name) {
+  const resp = await fetch(`./${name}?t=${Date.now()}`, { cache: 'no-store' });
+  if (!resp.ok) throw new Error(`${name}: ${resp.status}`);
+  return resp.json();
+}
+
+function renderQuestions(ledger) {
+  const rows = document.getElementById('q-rows');
+  let answered = 0;
+  for (const q of ledger.questions) {
+    if (q.status === 'answered') answered++;
+    const row = el('div', 'q-row');
+    const head = el('div', 'q-head');
+    head.appendChild(el('div', 'question', q.question));
+    head.appendChild(el('div', `status ${q.status}`, q.status));
+    row.appendChild(head);
+    if (q.summary) row.appendChild(el('div', 'summary', q.summary));
+    if (q.evidence && q.evidence.length)
+      row.appendChild(el('div', 'evidence', q.evidence.join(' · ')));
+    rows.appendChild(row);
+  }
+  document.getElementById('q-score').textContent =
+    `${answered} / ${ledger.questions.length}`;
+}
+
+function renderTriggers(done) {
+  const rows = document.getElementById('trig-rows');
+  for (const t of TRIGGERS) {
+    const row = el('div', 'trig-row');
+    let whenText, whenCls = 'when', tagText = 'due', tagCls = 'tag';
+    if (done[t.key]) {
+      whenText = '✓'; whenCls = 'when done'; tagText = 'done'; tagCls = 'tag done';
+    } else if (t.due === 'weekly') {
+      whenText = 'fri'; tagText = 'rhythm';
+    } else {
+      const d = daysUntil(t.due);
+      whenText = d >= 0 ? `${d}d` : `${-d}d`;
+      if (d < 0) { whenCls = 'when overdue'; tagText = 'overdue'; tagCls = 'tag overdue'; }
+    }
+    row.appendChild(el('div', whenCls, whenText));
+    const thing = el('div', 'thing', t.thing);
+    thing.appendChild(el('span', 'detail', t.detail));
+    row.appendChild(thing);
+    row.appendChild(el('div', tagCls, tagText));
+    rows.appendChild(row);
+  }
+}
+
+function renderHypotheses(ledger) {
+  const rows = document.getElementById('hyp-rows');
+  const hyps = ledger.hypotheses || [];
+  const openCount = hyps.filter(h => h.status === 'open' || h.status === 'overdue').length;
+  document.getElementById('hyp-qualifier').textContent =
+    `${hyps.length} committed · ${openCount} open`;
+  for (const h of hyps) {
+    const row = el('div', 'hyp-row');
+    const head = el('div', 'h-head');
+    head.appendChild(el('div', 'commitment', h.commitment));
+    head.appendChild(el('div', `status ${h.status}`, h.status.replace('-', ' ')));
+    row.appendChild(head);
+    if (h.resolution) row.appendChild(el('div', 'resolution', h.resolution));
+    row.appendChild(el('div', 'source', h.source_entry + (h.due ? ` · due ${h.due}` : '')));
+    rows.appendChild(row);
+  }
+}
+
+function renderLearnings(ledger) {
+  const rows = document.getElementById('learn-rows');
+  const glyphs = { validated: '●', pending: '◐', falsified: '○' };
+  const today = new Date().toISOString().slice(0, 10);
+  const learnings = ledger.learnings || [];
+  const counts = { validated: 0, pending: 0, falsified: 0 };
+  for (const l of learnings) counts[l.status] = (counts[l.status] || 0) + 1;
+  document.getElementById('learn-qualifier').textContent =
+    `${learnings.length} claims · ${counts.validated} validated · ${counts.falsified} falsified`;
+  for (const l of learnings) {
+    const row = el('div', 'learn-row');
+    row.appendChild(el('div', `glyph ${l.status}`, glyphs[l.status] || '·'));
+    const claim = el('div', 'claim', l.claim);
+    if (l.evidence) claim.appendChild(el('span', 'ev', l.evidence));
+    row.appendChild(claim);
+    const status = el('div', `status ${l.status}`, l.status);
+    if (l.next_check) {
+      const overdue = l.next_check < today && l.status === 'pending';
+      status.appendChild(el('span', `check${overdue ? ' overdue' : ''}`,
+        `${overdue ? 'overdue ' : 'check '}${l.next_check}`));
+    }
+    row.appendChild(status);
+    rows.appendChild(row);
+  }
+}
+
+function renderLlm(surface) {
+  const rows = document.getElementById('llm-rows');
+  const llm = surface.llm || { total_calls: 0, by_caller: [] };
+  if (!llm.by_caller.length) {
+    rows.appendChild(el('div', 'llm-empty', 'no calls logged — the backbone is unmeasured'));
+    return;
+  }
+  const cost = llm.total_cost_usd != null ? `$${llm.total_cost_usd.toFixed(2)}` : '—';
+  document.getElementById('llm-qualifier').textContent =
+    `${llm.total_calls} calls · ~${cost} total`;
+  for (const c of llm.by_caller) {
+    const row = el('div', 'llm-row');
+    const name = el('div', 'name', c.called_from);
+    name.appendChild(el('span', 'model', c.model));
+    row.appendChild(name);
+    row.appendChild(el('div', 'calls', String(c.calls)));
+    row.appendChild(el('div', 'tokens', `${(c.tokens / 1000).toFixed(1)}k`));
+    row.appendChild(el('div', 'cost',
+      c.cost_usd != null ? `$${c.cost_usd.toFixed(2)}` : '—'));
+    rows.appendChild(row);
+  }
+}
+
+async function boot() {
+  let ledger = null, surface = null;
+  try { ledger = await fetchJson('learnings.json'); } catch (e) { /* renders empty */ }
+  try { surface = await fetchJson('surface.json'); } catch (e) { /* renders empty */ }
+
+  if (ledger) {
+    document.getElementById('timestamp').textContent =
+      `ledger ${ledger.generated_at.slice(0, 16).replace('T', ' ')}Z`;
+    renderQuestions(ledger);
+    renderHypotheses(ledger);
+    renderLearnings(ledger);
+  }
+
+  // Trigger done-ness, proven from data where possible:
+  // live loop = any trades exist; ledger = learnings.json loads;
+  // friday = a *-friday review newer than 8 days is not verifiable from
+  // JSON, so it stays a rhythm row.
+  const trades = surface?.accumulating?.find(a => (a.name || '').includes('trade'));
+  const tradesCount = trades ? parseInt(String(trades.count).replace(/\D/g, '') || '0', 10) : 0;
+  renderTriggers({
+    live_loop: tradesCount > 0,
+    ledger: Boolean(ledger),
+    roster: false,
+    friday: false,
+    review: false,
+  });
+
+  const days = Math.ceil((HARD_STOP - Date.now()) / 86400000);
+  document.getElementById('phase-days').textContent = days >= 0 ? `${days}d` : 'ended';
+
+  if (surface) renderLlm(surface);
+}
+
+boot();
+</script>
+</body>
+</html>

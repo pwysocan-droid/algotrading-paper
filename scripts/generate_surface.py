@@ -754,6 +754,60 @@ def build_kahneman(conn: sqlite3.Connection, repo_root: Path, now: datetime) -> 
 # ──────────────────────── assemble + write ────────────────────────────
 
 
+# $/MTok by model prefix — longest match wins. Verified against the
+# platform model catalog 2026-07-16. Estimates only; unknown models get
+# no cost figure rather than a wrong one.
+LLM_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
+    "claude-haiku-4-5": (1.00, 5.00),
+    "claude-opus-4-8": (5.00, 25.00),
+    "claude-sonnet-5": (3.00, 15.00),
+    "claude-sonnet-4-6": (3.00, 15.00),
+}
+
+
+def build_llm(conn: sqlite3.Connection) -> dict:
+    """The backbone's own telemetry — calls, tokens, and estimated spend
+    from llm_calls, grouped by called_from. The reframe committed to an
+    auditable LLM backbone; this is the audit surfaced."""
+    rows = conn.execute(
+        """
+        SELECT called_from, model, COUNT(*) AS calls,
+               COALESCE(SUM(prompt_tokens), 0) AS in_tok,
+               COALESCE(SUM(completion_tokens), 0) AS out_tok
+          FROM llm_calls GROUP BY called_from, model
+        """
+    ).fetchall()
+    by_caller: list[dict] = []
+    total_calls = 0
+    total_cost = 0.0
+    cost_known = True
+    for r in rows:
+        cost = None
+        for prefix, (p_in, p_out) in LLM_PRICES_PER_MTOK.items():
+            if str(r["model"]).startswith(prefix):
+                cost = r["in_tok"] / 1e6 * p_in + r["out_tok"] / 1e6 * p_out
+                break
+        if cost is None:
+            cost_known = False
+        else:
+            total_cost += cost
+        total_calls += r["calls"]
+        by_caller.append({
+            "called_from": r["called_from"],
+            "model": r["model"],
+            "calls": r["calls"],
+            "tokens": r["in_tok"] + r["out_tok"],
+            "cost_usd": round(cost, 4) if cost is not None else None,
+        })
+    return {
+        "total_calls": total_calls,
+        "total_cost_usd": round(total_cost, 4) if by_caller and cost_known else (
+            round(total_cost, 4) if total_cost > 0 else None
+        ),
+        "by_caller": sorted(by_caller, key=lambda x: -x["calls"]),
+    }
+
+
 def generate(
     repo_root: Path = REPO_ROOT,
     db_path: Path | None = None,
@@ -770,6 +824,7 @@ def generate(
             "pending": build_pending(repo_root),
             "accumulating": build_accumulating(conn, repo_root, now),
             "timetable": build_timetable(conn, now),
+            "llm": build_llm(conn),
         }
 
 

@@ -628,3 +628,50 @@ def test_write_punch_list_json_round_trip(tmp_repo: Path) -> None:
     for key in ("summary", "gates", "ops", "log", "build"):
         assert key in reloaded
     assert reloaded["gates"][0]["thing"] == "G"
+
+
+# --- LLM telemetry (build_llm) ----------------------------------------------
+
+
+def test_build_llm_empty_table(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        llm = gs.build_llm(conn)
+    assert llm["total_calls"] == 0
+    assert llm["by_caller"] == []
+
+
+def test_build_llm_groups_and_prices(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        for i, (caller, model, p_in, p_out) in enumerate([
+            ("adversarial_cron", "claude-haiku-4-5", 1000, 500),
+            ("adversarial_cron", "claude-haiku-4-5", 1000, 500),
+            ("friday_bear_case", "claude-opus-4-8", 4000, 2000),
+            ("mystery", "some-unknown-model", 100, 100),
+        ]):
+            conn.execute(
+                "INSERT INTO llm_calls (timestamp, prompt_hash, prompt_full, response_full,"
+                " model, latency_ms, prompt_tokens, completion_tokens, total_tokens, called_from)"
+                " VALUES (?, ?, 'p', 'r', ?, 100, ?, ?, ?, ?)",
+                (f"2026-07-16T0{i}:00:00+00:00", f"hash{i}", model, p_in, p_out,
+                 p_in + p_out, caller),
+            )
+        llm = gs.build_llm(conn)
+
+    assert llm["total_calls"] == 4
+    by_caller = {c["called_from"]: c for c in llm["by_caller"]}
+    assert by_caller["adversarial_cron"]["calls"] == 2
+    assert by_caller["adversarial_cron"]["tokens"] == 3000
+    # haiku: 2000 in * $1/M + 1000 out * $5/M = 0.002 + 0.005 = 0.007
+    assert by_caller["adversarial_cron"]["cost_usd"] == pytest.approx(0.007)
+    # opus: 4000 * 5/M + 2000 * 25/M = 0.02 + 0.05 = 0.07
+    assert by_caller["friday_bear_case"]["cost_usd"] == pytest.approx(0.07)
+    # unknown model: no cost figure rather than a wrong one
+    assert by_caller["mystery"]["cost_usd"] is None
+
+
+def test_surface_json_includes_llm_block(tmp_db: Path, tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    data = gs.generate(repo_root=repo, db_path=tmp_db)
+    assert "llm" in data
+    assert data["llm"]["total_calls"] == 0
