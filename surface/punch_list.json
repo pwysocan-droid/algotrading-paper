@@ -1,37 +1,28 @@
 {
   "summary": {
-    "due_7d": 2,
-    "due_14d": 3,
-    "open": 9,
+    "due_7d": 1,
+    "due_14d": 2,
+    "open": 8,
     "done_this_week": 0
   },
   "gates": [
     {
-      "id": "gate:Phase 1 review — OVERDUE",
-      "when": "open",
-      "when_class": "open",
-      "thing": "Phase 1 review — OVERDUE",
-      "detail": "review date 2026-07-12 passed unwritten · phase1-review.md decides extend-or-archive",
+      "id": "gate:Phase 1b review — extend-or-archive, hard stop",
+      "when": "29d",
+      "when_class": "urgent",
+      "thing": "Phase 1b review — extend-or-archive, hard stop",
+      "detail": "phase1-review.md § 5 terms · gate 2 re-posed against the live 3-arm roster",
       "kind": "gate",
       "promoted": true
     }
   ],
   "ops": [
     {
-      "id": "ops:Friday adversarial review · #2",
-      "when": "1d",
-      "when_class": "urgent",
-      "thing": "Friday adversarial review · #2",
-      "detail": "last full review W21 (2026-05-23) · Fridays 07-03 and 07-10 were missed · next 2026-07-17",
-      "kind": "ops",
-      "promoted": false
-    },
-    {
-      "id": "ops:Future-self letters · 2026-04-26 entries",
+      "id": "ops:First candidate-vs-null A/B readout",
       "when": "open",
       "when_class": "open",
-      "thing": "Future-self letters · 2026-04-26 entries",
-      "detail": "convention set, letters pending since April",
+      "thing": "First candidate-vs-null A/B readout",
+      "detail": "compare.py once arms accumulate closed trades · promotion bar p<0.05 over 100+",
       "kind": "ops",
       "promoted": false
     },

@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-16T22:50:05Z
+2026-07-16T22:55:04Z
 
 7 surfaces tracked
 
@@ -10,26 +10,24 @@ Phase 1  ·  Week 1
 
 | System uptime | Trades this week | Phase 2 gates | Days to phase 1 review |
 | :--- | :--- | :--- | :--- |
-| **100.0%** | **4** | **1 / 3** | **0** |
+| **100.0%** | **5** | **1 / 3** | **0** |
 | last 4w | paper | passed | ends 2026-07-12 |
 
 ## § 01 — Recently changed
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [decision-log.md](decision-log.md) | 2026-07-16T22:43:05Z | Register gauntlet top 2 as li… |
+| [decision-log.md](decision-log.md) | 2026-07-16T22:54:52Z | Close the project's oldest de… |
 | [philosophy.md](philosophy.md) | 2026-07-02T20:25:50Z | Merge the adaptation-ladder a… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
-## § 02 — Pending decisions · 4 items
+## § 02 — Pending decisions · 3 items
 
-▸ Phase 1 review — OVERDUE — review date 2026-07-12 passed unwritten · phase1-review.md decides extend-or-archive
+▸ Phase 1b review — extend-or-archive, hard stop — phase1-review.md § 5 terms · gate 2 re-posed against the live 3-arm roster
 
-▸ Friday adversarial review · #2 — last full review W21 (2026-05-23) · Fridays 07-03 and 07-10 were missed · next 2026-07-17
-
-▸ Future-self letters · 2026-04-26 entries — convention set, letters pending since April
+▸ First candidate-vs-null A/B readout — compare.py once arms accumulate closed trades · promotion bar p<0.05 over 100+
 
 ▸ Nightly skeptic · 2026-07-16 — The pipeline is a metronome with no conductor. Seven consecutive clean runs, 81–82 bars added eac...
 
