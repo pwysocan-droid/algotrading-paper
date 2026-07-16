@@ -34,7 +34,15 @@ if ! python adversarial_cron.py >>"${LOG}" 2>&1; then
   exit 1
 fi
 
-git add reviews/nightly pending.md
+# Learnings ledger — hash-gated, so the LLM extraction only runs on
+# nights when decision-log.md actually changed. Non-fatal.
+if python scripts/generate_learnings.py >>"${LOG}" 2>&1; then
+  log "generate_learnings.py ok"
+else
+  log "WARN: generate_learnings.py failed"
+fi
+
+git add reviews/nightly pending.md surface/learnings.json
 if git diff --staged --quiet; then
   log "nothing to commit"
 else
