@@ -765,6 +765,33 @@ What it does *not* license: revising the Phase 2 gates or exit
 conditions on the strength of in-Phase-1 enthusiasm. Those are the
 load-bearing pre-commitments and they remain pre-committed.
 
+### Future-self letter — the adaptive clause
+
+*(Drafted 2026-07-16, retroactive; amend freely.)*
+
+*Right now.* The clause reads as obviously healthy: a learning
+project that can't update its framing is a worse learning project.
+The distinction between "revising the framing" and "moving the
+goalposts" feels crisp because nothing has tested it yet.
+
+*At the override moment.* The clause is most dangerous when the
+proposed revision is *reasonable*. You won't invoke it to do
+something absurd; you'll invoke it because the curriculum anchor is
+unflattering, or the gate math assumes infrastructure that behaves
+differently, or a review deadline arrived at a bad time. Each
+individual invocation will be defensible — the 2026-05-17 anchor
+move was logged and sound, and W21 still correctly called the
+*pattern* documented goalpost-moving. You'll be telling yourself
+"this is the adaptive clause working as designed," and the only
+symptom that it isn't will be that revisions keep landing in the
+direction that flatters you.
+
+*Before invoking, do this one thing.* Check the direction. Write in
+the entry: "this revision makes the project look better/worse/
+neutral" — and if the last two invocations also landed on "better,"
+have the Friday review argue the case against this one before it
+takes effect, not after.
+
 **Considered and rejected:**
 - *Radical rewrite of the project around the thesis.* Rejected
   because rewriting the spec in a single excited conversation is
@@ -999,6 +1026,34 @@ because there's a legitimate research bet ("the architecture is
 sound; let's see if real-money pressure surfaces issues paper
 didn't") — but it has to be deliberate, not default.
 
+### Future-self letter — Phase 2 entry gates
+
+*(Drafted 2026-07-16 per the convention above — retroactive, as the
+Week-2 operator session never happened; amend freely.)*
+
+*Right now.* The gates are abstract. No strategy exists, no live
+trade has been placed, and requiring "an A/B-validated promotion
+over 100+ trades" costs nothing to promise because the machinery to
+produce one doesn't exist yet. Pre-committing is easy when the
+thing you're forbidding yourself is hypothetical.
+
+*At the override moment.* You'll have one gate passed (uptime — the
+easy one, the one a $5 VPS passes by existing) and a candidate that
+*almost* clears the promotion gate: p=0.08, or 80 trades instead of
+100, or it beats null but not fees. You'll be telling yourself
+"two-of-three plus a near-miss is basically three" and "the sample
+will confirm what I already see." That is the small-sample
+confidence trap the whole project was built to catch, wearing the
+costume of pragmatism.
+
+*Before overriding, do this one thing.* Run
+`python compare.py --a <candidate>` and paste its verbatim output —
+including the INSUFFICIENT or p-value line — into a new decision-log
+entry titled "Phase 2 entry override — [date]", then wait one full
+week of live trades and run it again before acting. If the edge is
+real, seven days costs nothing. If it isn't, seven days is the
+cheapest $1,000 you'll ever keep.
+
 ## 2026-04-26 — Three explicit Phase 2 exit conditions
 
 Real money returns to paper (or project archives) when *any* of:
@@ -1011,6 +1066,34 @@ Real money returns to paper (or project archives) when *any* of:
 Phase 2, when one of them is being approached, the temptation to
 override will be at its peak. Pre-committing in writing is the
 discipline.
+
+### Future-self letter — Phase 2 exit conditions
+
+*(Drafted 2026-07-16, retroactive. The drawdown exit's full worked
+letter lives at the top of this file under the convention — this
+letter covers the other two exits; amend freely.)*
+
+*Right now.* Exits 2 and 3 feel like footnotes to the $700 floor.
+Variance-from-paper sounds like a technicality, and the 8-week
+review sounds automatic. Nothing is at stake yet.
+
+*At the override moment.* For the variance exit you'll be *up* —
+that's the trap. Real running 60% hotter than paper feels like a
+bonus, not a bug, and you'll want to keep it. But divergence in
+either direction means the simulation no longer predicts the system
+you're actually running, and every backtested conclusion is void.
+For the time exit, week 8 will arrive mid-streak, and "review week"
+will feel like interrupting a machine that's working. You'll be
+telling yourself the review is a formality you can do while
+continuing to trade.
+
+*Before overriding, do this one thing.* For variance: compute the
+divergence number and write it in an entry before the next cron
+cycle places a trade — if you can't explain the gap's mechanism
+(fees? slippage? fill timing?) in two sentences, halt to paper. For
+time: the mandatory review means execution HALTED during review
+week; write the "continue" justification with positions flat, not
+while the streak whispers.
 
 ## 2026-04-26 — Reuse wagon-watcher design system
 

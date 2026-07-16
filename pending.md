@@ -20,19 +20,14 @@ machine-managed by adversarial_cron.py — replaced nightly, don't edit.
 
 ---
 
-- thing: Phase 1 review — OVERDUE
-  detail: review date 2026-07-12 passed unwritten · phase1-review.md decides extend-or-archive
-  when: open
+- thing: Phase 1b review — extend-or-archive, hard stop
+  detail: phase1-review.md § 5 terms · gate 2 re-posed against the live 3-arm roster
+  when: 29d
   kind: gate
   promoted: true
 
-- thing: "Friday adversarial review · #2"
-  detail: last full review W21 (2026-05-23) · Fridays 07-03 and 07-10 were missed · next 2026-07-17
-  when: 1d
-  kind: ops
-
-- thing: Future-self letters · 2026-04-26 entries
-  detail: convention set, letters pending since April
+- thing: First candidate-vs-null A/B readout
+  detail: compare.py once arms accumulate closed trades · promotion bar p<0.05 over 100+
   when: open
   kind: ops
 
