@@ -31,8 +31,3 @@ Each item:
   detail: exploration vs validation boundary · table schema · graduation criteria
   when: open
   kind: log
-
-- thing: ".env.template exposure entry"
-  detail: caught, rotated, unlogged · post-incident write-up
-  when: open
-  kind: log

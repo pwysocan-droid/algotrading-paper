@@ -31,11 +31,6 @@ machine-managed by adversarial_cron.py — replaced nightly, don't edit.
   when: 1d
   kind: ops
 
-- thing: Decision-log entry · .env.template exposure
-  detail: caught, rotated, unlogged since May · nightly skeptic's first TOMORROW pick
-  when: open
-  kind: log
-
 - thing: Future-self letters · 2026-04-26 entries
   detail: convention set, letters pending since April
   when: open

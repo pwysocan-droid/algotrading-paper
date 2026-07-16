@@ -103,6 +103,48 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-16 — Post-incident record: .env exposure in a Claude Code session (May 2026)
+
+Closing the item flagged since May in pending.md and
+decision_log_queue.md ("caught, rotated, unlogged") and named in both
+the W21 review (attack vector 8) and the first nightly skeptic run as
+the longest-dismissed open item. Written ~2 months after the fact from
+operator recollection — the delay is itself the main lesson.
+
+**What happened.** During a Claude Code session in May 2026, the
+contents of the local env file (.env/.env.local) were displayed in
+the session transcript — the file was echoed to the screen, exposing
+credentials to the conversation context. Best recollection: only the
+ANTHROPIC_API_KEY was exposed; the Alpaca keys were not part of what
+was shown.
+
+**Response.** The operator caught it at the time and rotated the
+Anthropic API key. The Alpaca paper keys were judged unexposed and
+kept ("the keys online are good"). No evidence of misuse appeared.
+
+**What the evidence supports.** A full git-history search (2026-07-16)
+confirms no real credential was ever committed to the repo — every
+version of .env.template contains only placeholders, and .env was
+never tracked. The exposure surface was the session transcript, not
+the repository.
+
+**Lessons, committed:**
+1. **Log incidents the day they happen.** This record is ~60 days
+   late and is written from memory. The details that would matter in
+   a real postmortem (exact date, what command echoed the file,
+   whether the transcript persisted anywhere) are gone. The write-up
+   cost ten minutes; the deferral cost the facts.
+2. **Secrets should never be echoed to a session.** Tools and
+   assistants working in this repo must read credentials only via
+   code paths that need them (load_dotenv), never cat/print an env
+   file. Structural guard now in place: this session's checks read
+   key *names* only (`grep -o '^[A-Z_]*=' .env`), never values.
+3. **Rotation was the right call and is cheap.** Paper-trading keys
+   have no capital at risk, but the audited llm_calls spend rides on
+   the Anthropic key — rotate first, investigate second.
+
+---
+
 ## 2026-07-16 — Null variant live: the placebo arm is the first (and only) live strategy
 
 Adopting the "permanent null variant" from roadmap.md's parked
