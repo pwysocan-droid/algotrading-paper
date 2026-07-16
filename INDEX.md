@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-16T21:45:04Z
+2026-07-16T21:50:05Z
 
 7 surfaces tracked
 
@@ -17,19 +17,17 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [decision-log.md](decision-log.md) | 2026-07-16T21:37:31Z | Null variant live — first liv… |
+| [decision-log.md](decision-log.md) | 2026-07-16T21:46:17Z | Close the .env exposure item… |
 | [philosophy.md](philosophy.md) | 2026-07-02T20:25:50Z | Merge the adaptation-ladder a… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
-## § 02 — Pending decisions · 5 items
+## § 02 — Pending decisions · 4 items
 
 ▸ Phase 1 review — OVERDUE — review date 2026-07-12 passed unwritten · phase1-review.md decides extend-or-archive
 
 ▸ Friday adversarial review · #2 — last full review W21 (2026-05-23) · Fridays 07-03 and 07-10 were missed · next 2026-07-17
-
-▸ Decision-log entry · .env.template exposure — caught, rotated, unlogged since May · nightly skeptic's first TOMORROW pick
 
 ▸ Future-self letters · 2026-04-26 entries — convention set, letters pending since April
 

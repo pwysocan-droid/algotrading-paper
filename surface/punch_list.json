@@ -2,7 +2,7 @@
   "summary": {
     "due_7d": 2,
     "due_14d": 3,
-    "open": 10,
+    "open": 9,
     "done_this_week": 0
   },
   "gates": [
@@ -70,15 +70,6 @@
       "when_class": "open",
       "thing": "Shadow-signal schema + discipline entry",
       "detail": "exploration vs validation boundary · table schema · graduation criteria",
-      "kind": "log",
-      "promoted": false
-    },
-    {
-      "id": "log:.env.template exposure entry",
-      "when": "open",
-      "when_class": "open",
-      "thing": ".env.template exposure entry",
-      "detail": "caught, rotated, unlogged · post-incident write-up",
       "kind": "log",
       "promoted": false
     }
