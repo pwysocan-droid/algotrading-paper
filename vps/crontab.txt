@@ -5,3 +5,8 @@
 # Every 5 minutes: run the full surface pipeline. Master log captures
 # stdout/stderr; cron-fetch.sh also writes a dated per-day log.
 */5 * * * * /home/trader/algotrading-paper/vps/cron-fetch.sh >> /home/trader/algotrading-paper/vps/logs/cron-master.log 2>&1
+
+# Nightly at 03:32 UTC: adversarial skeptic (adversarial_cron.py).
+# 03:32 sits between the 03:30 and 03:35 fetch cycles so the two jobs
+# never race each other's git operations.
+32 3 * * * /home/trader/algotrading-paper/vps/cron-skeptic.sh >> /home/trader/algotrading-paper/vps/logs/cron-master.log 2>&1
