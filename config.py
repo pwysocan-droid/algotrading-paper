@@ -43,11 +43,19 @@ ALPACA_DATA_BASE_URL: str = "https://data.alpaca.markets"
 
 BAR_TIMEFRAME_MINUTES: int = 5
 
-# Strategy registry. The two defaults, per PROJECT.md "Strategy registry"
-# spec, plus the Week 3 parameter-sweep variants (roadmap.md Week 3 /
-# decision_log_queue.md "Variant-explosion-to-Day-1"), registered together
-# ahead of the Week 2 roster review so replay.py's evidence covers both
-# questions at once: which base strategy, and which parameterization.
+# Strategy registry. ALL VARIANTS RETIRED per decision-log 2026-07-02
+# ("Retire Bollinger and MA-crossover") — every variant with a real sample
+# was negative over the 6-month realistic-constraint backtest. Entries are
+# kept with enabled=False (not deleted) so the replay reports that fed the
+# decision stay reproducible. Nothing here is live; the next roster comes
+# from LLM-surfaced candidates per the adaptation-ladder entry.
+#
+# Original registration context: the two defaults per PROJECT.md "Strategy
+# registry" spec, plus the Week 3 parameter-sweep variants (roadmap.md
+# Week 3 / decision_log_queue.md "Variant-explosion-to-Day-1"), registered
+# together ahead of the Week 2 roster review so replay.py's evidence
+# covered both questions at once: which base strategy, and which
+# parameterization.
 #
 # bollinger_tight/loose/long/quick and macross_fast/slow are named verbatim
 # in PROJECT.md's Week 3 spec ("Examples: ..."). bollinger_verytight,
@@ -74,14 +82,14 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
             "time_exit_hours": 24,
         },
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": True,
     },
     "macross_default": {
         "strategy": "macross",
         "params": {"fast": 12, "slow": 26, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": True,
     },
     # --- Bollinger parameter sweep (5) ---
@@ -89,35 +97,35 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "strategy": "bollinger",
         "params": {"period": 20, "stddev": 1.5, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "bollinger_loose": {
         "strategy": "bollinger",
         "params": {"period": 20, "stddev": 2.5, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "bollinger_long": {
         "strategy": "bollinger",
         "params": {"period": 40, "stddev": 2.0, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "bollinger_quick": {
         "strategy": "bollinger",
         "params": {"period": 10, "stddev": 2.0, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "bollinger_verytight": {  # not in PROJECT.md — extends the tight/loose pattern
         "strategy": "bollinger",
         "params": {"period": 20, "stddev": 1.0, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     # --- MA-crossover parameter sweep (5) ---
@@ -125,35 +133,35 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "strategy": "macross",
         "params": {"fast": 5, "slow": 15, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "macross_slow": {
         "strategy": "macross",
         "params": {"fast": 20, "slow": 50, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "macross_veryfast": {  # not in PROJECT.md — extends the fast/slow pattern
         "strategy": "macross",
         "params": {"fast": 3, "slow": 8, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "macross_veryslow": {  # not in PROJECT.md — extends the fast/slow pattern
         "strategy": "macross",
         "params": {"fast": 30, "slow": 90, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
     "macross_balanced": {  # not in PROJECT.md — midpoint between default and fast
         "strategy": "macross",
         "params": {"fast": 8, "slow": 21, "tp": 0.05, "sl": 0.03},
         "context_keys": [],
-        "enabled": True,
+        "enabled": False,
         "phase_qualified": False,
     },
 }

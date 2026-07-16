@@ -61,8 +61,9 @@ def test_default_registry_has_the_two_defaults_plus_ten_sweep_variants() -> None
     assert STRATEGY_VARIANTS["macross_default"]["params"] == {
         "fast": 12, "slow": 26, "tp": 0.05, "sl": 0.03,
     }
-    assert all(v.get("enabled") is True for v in STRATEGY_VARIANTS.values()), (
-        "all 12 variants should be enabled for the replay pass"
+    assert all(v.get("enabled") is False for v in STRATEGY_VARIANTS.values()), (
+        "all 12 variants must be disabled — retired per decision-log "
+        "2026-07-02 roster call; entries kept only for replay reproducibility"
     )
     assert all(v["strategy"] in ("bollinger", "macross") for v in STRATEGY_VARIANTS.values())
 
