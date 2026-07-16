@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-16T22:20:06Z",
+  "generated_at": "2026-07-16T22:25:10Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-16T22:20:03.761717+00:00",
+    "last_run_iso": "2026-07-16T22:25:07.825688+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-16 · 22:20 UTC",
+    "last_run_human_date": "2026-07-16 · 22:25 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "15615 of 15634 ok · 99.9%",
+    "uptime_recent": "15616 of 15635 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -88,43 +88,43 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "274,481",
+      "count": "274,486",
       "delta": "+1488",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "274481"
+      "value": "274486"
     },
     {
       "name": "bar coverage",
       "count": "98%",
       "delta": "-34",
       "delta_class": "note",
-      "spark": "▇▇▃▇▄██▁",
+      "spark": "▇▇▃▇▅██▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "98"
     },
     {
       "name": "cron runs",
-      "count": "15,634",
+      "count": "15,635",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15634"
+      "value": "15635"
     },
     {
       "name": "llm calls",
-      "count": "3",
-      "delta": "+3",
+      "count": "4",
+      "delta": "+4",
       "delta_class": null,
       "spark": "▁▁▁▁▁▁▁█",
       "spark_class": "growing",
       "key": "llm_calls",
-      "value": "3"
+      "value": "4"
     },
     {
       "name": "decisions",
@@ -209,8 +209,8 @@
     }
   ],
   "llm": {
-    "total_calls": 3,
-    "total_cost_usd": 0.2666,
+    "total_calls": 4,
+    "total_cost_usd": 0.3962,
     "by_caller": [
       {
         "called_from": "adversarial_cron",
@@ -218,6 +218,13 @@
         "calls": 1,
         "tokens": 1087,
         "cost_usd": 0.0075
+      },
+      {
+        "called_from": "candidate_synthesis",
+        "model": "claude-opus-4-8",
+        "calls": 1,
+        "tokens": 7011,
+        "cost_usd": 0.1295
       },
       {
         "called_from": "friday_bear_case",
