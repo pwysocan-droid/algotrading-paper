@@ -229,3 +229,139 @@ def test_pending_signals_excludes_decided(tmp_db: Path) -> None:
         )
         pending = execute.pending_signals(conn)
     assert {s.id for s in pending} == {sid2}
+
+
+# --- Layer 4 exits (manage_exits) -------------------------------------------
+
+
+def _seed_bar(
+    db_path: Path, symbol: str, ts: str,
+    high: float, low: float, close: float,
+) -> None:
+    with db.connect(db_path) as conn:
+        conn.execute(
+            "INSERT INTO bars (symbol, timestamp, open, high, low, close, volume, fetched_at)"
+            " VALUES (?, ?, ?, ?, ?, ?, 1.0, ?)",
+            (symbol, ts, close, high, low, close, ts),
+        )
+
+
+def _open_trade(
+    db_path: Path, symbol: str = "BTC/USD", side: str = "buy",
+    entry_price: float = 100.0, qty: float = 2.0,
+    entry_time: str = "2026-07-16T00:00:00+00:00",
+) -> int:
+    sid = _seed_signal(db_path, symbol=symbol, side=side, price=entry_price,
+                       bar_timestamp=entry_time)
+    with db.connect(db_path) as conn:
+        cur = conn.execute(
+            "INSERT INTO trades (signal_id, variant_name, symbol, side, qty,"
+            " entry_price, entry_time, is_real_money, status)"
+            " VALUES (?, 'null_baseline', ?, ?, ?, ?, ?, 0, 'open')",
+            (sid, symbol, side, qty, entry_price, entry_time),
+        )
+        return int(cur.lastrowid)
+
+
+def _trade_row(db_path: Path, trade_id: int):
+    with db.connect(db_path) as conn:
+        return conn.execute("SELECT * FROM trades WHERE id = ?", (trade_id,)).fetchone()
+
+
+def test_manage_exits_take_profit(tmp_db: Path) -> None:
+    tid = _open_trade(tmp_db, entry_price=100.0)
+    _seed_bar(tmp_db, "BTC/USD", "2026-07-16T00:05:00+00:00", high=106.0, low=101.0, close=104.0)
+    now = datetime(2026, 7, 16, 0, 10, tzinfo=timezone.utc)
+
+    closed = execute.manage_exits(db_path=tmp_db, now=now)
+
+    assert closed == 1
+    row = _trade_row(tmp_db, tid)
+    assert row["status"] == "closed"
+    assert row["exit_reason"] == "take_profit"
+    assert row["exit_price"] == pytest.approx(105.0)
+    assert row["pnl_usd"] == pytest.approx(10.0)  # (105-100) * 2
+
+
+def test_manage_exits_stop_loss_wins_ties(tmp_db: Path) -> None:
+    tid = _open_trade(tmp_db, entry_price=100.0)
+    # bar crosses BOTH stop (97) and target (105) — conservative: stop first
+    _seed_bar(tmp_db, "BTC/USD", "2026-07-16T00:05:00+00:00", high=106.0, low=96.0, close=100.0)
+    now = datetime(2026, 7, 16, 0, 10, tzinfo=timezone.utc)
+
+    execute.manage_exits(db_path=tmp_db, now=now)
+
+    row = _trade_row(tmp_db, tid)
+    assert row["exit_reason"] == "stop_loss"
+    assert row["exit_price"] == pytest.approx(97.0)
+    assert row["pnl_usd"] == pytest.approx(-6.0)
+
+
+def test_manage_exits_sell_side_directions(tmp_db: Path) -> None:
+    tid = _open_trade(tmp_db, side="sell", entry_price=100.0)
+    # for a short: profit target is 95, stop is 103; bar dips to 94 → take profit
+    _seed_bar(tmp_db, "BTC/USD", "2026-07-16T00:05:00+00:00", high=101.0, low=94.0, close=96.0)
+    now = datetime(2026, 7, 16, 0, 10, tzinfo=timezone.utc)
+
+    execute.manage_exits(db_path=tmp_db, now=now)
+
+    row = _trade_row(tmp_db, tid)
+    assert row["exit_reason"] == "take_profit"
+    assert row["exit_price"] == pytest.approx(95.0)
+    assert row["pnl_usd"] == pytest.approx(10.0)  # (100-95) * 2
+
+
+def test_manage_exits_time_exit(tmp_db: Path) -> None:
+    tid = _open_trade(tmp_db, entry_price=100.0, entry_time="2026-07-15T00:00:00+00:00")
+    # quiet bar, no stop/target cross, but 25h elapsed
+    _seed_bar(tmp_db, "BTC/USD", "2026-07-16T00:55:00+00:00", high=100.5, low=99.5, close=100.2)
+    now = datetime(2026, 7, 16, 1, 0, tzinfo=timezone.utc)
+
+    execute.manage_exits(db_path=tmp_db, now=now)
+
+    row = _trade_row(tmp_db, tid)
+    assert row["exit_reason"] == "time_exit"
+    assert row["exit_price"] == pytest.approx(100.2)
+
+
+def test_manage_exits_leaves_healthy_position_open(tmp_db: Path) -> None:
+    tid = _open_trade(tmp_db, entry_price=100.0)
+    _seed_bar(tmp_db, "BTC/USD", "2026-07-16T00:05:00+00:00", high=101.0, low=99.0, close=100.5)
+    now = datetime(2026, 7, 16, 0, 10, tzinfo=timezone.utc)
+
+    closed = execute.manage_exits(db_path=tmp_db, now=now)
+
+    assert closed == 0
+    assert _trade_row(tmp_db, tid)["status"] == "open"
+
+
+def test_manage_exits_no_bars_no_crash(tmp_db: Path) -> None:
+    _open_trade(tmp_db, symbol="AVAX/USD")
+    closed = execute.manage_exits(db_path=tmp_db, now=datetime(2026, 7, 16, tzinfo=timezone.utc))
+    assert closed == 0
+
+
+def test_closed_position_frees_slot_for_new_trade(tmp_db: Path) -> None:
+    """The deadlock this feature exists to prevent: cap reached → exit → slot free."""
+    for i in range(MAX_CONCURRENT_POSITIONS):
+        _open_trade(tmp_db, symbol=f"SYM{i}/USD", entry_price=100.0)
+
+    sid = _seed_signal(tmp_db, symbol="LINK/USD", price=10.0,
+                       bar_timestamp="2026-07-16T00:05:00+00:00")
+    sig = _pending(tmp_db, sid)
+    with db.connect(tmp_db) as conn:
+        _, action, reason = execute.execute_signal(conn, sig, entry_price=10.0)
+    assert action == "rejected"
+    assert "concurrent" in reason
+
+    # one position take-profits...
+    _seed_bar(tmp_db, "SYM0/USD", "2026-07-16T00:05:00+00:00", high=106.0, low=101.0, close=105.0)
+    execute.manage_exits(db_path=tmp_db, now=datetime(2026, 7, 16, 0, 10, tzinfo=timezone.utc))
+
+    # ...and the same signal would now place (fresh signal, new bar ts)
+    sid2 = _seed_signal(tmp_db, symbol="LINK/USD", price=10.0,
+                        bar_timestamp="2026-07-16T00:10:00+00:00")
+    sig2 = _pending(tmp_db, sid2)
+    with db.connect(tmp_db) as conn:
+        _, action2, _ = execute.execute_signal(conn, sig2, entry_price=10.0)
+    assert action2 == "placed"

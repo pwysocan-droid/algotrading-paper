@@ -103,6 +103,49 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-16 — Null variant live: the placebo arm is the first (and only) live strategy
+
+Adopting the "permanent null variant" from roadmap.md's parked
+candidates, per phase1-review.md § 5 term 1 (archive trigger
+2026-07-24). `null_baseline` emits deterministic pseudo-random
+buy/sell signals — hash of (symbol, bar_timestamp), p=0.10 per
+symbol per bar — through the full live path: signals.py →
+execute.py's position limits → Layer 4 exits, on the VPS cron every
+5 minutes.
+
+**What it is for.** Three jobs, none of which is making money:
+1. **Close the first live loop.** Ten weeks produced zero
+   signals/decisions/trades; both machine reviews named this the
+   terminal gap ("2016 successful runs, 0 decisions"). The loop has
+   to be proven with a strategy whose behavior is fully understood
+   before any candidate strategy's results can be attributed to the
+   candidate rather than to loop bugs.
+2. **The placebo arm.** Every LLM-surfaced candidate must beat null
+   under identical constraints (compare.py, p<0.05, 100+ trades) or
+   its edge is noise. Never retired — every adaptation-ladder rung
+   is measured against it.
+3. **Exercise the constraint layer live.** The 6-month backtest
+   showed constraints dominate strategy (99.6% rejection); null's
+   rejections populate the decisions table with real
+   rejection-reason data.
+
+**Determinism matters:** random() would double-signal on re-runs and
+make backtests unreproducible. The hash-based roll plus the signals
+table's UNIQUE constraint makes every cycle idempotent.
+
+**Layer 4 exits built alongside** (execute.manage_exits): stop/target
+from each open trade's latest bar (conservative — stop wins ties,
+matching replay), 24h time exit. Without exits the 5-position cap
+deadlocks the loop after 5 trades — the placebo would have proven
+the loop broken instead of working.
+
+**Expected P&L: slowly negative** (fees on random entries). That is
+the design. If null_baseline shows a *positive* edge over a real
+sample, something is wrong with the simulator, the fee model, or the
+market data — investigate before believing any candidate's results.
+
+---
+
 ## 2026-07-02 — Retire Bollinger and MA-crossover (Week 2 roster call, resolved on 6-month evidence)
 
 The falsifiable hypothesis committed at the reframe said: if neither

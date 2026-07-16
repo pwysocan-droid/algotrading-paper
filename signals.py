@@ -11,6 +11,7 @@ No side effects. The driver below is what writes Signal rows to the DB.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 import statistics
@@ -150,9 +151,45 @@ def macross_strategy(
     )
 
 
+def null_strategy(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """The placebo arm (roadmap.md "Permanent null variant"; phase1-review.md
+    § 5 term 1). Random buy/sell signals with no market information — any
+    candidate strategy must beat this under identical constraints, or its
+    edge is noise wearing a thesis.
+
+    Deterministic pseudo-randomness from (symbol, bar_timestamp), NOT
+    random(): the same bar always produces the same decision, so re-running
+    a cycle is idempotent (paired with the signals table's UNIQUE constraint)
+    and backtests over the same window are reproducible.
+    """
+    p = float(params.get("p", 0.10))
+    if not bars:
+        return None
+    last = bars[-1]
+
+    digest = hashlib.sha256(f"{last.symbol}|{last.timestamp}".encode()).digest()
+    roll = int.from_bytes(digest[:8], "big") / 2**64  # uniform [0, 1)
+    if roll >= p:
+        return None
+    side = "buy" if digest[8] % 2 == 0 else "sell"
+
+    return Signal(
+        symbol=last.symbol,
+        variant_name="",
+        strategy="null",
+        side=side,
+        bar_timestamp=last.timestamp,
+        price_at_signal=last.close,
+        reasoning={"p": p, "roll": roll, "placebo": True},
+    )
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
+    "null": null_strategy,
 }
 
 

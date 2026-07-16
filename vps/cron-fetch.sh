@@ -52,6 +52,18 @@ else
   log "fetch.py FAILED rc=${FETCH_RC} (runs row logged status='failed')"
 fi
 
+# --- Trade cycle: signals → execution → exits, on the fresh bars. ---
+# Non-fatal: a cycle failure is logged and visible in the surface, but
+# doesn't block rendering/committing (honest-failure discipline, same
+# as fetch). Skipped when fetch failed — no fresh bars to act on.
+if [ "${FETCH_RC}" -eq 0 ]; then
+  if python trade_cycle.py >>"${DAY_LOG}" 2>&1; then
+    log "trade_cycle.py ok"
+  else
+    log "WARN: trade_cycle.py failed"
+  fi
+fi
+
 # --- Regenerate surfaces regardless of fetch outcome ---
 python render_index.py >>"${DAY_LOG}" 2>&1 || log "WARN: render_index.py failed"
 python scripts/generate_surface.py >>"${DAY_LOG}" 2>&1 || log "WARN: generate_surface.py failed"

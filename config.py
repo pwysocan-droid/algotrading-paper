@@ -72,6 +72,16 @@ BAR_TIMEFRAME_MINUTES: int = 5
 # all values match the global defaults, but it's a real gap if a future
 # variant wants different risk parameters.
 STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
+    # The placebo arm — the ONLY live variant (phase1-review.md § 5 term 1,
+    # first live loop; decision-log 2026-07-16). Never retired: every higher
+    # rung of the adaptation ladder is measured against it.
+    "null_baseline": {
+        "strategy": "null",
+        "params": {"p": 0.10, "tp": 0.05, "sl": 0.03},
+        "context_keys": [],
+        "enabled": True,
+        "phase_qualified": False,
+    },
     "bollinger_default": {
         "strategy": "bollinger",
         "params": {

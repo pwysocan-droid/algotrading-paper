@@ -41,31 +41,30 @@ def test_empty_registry_emits_zero_signals(populated_bars_db: Path) -> None:
     assert n == 0
 
 
-def test_default_registry_has_the_two_defaults_plus_ten_sweep_variants() -> None:
+def test_registry_null_baseline_is_the_only_live_variant() -> None:
     from config import STRATEGY_VARIANTS
-    expected = {
+    retired = {
         "bollinger_default", "macross_default",
         "bollinger_tight", "bollinger_loose", "bollinger_long",
         "bollinger_quick", "bollinger_verytight",
         "macross_fast", "macross_slow", "macross_veryfast",
         "macross_veryslow", "macross_balanced",
     }
-    assert set(STRATEGY_VARIANTS.keys()) == expected, (
-        "registry should hold the 2 PROJECT.md defaults plus the 10 Week-3 "
-        "parameter-sweep variants (12 total)"
+    assert set(STRATEGY_VARIANTS.keys()) == retired | {"null_baseline"}
+
+    assert STRATEGY_VARIANTS["null_baseline"]["enabled"] is True, (
+        "the placebo arm is the only live variant (phase1-review.md § 5 term 1)"
     )
-    assert len(STRATEGY_VARIANTS) == 12
+    assert STRATEGY_VARIANTS["null_baseline"]["strategy"] == "null"
+    assert all(
+        STRATEGY_VARIANTS[name].get("enabled") is False for name in retired
+    ), (
+        "all 12 backtest variants stay disabled — retired per decision-log "
+        "2026-07-02 roster call; entries kept only for replay reproducibility"
+    )
     assert STRATEGY_VARIANTS["bollinger_default"]["params"] == {
         "period": 20, "stddev": 2.0, "tp": 0.05, "sl": 0.03, "time_exit_hours": 24,
     }
-    assert STRATEGY_VARIANTS["macross_default"]["params"] == {
-        "fast": 12, "slow": 26, "tp": 0.05, "sl": 0.03,
-    }
-    assert all(v.get("enabled") is False for v in STRATEGY_VARIANTS.values()), (
-        "all 12 variants must be disabled — retired per decision-log "
-        "2026-07-02 roster call; entries kept only for replay reproducibility"
-    )
-    assert all(v["strategy"] in ("bollinger", "macross") for v in STRATEGY_VARIANTS.values())
 
 
 def test_run_variant_with_disabled_variant_skips(populated_bars_db: Path) -> None:
@@ -222,3 +221,45 @@ class TestMacrossStrategy:
     def test_registered_in_strategy_registry(self) -> None:
         assert signals.STRATEGY_REGISTRY["bollinger"] is bollinger_strategy
         assert signals.STRATEGY_REGISTRY["macross"] is macross_strategy
+        assert signals.STRATEGY_REGISTRY["null"] is signals.null_strategy
+
+
+class TestNullStrategy:
+    def _bar(self, symbol: str, ts: str) -> BarRow:
+        return BarRow(symbol=symbol, timestamp=ts, open=100.0, high=100.0,
+                      low=100.0, close=100.0, volume=1.0)
+
+    def test_deterministic_per_bar(self) -> None:
+        bars = [self._bar("BTC/USD", "2026-07-16T00:00:00+00:00")]
+        results = [signals.null_strategy(bars, {"p": 0.5}, {}) for _ in range(5)]
+        first = results[0]
+        for r in results[1:]:
+            if first is None:
+                assert r is None
+            else:
+                assert r is not None and r.side == first.side
+
+    def test_fire_rate_approximates_p(self) -> None:
+        fired = 0
+        for i in range(1000):
+            bars = [self._bar("BTC/USD", f"2026-07-16T{i//60:02d}:{i%60:02d}:00+00:00")]
+            if signals.null_strategy(bars, {"p": 0.10}, {}) is not None:
+                fired += 1
+        assert 60 <= fired <= 145, f"~10% expected over 1000 bars, got {fired}"
+
+    def test_both_sides_occur(self) -> None:
+        sides = set()
+        for i in range(500):
+            bars = [self._bar("ETH/USD", f"2026-07-{(i%28)+1:02d}T{i//60:02d}:{i%60:02d}:00+00:00")]
+            sig = signals.null_strategy(bars, {"p": 1.0}, {})
+            assert sig is not None  # p=1.0 always fires
+            sides.add(sig.side)
+        assert sides == {"buy", "sell"}
+
+    def test_p_zero_never_fires(self) -> None:
+        for i in range(100):
+            bars = [self._bar("SOL/USD", f"2026-07-16T00:{i%60:02d}:00+00:00")]
+            assert signals.null_strategy(bars, {"p": 0.0}, {}) is None
+
+    def test_empty_bars_returns_none(self) -> None:
+        assert signals.null_strategy([], {"p": 1.0}, {}) is None

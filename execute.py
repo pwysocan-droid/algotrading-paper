@@ -29,7 +29,10 @@ from config import (
     MAX_CONCURRENT_POSITIONS,
     MAX_POSITION_USD,
     MAX_TOTAL_EXPOSURE_USD,
+    STOP_LOSS_PCT,
     SYMBOL_COOLDOWN_HOURS,
+    TAKE_PROFIT_PCT,
+    TIME_EXIT_HOURS,
 )
 
 
@@ -261,3 +264,86 @@ def process_pending(db_path: Path | None = None) -> int:
             if action == "placed":
                 placed += 1
     return placed
+
+
+def _close_trade(
+    conn: sqlite3.Connection,
+    trade: sqlite3.Row,
+    exit_price: float,
+    exit_time: str,
+    exit_reason: str,
+) -> None:
+    if trade["side"] == "buy":
+        pnl_usd = (exit_price - trade["entry_price"]) * trade["qty"]
+        pnl_pct = (exit_price / trade["entry_price"] - 1.0) * 100.0
+    else:
+        pnl_usd = (trade["entry_price"] - exit_price) * trade["qty"]
+        pnl_pct = (1.0 - exit_price / trade["entry_price"]) * 100.0
+    conn.execute(
+        """
+        UPDATE trades
+           SET exit_price = ?, exit_time = ?, exit_reason = ?,
+               pnl_usd = ?, pnl_pct = ?, status = 'closed'
+         WHERE id = ?
+        """,
+        (exit_price, exit_time, exit_reason, pnl_usd, pnl_pct, trade["id"]),
+    )
+
+
+def manage_exits(
+    db_path: Path | None = None,
+    now: datetime | None = None,
+    take_profit_pct: float = TAKE_PROFIT_PCT,
+    stop_loss_pct: float = STOP_LOSS_PCT,
+    time_exit_hours: int = TIME_EXIT_HOURS,
+) -> int:
+    """Layer 4 exits for open live-paper trades. Returns count closed.
+
+    Without this, open positions never free their slots and the
+    5-concurrent-position cap deadlocks the whole loop after 5 trades.
+    Checks each open trade against its symbol's latest bar: stop/target
+    from the bar's low/high (conservative — if both cross in one bar,
+    assume the stop hit first, matching replay.simulate_exit), then the
+    time exit at the bar's close.
+    """
+    ts = now or datetime.now(timezone.utc)
+    closed = 0
+    with db.connect(db_path) as conn:
+        for trade in open_positions(conn):
+            bar = conn.execute(
+                """
+                SELECT timestamp, high, low, close FROM bars
+                 WHERE symbol = (SELECT symbol FROM trades WHERE id = ?)
+                 ORDER BY timestamp DESC LIMIT 1
+                """,
+                (trade["id"],),
+            ).fetchone()
+            if bar is None:
+                continue
+
+            entry_price = trade["entry_price"]
+            if trade["side"] == "buy":
+                tp = entry_price * (1.0 + take_profit_pct)
+                sl = entry_price * (1.0 - stop_loss_pct)
+                sl_hit = bar["low"] <= sl
+                tp_hit = bar["high"] >= tp
+            else:
+                tp = entry_price * (1.0 - take_profit_pct)
+                sl = entry_price * (1.0 + stop_loss_pct)
+                sl_hit = bar["high"] >= sl
+                tp_hit = bar["low"] <= tp
+
+            entry_time = datetime.fromisoformat(trade["entry_time"])
+            if entry_time.tzinfo is None:
+                entry_time = entry_time.replace(tzinfo=timezone.utc)
+
+            if sl_hit:  # conservative: stop wins ties
+                _close_trade(conn, trade, sl, ts.isoformat(), "stop_loss")
+            elif tp_hit:
+                _close_trade(conn, trade, tp, ts.isoformat(), "take_profit")
+            elif ts - entry_time >= timedelta(hours=time_exit_hours):
+                _close_trade(conn, trade, bar["close"], ts.isoformat(), "time_exit")
+            else:
+                continue
+            closed += 1
+    return closed
