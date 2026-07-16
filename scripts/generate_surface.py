@@ -808,6 +808,46 @@ def build_llm(conn: sqlite3.Connection) -> dict:
     }
 
 
+def build_scoreboard(conn: sqlite3.Connection) -> dict:
+    """Per-variant live paper-trade standings — who is actually winning.
+    Closed-trade P&L only (open positions counted but not marked to
+    market: unrealized P&L would need a price join and can mislead)."""
+    rows = conn.execute(
+        """
+        SELECT variant_name,
+               COUNT(*) AS placed,
+               SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS open_n,
+               SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) AS closed_n,
+               SUM(CASE WHEN status = 'closed' AND pnl_usd > 0 THEN 1 ELSE 0 END) AS wins,
+               COALESCE(SUM(CASE WHEN status = 'closed' THEN pnl_usd END), 0) AS pnl
+          FROM trades
+         GROUP BY variant_name
+         ORDER BY pnl DESC
+        """
+    ).fetchall()
+    variants = [
+        {
+            "name": r["variant_name"],
+            "placed": r["placed"],
+            "open": r["open_n"],
+            "closed": r["closed_n"],
+            "wins": r["wins"],
+            "win_rate": (r["wins"] / r["closed_n"]) if r["closed_n"] else None,
+            "pnl_usd": round(r["pnl"], 2),
+        }
+        for r in rows
+    ]
+    return {
+        "variants": variants,
+        "total": {
+            "placed": sum(v["placed"] for v in variants),
+            "open": sum(v["open"] for v in variants),
+            "closed": sum(v["closed"] for v in variants),
+            "pnl_usd": round(sum(v["pnl_usd"] for v in variants), 2),
+        },
+    }
+
+
 def generate(
     repo_root: Path = REPO_ROOT,
     db_path: Path | None = None,
@@ -825,6 +865,7 @@ def generate(
             "accumulating": build_accumulating(conn, repo_root, now),
             "timetable": build_timetable(conn, now),
             "llm": build_llm(conn),
+            "scoreboard": build_scoreboard(conn),
         }
 
 

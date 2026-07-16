@@ -198,6 +198,41 @@
   }
   .learn-row .status .check.overdue { color: var(--red); }
 
+  /* SCOREBOARD */
+  .score-row {
+    display: grid; grid-template-columns: 1fr 40px 34px 44px 66px;
+    align-items: baseline; gap: 8px 12px;
+    padding: 7px 0; border-bottom: 1px solid var(--hairline);
+  }
+  .score-row:first-of-type { border-top: 1px solid var(--hairline); }
+  .score-row .name { font-size: 10px; color: var(--fg-dim); letter-spacing: 0.02em; }
+  .score-row .n, .score-row .open-n {
+    font-size: 13px; font-weight: 500; color: var(--fg);
+    text-align: right; letter-spacing: -0.01em;
+  }
+  .score-row .open-n.zero { color: var(--fg-ghost); }
+  .score-row .winrate { font-size: 11px; color: var(--fg-dim); text-align: right; }
+  .score-row .pnl {
+    font-size: 13px; font-weight: 500; text-align: right;
+    letter-spacing: -0.01em;
+  }
+  .score-row .pnl.pos { color: var(--teal); }
+  .score-row .pnl.neg { color: var(--red); }
+  .score-row .pnl.flat { color: var(--fg-dim); }
+  .score-row.total .name { color: var(--fg); font-weight: 500; }
+  .score-head {
+    display: grid; grid-template-columns: 1fr 40px 34px 44px 66px;
+    gap: 8px 12px; padding: 0 0 5px;
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--fg-ghost);
+  }
+  .score-head > div { text-align: right; }
+  .score-head > div:first-child { text-align: left; }
+  .score-empty {
+    padding: 12px 0; font-size: 10px; font-style: italic;
+    color: var(--fg-ghost); text-align: center;
+  }
+
   /* LLM TELEMETRY */
   .llm-row {
     display: grid; grid-template-columns: 1fr 44px 70px 60px;
@@ -269,40 +304,50 @@
     <div id="q-rows"></div>
   </div>
 
-  <!-- ii. PHASE 1B TRIGGERS -->
+  <!-- ii. SCOREBOARD -->
   <div class="section">
     <div class="section-label">
       <span class="idx">ii.</span>
+      <span class="name">scoreboard</span>
+      <span class="qualifier" id="score-qualifier">live paper · closed P&amp;L</span>
+    </div>
+    <div id="score-rows"></div>
+  </div>
+
+  <!-- iii. PHASE 1B TRIGGERS -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">iii.</span>
       <span class="name">archive triggers</span>
       <span class="qualifier">phase1-review.md § 5 · any two missed = archive</span>
     </div>
     <div id="trig-rows"></div>
   </div>
 
-  <!-- iii. HYPOTHESES -->
+  <!-- iv. HYPOTHESES -->
   <div class="section">
     <div class="section-label">
-      <span class="idx">iii.</span>
+      <span class="idx">iv.</span>
       <span class="name">falsifiable hypotheses</span>
       <span class="qualifier" id="hyp-qualifier">—</span>
     </div>
     <div id="hyp-rows"></div>
   </div>
 
-  <!-- iv. LEARNINGS -->
+  <!-- v. LEARNINGS -->
   <div class="section">
     <div class="section-label">
-      <span class="idx">iv.</span>
+      <span class="idx">v.</span>
       <span class="name">learnings</span>
       <span class="qualifier" id="learn-qualifier">mined from decision-log.md</span>
     </div>
     <div id="learn-rows"></div>
   </div>
 
-  <!-- v. LLM BACKBONE -->
+  <!-- vi. LLM BACKBONE -->
   <div class="section">
     <div class="section-label">
-      <span class="idx">v.</span>
+      <span class="idx">vi.</span>
       <span class="name">llm backbone</span>
       <span class="qualifier" id="llm-qualifier">llm_calls · audited</span>
     </div>
@@ -435,6 +480,43 @@ function renderLearnings(ledger) {
   }
 }
 
+function renderScoreboard(surface) {
+  const rows = document.getElementById('score-rows');
+  const sb = surface.scoreboard;
+  if (!sb || !sb.variants.length) {
+    rows.appendChild(el('div', 'score-empty',
+      'no trades yet — the loop is live, the table fills itself'));
+    return;
+  }
+  document.getElementById('score-qualifier').textContent =
+    `${sb.total.placed} placed · ${sb.total.open} open · closed P&L`;
+
+  const head = el('div', 'score-head');
+  for (const h of ['variant', 'n', 'open', 'win%', 'P&L']) head.appendChild(el('div', null, h));
+  rows.appendChild(head);
+
+  const pnlCls = v => v > 0 ? 'pnl pos' : v < 0 ? 'pnl neg' : 'pnl flat';
+  for (const v of sb.variants) {
+    const row = el('div', 'score-row');
+    row.appendChild(el('div', 'name', v.name));
+    row.appendChild(el('div', 'n', String(v.placed)));
+    row.appendChild(el('div', `open-n${v.open ? '' : ' zero'}`, String(v.open)));
+    row.appendChild(el('div', 'winrate',
+      v.win_rate != null ? `${Math.round(v.win_rate * 100)}%` : '—'));
+    row.appendChild(el('div', pnlCls(v.pnl_usd),
+      `${v.pnl_usd < 0 ? '-' : '+'}$${Math.abs(v.pnl_usd).toFixed(2)}`));
+    rows.appendChild(row);
+  }
+  const total = el('div', 'score-row total');
+  total.appendChild(el('div', 'name', 'portfolio'));
+  total.appendChild(el('div', 'n', String(sb.total.placed)));
+  total.appendChild(el('div', `open-n${sb.total.open ? '' : ' zero'}`, String(sb.total.open)));
+  total.appendChild(el('div', 'winrate', ''));
+  total.appendChild(el('div', pnlCls(sb.total.pnl_usd),
+    `${sb.total.pnl_usd < 0 ? '-' : '+'}$${Math.abs(sb.total.pnl_usd).toFixed(2)}`));
+  rows.appendChild(total);
+}
+
 function renderLlm(surface) {
   const rows = document.getElementById('llm-rows');
   const llm = surface.llm || { total_calls: 0, by_caller: [] };
@@ -488,7 +570,10 @@ async function boot() {
   const days = Math.ceil((HARD_STOP - Date.now()) / 86400000);
   document.getElementById('phase-days').textContent = days >= 0 ? `${days}d` : 'ended';
 
-  if (surface) renderLlm(surface);
+  if (surface) {
+    renderScoreboard(surface);
+    renderLlm(surface);
+  }
 }
 
 boot();

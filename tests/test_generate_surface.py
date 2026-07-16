@@ -675,3 +675,58 @@ def test_surface_json_includes_llm_block(tmp_db: Path, tmp_path: Path) -> None:
     data = gs.generate(repo_root=repo, db_path=tmp_db)
     assert "llm" in data
     assert data["llm"]["total_calls"] == 0
+
+
+# --- Scoreboard --------------------------------------------------------------
+
+
+def test_build_scoreboard_empty(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        sb = gs.build_scoreboard(conn)
+    assert sb["variants"] == []
+    assert sb["total"]["placed"] == 0
+
+
+def test_build_scoreboard_ranks_by_closed_pnl(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        rows = [
+            # (variant, status, pnl)
+            ("null_baseline", "closed", -1.50),
+            ("null_baseline", "closed", 2.00),
+            ("null_baseline", "open", None),
+            ("cand_a", "closed", 10.00),
+            ("cand_a", "closed", -2.00),
+        ]
+        for i, (variant, status, pnl) in enumerate(rows):
+            conn.execute(
+                "INSERT INTO signals (symbol, variant_name, strategy, side, bar_timestamp,"
+                " price_at_signal, reasoning_json, emitted_at)"
+                " VALUES ('BTC/USD', ?, 's', 'buy', ?, 100.0, '{}', 't')",
+                (variant, f"2026-07-16T00:{i:02d}:00+00:00"),
+            )
+            conn.execute(
+                "INSERT INTO trades (signal_id, variant_name, symbol, side, qty, entry_price,"
+                " entry_time, pnl_usd, is_real_money, status)"
+                " VALUES (?, ?, 'BTC/USD', 'buy', 1.0, 100.0, ?, ?, 0, ?)",
+                (i + 1, variant, f"2026-07-16T00:{i:02d}:00+00:00", pnl, status),
+            )
+        sb = gs.build_scoreboard(conn)
+
+    assert [v["name"] for v in sb["variants"]] == ["cand_a", "null_baseline"]
+    cand = sb["variants"][0]
+    assert cand["placed"] == 2 and cand["closed"] == 2 and cand["open"] == 0
+    assert cand["pnl_usd"] == pytest.approx(8.0)
+    assert cand["win_rate"] == pytest.approx(0.5)
+    null = sb["variants"][1]
+    assert null["open"] == 1
+    assert null["pnl_usd"] == pytest.approx(0.5)
+    assert sb["total"]["placed"] == 5
+    assert sb["total"]["open"] == 1
+    assert sb["total"]["pnl_usd"] == pytest.approx(8.5)
+
+
+def test_scoreboard_in_surface_json(tmp_db: Path, tmp_path: Path) -> None:
+    repo = tmp_path / "repo2"
+    repo.mkdir()
+    data = gs.generate(repo_root=repo, db_path=tmp_db)
+    assert "scoreboard" in data
