@@ -56,12 +56,17 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "weekend_illiquidity_momentum",
     }
     assert set(STRATEGY_VARIANTS.keys()) == retired | candidates | {"null_baseline"}
-    assert all(
-        STRATEGY_VARIANTS[name].get("enabled") is False for name in candidates
-    ), "candidates stay disabled until the gauntlet's top-2 registration"
+
+    # The live roster: null placebo + the gauntlet's top 2 as A/B arms
+    # (reports/gauntlet-2026-07-16.md; decision-log 2026-07-16). Not a
+    # strategy zoo: exactly 3 live.
+    live = {n for n, v in STRATEGY_VARIANTS.items() if v.get("enabled")}
+    assert live == {
+        "null_baseline", "weekend_illiquidity_momentum", "volume_thrust_regime_shift",
+    }
 
     assert STRATEGY_VARIANTS["null_baseline"]["enabled"] is True, (
-        "the placebo arm is the only live variant (phase1-review.md § 5 term 1)"
+        "the placebo arm is permanent (phase1-review.md § 5 term 1)"
     )
     assert STRATEGY_VARIANTS["null_baseline"]["strategy"] == "null"
     assert all(

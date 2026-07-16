@@ -204,12 +204,17 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "enabled": False,
         "phase_qualified": False,
     },
+    # Gauntlet top 2 (reports/gauntlet-2026-07-16.md) — LIVE as A/B arms
+    # against null_baseline, NOT as winners: every candidate was net-
+    # negative after fees in the 180d replay. Registration is the live
+    # experiment the Phase 1b term committed to; promotion still requires
+    # beating null at p<0.05 over 100+ trades (decision-log 2026-07-16).
     "volume_thrust_regime_shift": {
         "strategy": "vol_thrust",
         "params": {"window_bars": 288, "vol_zscore": 3.0, "thrust_body_pct": 0.008,
                    "thrust_search_bars": 3},
         "context_keys": [],
-        "enabled": False,
+        "enabled": True,
         "phase_qualified": False,
     },
     "weekend_illiquidity_momentum": {
@@ -217,7 +222,7 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "params": {"window_bars": 72, "mom_lookback_bars": 12, "mom_threshold": 0.015,
                    "signif_ratio": 2.0, "persistence_bars": 3},
         "context_keys": [],
-        "enabled": False,
+        "enabled": True,
         "phase_qualified": False,
     },
 }

@@ -103,6 +103,49 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-16 — Gauntlet results: every candidate negative net of fees; top 2 registered as A/B arms, not winners
+
+The five LLM-surfaced candidates (reviews/candidates-2026-07-16.md) ran
+the 180-day constrained replay (reports/gauntlet-2026-07-16.md). **All
+five lost money net of fees.** Ranked by edge per constraint slot:
+weekend_illiquidity_momentum −$0.21/trade (n=79),
+volume_thrust_regime_shift −$0.63 (n=38), dead_zone_range_break −$0.88
+(n=13), btc_leads_alt_lag_capture −$1.76 (n=3),
+liquidation_cascade_reclaim −$2.56 (n=4).
+
+**The honest read:**
+1. **No candidate earned promotion.** By the project's own bar,
+   negative is negative. The bottom three additionally have samples
+   (n=3–13) too small to claim anything at all.
+2. **The fee-floor finding replicated on novel strategies.**
+   weekend_illiquidity_momentum is *gross-positive* (win rate 49.4%,
+   gross Sharpe 1.51) and fee-negative — exactly the failure shape the
+   Phase 1 backtest predicted. The edge candidates found is real but
+   smaller than the ~0.6% round-trip cost. (Caught in review: replay's
+   pnl_pct — which Sharpe uses — is gross of fees; pnl_usd is net.
+   The gross/net split is diagnostic here, but Sharpe-on-gross should
+   not be read as risk-adjusted net performance.)
+3. **Registering the top 2 anyway — as experiment arms.** The Phase 1b
+   term commits to a live roster because the live A/B against
+   null_baseline is the architecture test (gate 2's machinery), and
+   paper trades cost nothing. weekend_illiquidity_momentum and
+   volume_thrust_regime_shift are now enabled=True beside the placebo.
+   Registration is explicitly NOT promotion: the promotion bar is
+   unchanged (beat null at p<0.05 over 100+ closed trades, compare.py).
+   The expected outcome is that all three arms lose slowly and the
+   candidates must prove they lose *less than random* — and if a
+   candidate ever beats fees outright, the backtest says be suspicious
+   first (see the null-variant entry's tripwire).
+4. **Aggression-without-rigor check passed.** The temptation was to
+   read weekend's gross Sharpe 1.51 as success. It is noise-plus-fees
+   until the live A/B says otherwise. Writing that down now, before
+   the live data arrives.
+
+Live roster after this entry: null_baseline + weekend_illiquidity_
+momentum + volume_thrust_regime_shift. Three arms, not a zoo.
+
+---
+
 ## 2026-07-16 — Post-incident record: .env exposure in a Claude Code session (May 2026)
 
 Closing the item flagged since May in pending.md and
