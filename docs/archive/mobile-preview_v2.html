@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>algotrading-paper · live</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* === SURFACE === */
+    --bg: #0a0a0a;
+    --hairline: #1c1c1c;
+    --hairline-bright: #2a2a2a;
+
+    /* === TEXT, INFORMATION-RANK ORDERED === */
+    --fg: #e8e8e8;        /* primary: numbers, the data itself */
+    --fg-dim: #888;        /* secondary: labels, names of things */
+    --fg-faint: #555;      /* tertiary: provenance, commentary */
+    --fg-ghost: #333;      /* quaternary: empty placeholders */
+
+    /* === SEMANTIC COLOR === */
+    /* RED — the mechanism in motion.
+       Reserved for: the paddle, the cron-cycle ring arc.
+       The system is currently doing the thing. */
+    --red: #EB0000;
+    --paddle: #EB0000;
+
+    /* TEAL — the project accumulating value.
+       Used for: positive deltas, climbing sparklines,
+       the live "now" marker in the timetable,
+       active countdown numbers. */
+    --teal: #6ee7b7;
+    --teal-dim: #4ab895;  /* the teal at sparkline opacity */
+  }
+
+  /* === TYPOGRAPHIC SCALE ===
+     One scale, applied across the whole surface.
+
+     NUMBERS LEAD. Numbers are always the largest element in
+     their row. Non-numbers are labels.
+
+     --type-figure   18px   the data itself (all numbers)
+     --type-figure-promoted  26px   the gate-bearing number
+                                     ONLY (one row per page max)
+     --type-label    10px   names of things
+     --type-context   10px italic   commentary on a figure
+     --type-mast     12px   masthead title
+     --type-time     17px   the two big times (last/next run)
+
+     Everything mono. Italic is the only style variation
+     allowed, and only for commentary.
+  */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
+  }
+
+  body {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 18px 22px 40px;
+    min-height: 100vh;
+  }
+
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* ============================================================
+     TIER 1 · MASTHEAD + HEADLESS PADDLE
+     The clock IS the page. The paddle sweeps for the cron
+     interval, pauses for the run duration, releases.
+     ============================================================ */
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .masthead-text {
+    padding-top: 4px;
+  }
+
+  .masthead .title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--fg);
+  }
+
+  .masthead .title .slash { color: var(--fg-faint); margin: 0 5px; font-weight: 400; }
+  .masthead .title .sub { color: var(--fg-dim); font-weight: 400; }
+
+  .masthead .timestamp {
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--fg-faint);
+    letter-spacing: 0.02em;
+  }
+
+  /* The headless clock — SBB Mondaine, paddle only, no face */
+  .clock {
+    width: 52px;
+    height: 52px;
+    position: relative;
+    flex: 0 0 52px;
+  }
+
+  .clock svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .clock .ring {
+    fill: none;
+    stroke: var(--hairline-bright);
+    stroke-width: 1;
+  }
+
+  /* The cron-cycle arc — drawn on top of the ring,
+     fills from 0 to 100 over 5 minutes, snaps back on run. */
+  .clock .ring-arc {
+    fill: none;
+    stroke: var(--paddle);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+
+  /* SVG transform-origin: use view-box coordinates so 25,25
+     refers to the SVG's coordinate system (the actual center
+     of the ring), not the rendered pixel box. */
+  .clock .paddle {
+    transform-origin: 25px 25px;
+    transform-box: view-box;
+    /* JS controls rotation directly */
+  }
+
+  /* ============================================================
+     TIER 1 · VITAL SIGNS
+     Cron state. Two columns of clock-derived data. No section
+     header — this is the headline, not a section.
+     ============================================================ */
+
+  .vitals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .vital .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fg-dim);
+    margin-bottom: 5px;
+  }
+
+  .vital .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+    line-height: 1;
+  }
+
+  .vital .sub {
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--fg-faint);
+    letter-spacing: 0;
+  }
+
+  /* ============================================================
+     STATE OF THE EXPERIMENT
+     Same row pattern as `accumulating` below:
+       name | figure | sparkline
+     Number leads. Sparkline is commentary on the number.
+     No per-row dividers. No second-line context. The label
+     does the qualifying work, the way it does in accumulating.
+     ============================================================ */
+
+  .state {
+    margin-bottom: 26px;
+  }
+
+  .state-row {
+    display: grid;
+    grid-template-columns: 1fr 60px 24px 90px;
+    align-items: baseline;
+    gap: 10px 14px;
+    padding: 7px 0;
+  }
+
+  .state-row .name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--fg-dim);
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+  }
+
+  /* Inline qualifier — replaces the separate context row.
+     Same role as `last 24h` at the section level. */
+  .state-row .name .qual {
+    display: block;
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--fg-faint);
+    font-style: italic;
+    letter-spacing: 0;
+  }
+
+  .state-row .figure {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+    text-align: right;
+    line-height: 1;
+  }
+
+  .state-row .unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--fg-faint);
+    text-align: left;
+    line-height: 1;
+    font-weight: 400;
+  }
+
+  .state-row .spark {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--fg-dim);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-align: right;
+  }
+
+  .state-row .spark.empty {
+    color: var(--fg-ghost);
+  }
+
+  .state-row .spark.growing {
+    color: var(--teal-dim);
+  }
+
+  /* ============================================================
+     TIER 2 · SECTION LABELS
+     Quiet markers. Two-letter index + tight uppercase title.
+     ============================================================ */
+
+  .section-label {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .section-label .idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--fg-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .section-label .name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--fg-dim);
+    letter-spacing: 0.12em;
+  }
+
+  .section-label .qualifier {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--fg-faint);
+    letter-spacing: 0;
+    margin-left: auto;
+  }
+
+  /* Quiet underlined link in section qualifiers.
+     Just enough affordance to read as clickable. */
+  .section-label .qualifier .ql-link {
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hairline-bright);
+    font-style: normal;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .section-label .qualifier .ql-link:hover {
+    color: var(--fg);
+    border-bottom-color: var(--fg-faint);
+  }
+
+  /* ============================================================
+     TIER 2 · PENDING — the departures logic
+     Numbers lead. `when` (days remaining) is the data.
+     `thing` is the label that explains what the number is for.
+     ============================================================ */
+
+  .pending {
+    margin-bottom: 26px;
+  }
+
+  .pending-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 36px;
+    align-items: baseline;
+    gap: 14px;
+    padding: 9px 0 8px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .pending-row:first-of-type {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .pending-row .when {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--fg);
+    text-align: left;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .pending-row .when.open {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--fg-faint);
+    font-style: italic;
+  }
+
+  /* Urgent countdowns get teal — the project's clock is running */
+  .pending-row .when.urgent {
+    color: var(--teal);
+  }
+
+  .pending-row .thing {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--fg-dim);
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+
+  .pending-row .thing .detail {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--fg-faint);
+    margin-top: 2px;
+    line-height: 1.4;
+    letter-spacing: 0;
+  }
+
+  .pending-row .kind {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+    text-align: right;
+  }
+
+  .pending-row .kind.gate {
+    color: var(--fg-dim);
+  }
+
+  /* The promoted row — the active gate.
+     The label gets full weight; the number stays at scale. */
+  .pending-row.promoted .thing {
+    color: var(--fg);
+    font-size: 12px;
+  }
+  .pending-row.promoted .kind.gate {
+    color: var(--fg);
+  }
+
+  /* ============================================================
+     TIER 3 · ACCUMULATING
+     Tabular throughput. Numbers lead at the standard scale.
+     ============================================================ */
+
+  .accum {
+    margin-bottom: 26px;
+  }
+
+  .accum-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 12px 50px 90px;
+    align-items: baseline;
+    gap: 8px 14px;
+    padding: 7px 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .accum-row .name {
+    font-size: 10px;
+    color: var(--fg-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .accum-row .count {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--fg);
+    text-align: right;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .accum-row .count.empty {
+    color: var(--fg-ghost);
+  }
+
+  /* Session marker — appears only when the row's value
+     changed since the operator's previous visit (>1h gap).
+     The dot is teal because change = accumulation. */
+  .accum-row .marker {
+    font-size: 11px;
+    color: var(--teal);
+    text-align: center;
+    line-height: 1;
+    opacity: 0;            /* hidden by default */
+    transition: opacity 0.2s;
+  }
+
+  .accum-row .marker.active {
+    opacity: 1;
+  }
+
+  .accum-row .delta {
+    font-size: 10px;
+    color: var(--teal);
+    text-align: right;
+    letter-spacing: 0;
+    font-style: italic;
+  }
+
+  .accum-row .delta.zero {
+    color: var(--fg-ghost);
+    font-style: normal;
+  }
+
+  .accum-row .delta.note {
+    color: var(--fg-faint);
+    font-style: italic;
+  }
+
+  .accum-row .spark {
+    font-size: 12px;
+    color: var(--teal-dim);
+    letter-spacing: 0.04em;
+    text-align: right;
+    line-height: 1;
+  }
+
+  .accum-row .spark.empty {
+    color: var(--fg-ghost);
+  }
+
+  /* ============================================================
+     TIER 3 · TIMETABLE
+     Actual dates. Actual events. Replaces the abstract dot-line.
+     ============================================================ */
+
+  .timetable {
+    margin-bottom: 26px;
+  }
+
+  .tt-row {
+    display: grid;
+    grid-template-columns: 92px 1fr 48px;
+    align-items: baseline;
+    gap: 14px;
+    padding: 7px 0 6px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .tt-row:first-of-type {
+    border-top: 1px solid var(--hairline);
+  }
+
+  /* The current-position row gets the teal accumulation color
+     — this is the project's "now" marker. */
+  .tt-row.now .when {
+    color: var(--teal);
+  }
+  .tt-row.now .what {
+    color: var(--fg);
+  }
+
+  .tt-row .when {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg-dim);
+    letter-spacing: -0.005em;
+    line-height: 1;
+  }
+
+  .tt-row .what {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--fg-dim);
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+
+  .tt-row .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+    text-align: right;
+  }
+
+  .tt-row .tag.gate {
+    color: var(--fg-dim);
+  }
+
+  /* ============================================================
+     TIER 3 · KAHNEMAN (de-weighted)
+     No gradient, no colored border, hairline only.
+     Same vocabulary as the rest of the surface.
+     ============================================================ */
+
+  /* ============================================================
+     CONCEPTUAL ANCHOR · KAHNEMAN
+     Positioned high — the conceptual center of gravity that the
+     data below orbits around. The one place a human voice
+     speaks on a surface otherwise full of measurements.
+
+     Only appears when a real trigger fires (Day 1, pre-gate,
+     pre-review). On days with no trigger, omit entirely.
+     ============================================================ */
+
+  .kahneman {
+    margin-bottom: 26px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .kahneman .trigger {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fg-faint);
+    margin-bottom: 14px;
+  }
+
+  /* Mono throughout — the quote is one of the surface's voices,
+     not a separate register. */
+  .kahneman .body {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--fg);
+    letter-spacing: -0.005em;
+  }
+
+  .kahneman .body em {
+    font-style: italic;
+    color: var(--fg);
+    font-weight: 400;
+  }
+
+  .kahneman .attribution {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--fg-faint);
+    margin-top: 14px;
+    letter-spacing: 0;
+  }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    text-align: center;
+  }
+
+  .footer .phrase {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--fg-dim);
+    line-height: 1.5;
+    letter-spacing: 0;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .footer .provenance {
+    margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--fg-faint);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============================================================
+       MASTHEAD + HEADLESS CLOCK
+       ============================================================ -->
+  <div class="masthead">
+    <div class="masthead-text">
+      <div class="title">algotrading-paper <span class="slash">/</span><span class="sub">live</span></div>
+      <div class="timestamp" id="timestamp">2026-05-17 · 19:24 UTC</div>
+    </div>
+
+    <!-- SBB Mondaine clock, no face.
+         Two time signals:
+         - Paddle: 58s sweep + 2s hold per minute (the
+           Hilfiker rhythm), visible motion at all times.
+         - Ring arc: fills over the 5-minute cron cycle,
+           resets when a run completes. -->
+    <div class="clock" aria-label="cron heartbeat">
+      <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <!-- thin ring (the rim of the missing face) -->
+        <circle class="ring" cx="25" cy="25" r="21" />
+        <!-- cron-cycle arc, drawn over the ring.
+             pathLength=100 lets us animate stroke-dashoffset
+             as a percentage of the cycle directly. -->
+        <circle class="ring-arc" id="ring-arc"
+                cx="25" cy="25" r="21"
+                pathLength="100"
+                stroke-dasharray="100"
+                stroke-dashoffset="100"
+                transform="rotate(-90 25 25)" />
+        <!-- paddle: SBB red, Hilfiker roundel.
+             Geometry centered at (25, 25) so transform-origin
+             via transform-box: view-box rotates it cleanly. -->
+        <g class="paddle" id="paddle">
+          <line x1="25" y1="23" x2="25" y2="8"
+                stroke="var(--paddle)" stroke-width="1.6"
+                stroke-linecap="round" />
+          <circle cx="25" cy="6" r="2.2" fill="var(--paddle)" />
+          <circle cx="25" cy="25" r="1.4" fill="var(--paddle)" />
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       CONCEPTUAL ANCHOR — KAHNEMAN
+       Positioned high. Only appears when a trigger fires.
+       The data below orbits around this thought.
+       ============================================================ -->
+  <div class="kahneman">
+    <div class="trigger">day 1 · planning fallacy</div>
+    <div class="body">
+      You will <em>underestimate</em> how long the accumulation takes. The eight-week curriculum is the antidote, not the obstacle.
+    </div>
+    <div class="attribution">— after Kahneman &amp; Tversky, 1979</div>
+  </div>
+
+  <!-- ============================================================
+       VITAL SIGNS
+       ============================================================ -->
+  <div class="vitals">
+    <div class="vital">
+      <div class="label">last run</div>
+      <div class="value" id="last-run">2m 14s ago</div>
+      <div class="sub">2026-05-17 · 19:22 UTC</div>
+    </div>
+    <div class="vital">
+      <div class="label">next run</div>
+      <div class="value" id="next-run">2m 46s</div>
+      <div class="sub">46 of 47 ok · 97.9%</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       STATE OF THE EXPERIMENT
+       ============================================================ -->
+  <div class="state">
+    <div class="section-label">
+      <span class="idx">i.</span>
+      <span class="name">state</span>
+      <span class="qualifier">phase 1 · day 1</span>
+    </div>
+
+    <div class="state-row">
+      <div class="name">
+        system uptime
+        <span class="qual">46 of 8064 expected · 28-day window</span>
+      </div>
+      <div class="figure">0.6</div>
+      <div class="unit">%</div>
+      <div class="spark growing">▇▇▇▇▆▇▇▇</div>
+    </div>
+    <div class="state-row">
+      <div class="name">
+        trades this week
+        <span class="qual">no strategies registered</span>
+      </div>
+      <div class="figure">0</div>
+      <div class="unit"></div>
+      <div class="spark empty">▁▁▁▁▁▁▁▁</div>
+    </div>
+    <div class="state-row">
+      <div class="name">
+        phase 2 gates
+        <span class="qual">curriculum day 1 · open after week 4</span>
+      </div>
+      <div class="figure">0</div>
+      <div class="unit">/3</div>
+      <div class="spark empty">▁▁▁▁▁▁▁▁</div>
+    </div>
+    <div class="state-row">
+      <div class="name">
+        days to phase 1 review
+        <span class="qual">ends 2026-07-12</span>
+      </div>
+      <div class="figure">55</div>
+      <div class="unit"></div>
+      <div class="spark">█▇▆▅▄▃▂▁</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PENDING
+       ============================================================ -->
+  <div class="pending">
+    <div class="section-label">
+      <span class="idx">ii.</span>
+      <span class="name">pending</span>
+      <span class="qualifier">4 · awaiting human · <a href="./punch-list.html" class="ql-link">all</a></span>
+    </div>
+
+    <div class="pending-row promoted">
+      <div class="when urgent">10d</div>
+      <div class="thing">
+        Week 2 strategy-roster review
+        <span class="detail">Bollinger and MA-crossover survive, or replaced</span>
+      </div>
+      <div class="kind gate">gate</div>
+    </div>
+
+    <div class="pending-row">
+      <div class="when urgent">5d</div>
+      <div class="thing">
+        Friday adversarial review · #1
+        <span class="detail">first operational rhythm · bear case only</span>
+      </div>
+      <div class="kind">ops</div>
+    </div>
+
+    <div class="pending-row">
+      <div class="when open">open</div>
+      <div class="thing">
+        Future-self letters · 2026-04-26 entries
+        <span class="detail">convention set, letters pending</span>
+      </div>
+      <div class="kind">ops</div>
+    </div>
+
+    <div class="pending-row">
+      <div class="when open">open</div>
+      <div class="thing">
+        Decision-log entry · .env.template exposure
+        <span class="detail">caught, rotated, unlogged</span>
+      </div>
+      <div class="kind">log</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ACCUMULATING
+       ============================================================ -->
+  <div class="accum">
+    <div class="section-label">
+      <span class="idx">iii.</span>
+      <span class="name">accumulating</span>
+      <span class="qualifier" id="session-qualifier">last 24h</span>
+    </div>
+
+    <div class="accum-row" data-key="bars" data-value="41927">
+      <div class="name">bars</div>
+      <div class="count">41,927</div>
+      <div class="marker">‣</div>
+      <div class="delta">+271</div>
+      <div class="spark">▁▁▁▂▃▅▆▇</div>
+    </div>
+    <div class="accum-row" data-key="cron_runs" data-value="47">
+      <div class="name">cron runs</div>
+      <div class="count">47</div>
+      <div class="marker">‣</div>
+      <div class="delta">+47</div>
+      <div class="spark">▁▂▃▄▅▆▇█</div>
+    </div>
+    <div class="accum-row" data-key="llm_calls" data-value="3">
+      <div class="name">llm calls</div>
+      <div class="count">3</div>
+      <div class="marker">‣</div>
+      <div class="delta zero">+0</div>
+      <div class="spark empty">▁▁▁▁▁▁▁▁</div>
+    </div>
+    <div class="accum-row" data-key="decisions" data-value="2">
+      <div class="name">decisions</div>
+      <div class="count">2</div>
+      <div class="marker">‣</div>
+      <div class="delta">+1</div>
+      <div class="spark">▁▁▁▁▁▁▄█</div>
+    </div>
+    <div class="accum-row" data-key="letters" data-value="1">
+      <div class="name">letters</div>
+      <div class="count">1</div>
+      <div class="marker">‣</div>
+      <div class="delta">+1</div>
+      <div class="spark">▁▁▁▁▁▁▁█</div>
+    </div>
+    <div class="accum-row" data-key="reviews" data-value="0">
+      <div class="name">reviews</div>
+      <div class="count empty">—</div>
+      <div class="marker">‣</div>
+      <div class="delta note">fri</div>
+      <div class="spark empty">▁▁▁▁▁▁▁▁</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TIMETABLE
+       ============================================================ -->
+  <div class="timetable">
+    <div class="section-label">
+      <span class="idx">iv.</span>
+      <span class="name">timetable</span>
+      <span class="qualifier">phase 1 · 56 days</span>
+    </div>
+
+    <div class="tt-row now">
+      <div class="when">sun 5/17</div>
+      <div class="what">curriculum day 1 · now</div>
+      <div class="tag" style="color: var(--teal);">●</div>
+    </div>
+    <div class="tt-row">
+      <div class="when">fri 5/22</div>
+      <div class="what">adversarial review · #1</div>
+      <div class="tag">ops</div>
+    </div>
+    <div class="tt-row">
+      <div class="when">wed 5/27</div>
+      <div class="what">week 2 · strategy-roster review</div>
+      <div class="tag gate">gate</div>
+    </div>
+    <div class="tt-row">
+      <div class="when">mon 6/15</div>
+      <div class="what">week 4 · walk-forward tuner online</div>
+      <div class="tag">build</div>
+    </div>
+    <div class="tt-row">
+      <div class="when">mon 6/22</div>
+      <div class="what">week 5 · F&amp;G integration</div>
+      <div class="tag">build</div>
+    </div>
+    <div class="tt-row">
+      <div class="when">mon 7/06</div>
+      <div class="what">week 7 · LLM news sentiment</div>
+      <div class="tag">build</div>
+    </div>
+    <div class="tt-row">
+      <div class="when">sun 7/12</div>
+      <div class="what">phase 1 review</div>
+      <div class="tag gate">gate</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <div class="footer">
+    <div class="phrase">the experiencing self runs · the remembering self decides</div>
+    <div class="provenance">github.com/pwysocan-droid/algotrading-paper</div>
+  </div>
+
+<script>
+  // ============================================================
+  // SESSION MARKER — what changed since you last looked
+  // ============================================================
+  //
+  // The surface stores the operator's previous visit's values in
+  // localStorage. On a new visit, rows whose value has changed
+  // get a teal ‣ indicator next to their count.
+  //
+  // "New visit" means: time since previous load > 1 hour. Faster
+  // reloads (within the hour) are treated as the same session
+  // and do not reset the markers — so the operator can reload
+  // to re-check what changed without losing the indicators.
+
+  const SESSION_GAP_MS = 60 * 60 * 1000;  // 1 hour
+  const STORAGE_KEY = 'algotrading_paper_session_v1';
+
+  function applySessionMarkers() {
+    let prevSession;
+    try {
+      prevSession = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    } catch {
+      prevSession = null;
+    }
+
+    const now = Date.now();
+    const rows = document.querySelectorAll('.accum-row[data-key]');
+    const currentValues = {};
+    rows.forEach(row => {
+      currentValues[row.dataset.key] = row.dataset.value;
+    });
+
+    // Decide whether this is a new session
+    const isNewSession = !prevSession ||
+                         (now - prevSession.timestamp) > SESSION_GAP_MS;
+
+    if (isNewSession && prevSession) {
+      // Light up markers for rows whose value differs from snapshot
+      rows.forEach(row => {
+        const key = row.dataset.key;
+        const prev = prevSession.values[key];
+        const curr = row.dataset.value;
+        if (prev !== undefined && prev !== curr) {
+          row.querySelector('.marker')?.classList.add('active');
+        }
+      });
+
+      // Update qualifier to indicate session gap
+      const qual = document.getElementById('session-qualifier');
+      if (qual) {
+        const hoursAgo = Math.round((now - prevSession.timestamp) / (1000 * 60 * 60));
+        qual.textContent = `since ${hoursAgo}h ago`;
+      }
+
+      // Persist new snapshot
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        timestamp: now,
+        values: currentValues
+      }));
+    } else if (!prevSession) {
+      // First visit — just snapshot, no markers
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        timestamp: now,
+        values: currentValues
+      }));
+    }
+    // If continuing session, do nothing — markers from previous
+    // load (if any) stay active until next gap.
+  }
+
+  applySessionMarkers();
+
+  // ============================================================
+  // HEADLESS CLOCK — two time signals
+  // ============================================================
+  //
+  // Two real measurements, two visible gestures:
+  //
+  //   PADDLE     The Hilfiker rhythm. Sweeps from 12 around
+  //              the face in 58 seconds, holds at 12 for 2
+  //              seconds, releases. One full cycle = 1 minute.
+  //              This is what gives the surface its continuous
+  //              visible motion.
+  //
+  //   RING ARC   The cron-cycle indicator. A thin red arc
+  //              that fills around the rim of the ring over
+  //              the 5-minute cron interval. When the cron
+  //              executes, the arc is full. When the run
+  //              completes, it snaps back to 0 and starts
+  //              filling again.
+  //
+  // Together: the operator sees the seconds passing (paddle),
+  // and the cron approaching (ring fill). Both are honest.
+
+  const PADDLE_SWEEP_MS = 58 * 1000;   // 58 seconds of sweep
+  const PADDLE_HOLD_MS  =  2 * 1000;   // 2 seconds of hold at 12
+  const PADDLE_CYCLE_MS = PADDLE_SWEEP_MS + PADDLE_HOLD_MS;  // 60s
+
+  const CRON_INTERVAL_MS = 5 * 60 * 1000;   // 5 minutes between cron runs
+  const RUN_DURATION_MS  = 10 * 1000;        // simulated execution duration
+
+  // For preview: pretend last cron ran 2m 14s before page load
+  const LAST_RUN_OFFSET_MS = (2 * 60 + 14) * 1000;
+  const lastRunAt = Date.now() - LAST_RUN_OFFSET_MS;
+  const nextRunAt = lastRunAt + CRON_INTERVAL_MS;
+
+  const paddle = document.getElementById('paddle');
+  const ringArc = document.getElementById('ring-arc');
+
+  function updateClock() {
+    const now = Date.now();
+
+    // --- Paddle: 58s sweep, 2s hold per minute ---
+    const intoCycle = now % PADDLE_CYCLE_MS;
+    let paddleAngle;
+    if (intoCycle < PADDLE_SWEEP_MS) {
+      paddleAngle = (intoCycle / PADDLE_SWEEP_MS) * 360;
+    } else {
+      paddleAngle = 360;  // held at 12
+    }
+    paddle.style.transform = `rotate(${paddleAngle}deg)`;
+
+    // --- Ring arc: fills over cron cycle ---
+    const cycleElapsed = (now - lastRunAt) % CRON_INTERVAL_MS;
+    const cyclePct = Math.min(100, (cycleElapsed / CRON_INTERVAL_MS) * 100);
+    // stroke-dashoffset goes from 100 (empty) to 0 (full).
+    ringArc.setAttribute('stroke-dashoffset', 100 - cyclePct);
+  }
+
+  updateClock();
+  setInterval(updateClock, 100);  // 10fps — enough for smooth paddle
+
+  // ============================================================
+  // VITAL-SIGN COUNTDOWN
+  // ============================================================
+
+  function fmt(ms) {
+    if (ms < 0) ms = 0;
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}m ${s.toString().padStart(2, '0')}s`;
+  }
+
+  function tickVitals() {
+    const now = Date.now();
+    document.getElementById('last-run').textContent = fmt(now - lastRunAt) + ' ago';
+
+    const toNext = nextRunAt - now;
+    document.getElementById('next-run').textContent =
+      toNext <= 0 ? 'now' : fmt(toNext);
+  }
+  tickVitals();
+  setInterval(tickVitals, 1000);
+
+  // ============================================================
+  // MASTHEAD TIMESTAMP
+  // ============================================================
+
+  function updateTimestamp() {
+    const now = new Date();
+    const yyyy = now.getUTCFullYear();
+    const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(now.getUTCDate()).padStart(2, '0');
+    const hh = String(now.getUTCHours()).padStart(2, '0');
+    const min = String(now.getUTCMinutes()).padStart(2, '0');
+    document.getElementById('timestamp').textContent =
+      `${yyyy}-${mm}-${dd} · ${hh}:${min} UTC`;
+  }
+  updateTimestamp();
+  setInterval(updateTimestamp, 30 * 1000);
+</script>
+
+</body>
+</html>

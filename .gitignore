@@ -47,3 +47,7 @@ vps/logs/*.log
 
 # Local UI reference material
 html/
+
+# Editor / local tool state
+*.code-workspace
+.claude/settings.local.json

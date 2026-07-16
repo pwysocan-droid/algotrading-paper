@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"^---$\\\\|^## \" /Users/paul_wysocan/Documents/trader/decision-log.md)",
+      "Bash(git check-ignore *)",
+      "Bash(awk '/System uptime \\\\| Trades/,/started|passed|calendar/' /Users/paul_wysocan/Documents/trader/INDEX.md)",
+      "Bash(git rebase *)",
+      "Bash(curl -s https://pwysocan-droid.github.io/algotrading-paper/surface/)",
+      "Bash(curl -s \"https://pwysocan-droid.github.io/algotrading-paper/surface/surface.json?t=$\\(date +%s\\)\")",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s \"https://pwysocan-droid.github.io/algotrading-paper/surface/app.js?t=$\\(date +%s\\)\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('last_run_iso:', d['vitals']['last_run_iso']\\); print\\('last_run_human:', d['vitals']['last_run_human']\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(gh workflow *)",
+      "Bash(gh run *)"
+    ]
+  }
+}

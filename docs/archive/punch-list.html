@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>algotrading-paper · punch list</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --hairline: #1c1c1c;
+    --hairline-bright: #2a2a2a;
+    --fg: #e8e8e8;
+    --fg-dim: #888;
+    --fg-faint: #555;
+    --fg-ghost: #333;
+    --red: #EB0000;
+    --teal: #6ee7b7;
+    --teal-dim: #4ab895;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
+  }
+
+  body {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 20px 22px 48px;
+    min-height: 100vh;
+  }
+
+  /* === MASTHEAD === */
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .masthead .title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fg);
+  }
+
+  .masthead .title .slash { color: var(--fg-faint); margin: 0 5px; }
+  .masthead .title .sub { color: var(--fg-dim); }
+
+  .masthead .nav {
+    font-size: 10px;
+    color: var(--fg-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .masthead .nav a {
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hairline-bright);
+  }
+
+  .masthead .nav a:hover {
+    color: var(--fg);
+  }
+
+  /* === SUMMARY BAR === */
+
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .summary-stat .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fg-dim);
+    margin-bottom: 6px;
+  }
+
+  .summary-stat .value {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .summary-stat .value.urgent {
+    color: var(--teal);
+  }
+
+  .summary-stat .value.zero {
+    color: var(--fg-ghost);
+  }
+
+  /* === SECTION LABELS === */
+
+  .section-label {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 30px 0 14px;
+  }
+
+  .section-label .idx {
+    font-size: 10px;
+    color: var(--fg-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .section-label .name {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--fg-dim);
+    letter-spacing: 0.12em;
+  }
+
+  .section-label .count {
+    font-size: 10px;
+    color: var(--fg-faint);
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  /* === TASK ROWS === */
+
+  .task-row {
+    display: grid;
+    grid-template-columns: 24px 50px 1fr 50px;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .task-row .checkbox {
+    font-size: 14px;
+    color: var(--fg-faint);
+    text-align: center;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+
+  .task-row .checkbox:hover {
+    color: var(--fg-dim);
+  }
+
+  .task-row.done .checkbox {
+    color: var(--teal-dim);
+  }
+
+  .task-row .when {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg);
+    text-align: left;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .task-row .when.urgent {
+    color: var(--teal);
+  }
+
+  .task-row .when.open {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--fg-faint);
+    font-style: italic;
+  }
+
+  .task-row .thing {
+    font-size: 12px;
+    color: var(--fg-dim);
+    line-height: 1.45;
+  }
+
+  .task-row .thing .detail {
+    display: block;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--fg-faint);
+    margin-top: 3px;
+    letter-spacing: 0;
+  }
+
+  .task-row.promoted .thing {
+    color: var(--fg);
+    font-size: 13px;
+  }
+
+  .task-row .kind {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+    text-align: right;
+  }
+
+  .task-row .kind.gate {
+    color: var(--fg-dim);
+  }
+
+  .task-row.done .thing,
+  .task-row.done .when,
+  .task-row.done .kind {
+    color: var(--fg-ghost);
+    text-decoration: line-through;
+    text-decoration-color: var(--fg-ghost);
+  }
+
+  /* === FOOTER === */
+
+  .footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    text-align: center;
+  }
+
+  .footer .phrase {
+    font-style: italic;
+    font-size: 11px;
+    color: var(--fg-dim);
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  .footer .provenance {
+    margin-top: 16px;
+    font-size: 9px;
+    color: var(--fg-faint);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="title">
+      algotrading-paper <span class="slash">/</span><span class="sub">punch list</span>
+    </div>
+    <div class="nav">
+      <a href="./">← live</a>
+    </div>
+  </div>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary">
+    <div class="summary-stat">
+      <div class="label">due ≤ 7d</div>
+      <div class="value urgent">2</div>
+    </div>
+    <div class="summary-stat">
+      <div class="label">due ≤ 14d</div>
+      <div class="value">3</div>
+    </div>
+    <div class="summary-stat">
+      <div class="label">open</div>
+      <div class="value">5</div>
+    </div>
+    <div class="summary-stat">
+      <div class="label">done · this wk</div>
+      <div class="value zero">0</div>
+    </div>
+  </div>
+
+  <!-- GATES — load-bearing decisions -->
+  <div class="section-label">
+    <span class="idx">i.</span>
+    <span class="name">gates</span>
+    <span class="count">2 · pre-committed decisions</span>
+  </div>
+
+  <div class="task-row promoted">
+    <div class="checkbox" data-id="g1">○</div>
+    <div class="when urgent">10d</div>
+    <div class="thing">
+      Week 2 strategy-roster review
+      <span class="detail">Bollinger and MA-crossover survive, or replaced by Week 0 synthesis candidates</span>
+    </div>
+    <div class="kind gate">gate</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="g2">○</div>
+    <div class="when urgent">10d</div>
+    <div class="thing">
+      Scheduler migration decision
+      <span class="detail">Render vs Fly · full stack migrates or partial · timing depends on Friday's bear case</span>
+    </div>
+    <div class="kind gate">gate</div>
+  </div>
+
+  <!-- OPS — recurring rhythms and ready-to-do work -->
+  <div class="section-label">
+    <span class="idx">ii.</span>
+    <span class="name">ops</span>
+    <span class="count">3 · ready to do</span>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="o1">○</div>
+    <div class="when urgent">3d</div>
+    <div class="thing">
+      Friday adversarial review · #1
+      <span class="detail">first operational rhythm · bear case only · template at reviews/templates/friday-bear-case.md</span>
+    </div>
+    <div class="kind">ops</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="o2">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Future-self letters · 2026-04-26 entries
+      <span class="detail">convention set, letters pending · one per pre-commitment that could be overridden</span>
+    </div>
+    <div class="kind">ops</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="o3">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Pre-Week-2 reads
+      <span class="detail">look-ahead-bias test · empty-state report · future-self letter example · llm_calls model ID</span>
+    </div>
+    <div class="kind">ops</div>
+  </div>
+
+  <!-- LOG — decision-log entries to write -->
+  <div class="section-label">
+    <span class="idx">iii.</span>
+    <span class="name">log</span>
+    <span class="count">4 · entries to write</span>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="l1">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Cadence-recalibration entry
+      <span class="detail">GH cron actual ≠ documented · preserves 0.6% number as evidence · drafted, awaits commit</span>
+    </div>
+    <div class="kind">log</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="l2">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Variant-explosion-to-Day-1 entry
+      <span class="detail">names parameter-sweep vs factor-exploration distinction · 12 variants list</span>
+    </div>
+    <div class="kind">log</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="l3">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Shadow-signal schema + discipline entry
+      <span class="detail">exploration vs validation boundary · table schema · graduation criteria</span>
+    </div>
+    <div class="kind">log</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="l4">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      .env.template exposure entry
+      <span class="detail">caught, rotated, unlogged · post-incident write-up</span>
+    </div>
+    <div class="kind">log</div>
+  </div>
+
+  <!-- BUILD — code that needs writing -->
+  <div class="section-label">
+    <span class="idx">iv.</span>
+    <span class="name">build</span>
+    <span class="count">3 · deferred code work</span>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="b1">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Cron-variance row on surface
+      <span class="detail">std dev of run intervals over 24h · add to generate_surface.py</span>
+    </div>
+    <div class="kind">build</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="b2">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Shadow signals implementation
+      <span class="detail">post-Week-2 if scheduler migration ships first · schema in decision-log</span>
+    </div>
+    <div class="kind">build</div>
+  </div>
+
+  <div class="task-row">
+    <div class="checkbox" data-id="b3">○</div>
+    <div class="when open">open</div>
+    <div class="thing">
+      Bar-coverage steady-state verification
+      <span class="detail">confirm 70-90% target after 48h of --minutes=90 in effect</span>
+    </div>
+    <div class="kind">build</div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="phrase">the experiencing self runs · the remembering self decides</div>
+    <div class="provenance">github.com/pwysocan-droid/algotrading-paper</div>
+  </div>
+
+<script>
+  // ============================================================
+  // CHECKBOX TOGGLE
+  // ============================================================
+  //
+  // Click-to-toggle. Persists to localStorage so done items stay
+  // crossed out between visits. The list itself is sourced from
+  // pending.md + decision-log queue; this layer only tracks
+  // "done" status the operator has indicated.
+  //
+  // Done items don't disappear — they stay visible struck through
+  // so the operator can see what's been cleared. The cron's
+  // generate_surface.py is the source of truth for what's still
+  // open; this UI is a lightweight overlay.
+
+  const STORAGE_KEY = 'algotrading_paper_punch_v1';
+
+  function loadDone() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+    } catch {
+      return new Set();
+    }
+  }
+
+  function saveDone(set) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+  }
+
+  function applyDone() {
+    const done = loadDone();
+    document.querySelectorAll('.task-row').forEach(row => {
+      const id = row.querySelector('.checkbox')?.dataset.id;
+      if (id && done.has(id)) {
+        row.classList.add('done');
+        row.querySelector('.checkbox').textContent = '●';
+      }
+    });
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const all = [...document.querySelectorAll('.task-row')];
+    const done = all.filter(r => r.classList.contains('done')).length;
+
+    // Update the done counter
+    const stats = document.querySelectorAll('.summary-stat .value');
+    if (stats[3]) {
+      stats[3].textContent = done.toString();
+      stats[3].classList.toggle('zero', done === 0);
+    }
+
+    // Update section counters too
+    document.querySelectorAll('.section-label').forEach(label => {
+      const section = label.parentElement;
+      const sectionRows = [...label.nextElementSibling ? [label.nextElementSibling] : []];
+      // Walk siblings until next section-label
+      let sibling = label.nextElementSibling;
+      let total = 0, sectionDone = 0;
+      while (sibling && !sibling.classList.contains('section-label')) {
+        if (sibling.classList.contains('task-row')) {
+          total++;
+          if (sibling.classList.contains('done')) sectionDone++;
+        }
+        sibling = sibling.nextElementSibling;
+      }
+      const counter = label.querySelector('.count');
+      if (counter && total > 0) {
+        const original = counter.dataset.original || counter.textContent;
+        counter.dataset.original = original;
+        counter.textContent = sectionDone > 0
+          ? `${total - sectionDone} of ${total} · ${original.split(' · ')[1] || ''}`.trim()
+          : original;
+      }
+    });
+  }
+
+  document.addEventListener('click', e => {
+    const box = e.target.closest('.checkbox');
+    if (!box) return;
+    const id = box.dataset.id;
+    if (!id) return;
+    const done = loadDone();
+    if (done.has(id)) {
+      done.delete(id);
+      box.closest('.task-row').classList.remove('done');
+      box.textContent = '○';
+    } else {
+      done.add(id);
+      box.closest('.task-row').classList.add('done');
+      box.textContent = '●';
+    }
+    saveDone(done);
+    updateSummary();
+  });
+
+  applyDone();
+</script>
+
+</body>
+</html>
