@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-16T23:50:06Z",
+  "generated_at": "2026-07-16T23:55:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-16T23:50:03.921919+00:00",
-    "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-16 · 23:50 UTC",
-    "next_run_human": "59m 57s",
-    "uptime_recent": "15633 of 15652 ok · 99.9%",
+    "last_run_iso": "2026-07-16T23:55:04.441901+00:00",
+    "last_run_human": "0m 03s ago",
+    "last_run_human_date": "2026-07-16 · 23:55 UTC",
+    "next_run_human": "59m 56s",
+    "uptime_recent": "15634 of 15653 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -80,43 +80,43 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "274,571",
+      "count": "274,576",
       "delta": "+1491",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "274571"
+      "value": "274576"
     },
     {
       "name": "bar coverage",
       "count": "98%",
-      "delta": "-34",
+      "delta": "-33",
       "delta_class": "note",
-      "spark": "▇▅▄▅▅█▆▁",
+      "spark": "▇▃▄▅▅█▅▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "98"
     },
     {
       "name": "cron runs",
-      "count": "15,652",
+      "count": "15,653",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15652"
+      "value": "15653"
     },
     {
       "name": "llm calls",
-      "count": "11",
-      "delta": "+11",
+      "count": "12",
+      "delta": "+12",
       "delta_class": null,
       "spark": "▁▁▁▁▁▁▁█",
       "spark_class": "growing",
       "key": "llm_calls",
-      "value": "11"
+      "value": "12"
     },
     {
       "name": "decisions",
@@ -201,8 +201,8 @@
     }
   ],
   "llm": {
-    "total_calls": 11,
-    "total_cost_usd": 0.7498,
+    "total_calls": 12,
+    "total_cost_usd": 0.9201,
     "by_caller": [
       {
         "called_from": "adversarial_cron",
@@ -273,6 +273,13 @@
         "calls": 1,
         "tokens": 13983,
         "cost_usd": 0.1066
+      },
+      {
+        "called_from": "idea_foundry",
+        "model": "claude-opus-4-8",
+        "calls": 1,
+        "tokens": 9484,
+        "cost_usd": 0.1703
       },
       {
         "called_from": "learnings_ledger",
