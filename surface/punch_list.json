@@ -2,7 +2,7 @@
   "summary": {
     "due_7d": 1,
     "due_14d": 2,
-    "open": 8,
+    "open": 9,
     "done_this_week": 0
   },
   "gates": [
@@ -32,6 +32,15 @@
       "when_class": "open",
       "thing": "Future-self letters · 2026-04-26 entries",
       "detail": "convention set, letters pending",
+      "kind": "ops",
+      "promoted": false
+    },
+    {
+      "id": "ops:Nightly skeptic · 2026-07-16",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Nightly skeptic · 2026-07-16",
+      "detail": "The pipeline is a metronome with no conductor. Seven consecutive clean runs, 81–82 bars added eac...",
       "kind": "ops",
       "promoted": false
     }

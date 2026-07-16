@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-16T21:05:04Z
+2026-07-16T21:10:05Z
 
 7 surfaces tracked
 
@@ -23,7 +23,7 @@ Phase 1  ·  Week 1
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 
-## § 02 — Pending decisions · 4 items
+## § 02 — Pending decisions · 5 items
 
 ▸ Week 2 strategy-roster review — Bollinger and MA-crossover survive, or replaced
 
@@ -32,6 +32,8 @@ Phase 1  ·  Week 1
 ▸ Future-self letters · 2026-04-26 entries — convention set, letters pending
 
 ▸ Decision-log entry · .env.template exposure — caught, rotated, unlogged
+
+▸ Nightly skeptic · 2026-07-16 — The pipeline is a metronome with no conductor. Seven consecutive clean runs, 81–82 bars added eac...
 
 ## § 03 — Read-me-when-lost · 4 pointers
 
