@@ -1,0 +1,94 @@
+{
+  "round": 1,
+  "generated_at": "2026-07-16T23:50:47.658821+00:00",
+  "model": "claude-opus-4-8",
+  "ideas": [
+    {
+      "name": "entropy_collapse_impulse",
+      "lens": "information_theory",
+      "mechanism": "A price series that becomes highly compressible over a short window means the market has entered a low-surprise, coiled state where consecutive returns carry near-zero new information \u2014 order flow is balanced and directionless. Such states are metastable: when balance breaks, the release is directional and momentum-carrying because the pent-up positioning unwinds in one direction. Unlike volatility compression (dead_zone), which measures range, entropy measures the *predictability structure* of the return sequence itself \u2014 a series can have wide range but low entropy (trending) or narrow range but high entropy (choppy noise). The specific edge: minimum-entropy states immediately preceding a return-distribution surprise are not arbitraged at 5-min retail scale because most participants react to price range and moving averages, not to Shannon entropy of the sign-and-magnitude sequence. We enter on the FIRST high-surprise bar out of a low-entropy coil, catching the impulse origin rather than confirming after.",
+      "lineage_check": "Nearest death is dead_zone_range_break (volatility compression/Crabel). That lineage measured range compression (high-low over N bars) and broke on range expansion. This measures Shannon entropy of the discretized return sequence \u2014 a coil can be range-tight but entropy-high (dead choppy, we skip it) or range-wide but entropy-low (persistent drift). We enter on entropy collapse followed by a distributional surprise, an orthogonal trigger that the compression-release ratio never captured.",
+      "entry_rule": "Over the trailing 48 bars (4h), compute log-returns, discretize each into 5 bins by sign and magnitude tercile (large-down, small-down, flat, small-up, large-up). Compute Shannon entropy H of the empirical symbol distribution over a rolling 24-bar window. Flag a 'coil' when H drops below the 15th percentile of its own trailing 288-bar (24h) distribution AND stays below for at least 6 consecutive bars. After a confirmed coil, enter LONG on the first bar whose absolute return exceeds 2.5x the trailing 24-bar return std AND is positive; enter SHORT if that surprise bar is negative. One entry per coil; coil resets when H returns above its 50th percentile.",
+      "params": {
+        "entropy_window": 24,
+        "coil_percentile": 15,
+        "coil_min_bars": 6,
+        "surprise_sigma": 2.5,
+        "hist_window": 288,
+        "n_bins": 5
+      },
+      "expected_fire_rate": "Coils below 15th percentile persisting 6+ bars then breaking on a 2.5-sigma bar are rare: roughly 1 fire per symbol every 3-5 days, ~0.25/symbol/day. Well within cooldown and slot limits; frequency is deliberately starved to buy amplitude.",
+      "fee_survival": "The 2.5-sigma surprise bar out of a genuinely low-entropy coil marks the origin of a positioning unwind, historically the leading edge of moves that run 2-4% before exhausting \u2014 because the coil implies suppressed variance that the break releases. Entering at the impulse origin (not after confirmation) captures the full run, so expected move per event materially exceeds the 1% floor; fades of exhausted moves are explicitly excluded.",
+      "kill_criterion": "Dies if median absolute price excursion in the 24h after entry is under 1.2%, or if the +5% target is hit on fewer than 22% of fires while the -3% stop hits more than 40% \u2014 meaning the entropy-break offers no directional follow-through edge over a coin flip net of fees."
+    },
+    {
+      "name": "omori_aftershock_ladder",
+      "lens": "cross_domain_import",
+      "mechanism": "Imported from seismology: Omori's law states aftershock frequency decays as 1/t^p after a mainshock, and Bath's law says the largest aftershock is ~1.2 magnitude below the mainshock. Mapping to crypto: a large volatility 'mainshock' bar (a shock in absolute return) is followed by a decaying sequence of correlated aftershock bars in the SAME direction, because liquidations, margin calls, and delayed-reaction order flow arrive on a power-law-decaying schedule, not instantly. The market does not fully price the mainshock in one bar because the propagation of forced flow is mechanically staggered (exchange risk engines, cross-margin cascades, human reaction lag). The edge: enter DURING the early aftershock window in the mainshock direction, catching the clustered continuation. This is distinct from capitulation-reversal because we trade WITH the shock's direction during its aftershock decay, not fading the wick.",
+      "lineage_check": "Nearest death is liquidation_cascade_reclaim (buy-the-wick capitulation reversal). That lineage FADED the shock, waiting for a reclaim confirmation that arrived too late. Omori does the opposite: it rides the shock's directional continuation during the aftershock-clustering window, betting the mainshock under-propagates in one bar. Opposite sign, opposite mechanism \u2014 continuation vs reversal.",
+      "entry_rule": "Detect a mainshock: a bar whose absolute return exceeds 4x the trailing 96-bar return std AND whose volume exceeds 3x the trailing 96-bar median volume. Record its direction. In the following 12 bars (aftershock window), enter in the mainshock's direction on the first bar that (a) closes beyond the mainshock bar's close in the mainshock direction and (b) has volume above the trailing 24-bar median \u2014 confirming aftershock energy is still elevated, not decayed. Skip if the aftershock window has already retraced more than 50% of the mainshock bar's range (mainshock was exhaustion, not propagation).",
+      "params": {
+        "mainshock_sigma": 4.0,
+        "mainshock_vol_mult": 3.0,
+        "std_window": 96,
+        "aftershock_window": 12,
+        "retrace_skip_pct": 50,
+        "aftershock_vol_window": 24
+      },
+      "expected_fire_rate": "4-sigma volume-confirmed mainshocks with valid non-exhausted aftershock continuation occur ~1-2 times per symbol per week, ~0.2/symbol/day. Rare by design; the shock filter enforces amplitude.",
+      "fee_survival": "Mainshocks of 4-sigma magnitude are 2-3%+ single-bar moves; Omori/Bath predict the aftershock sequence extends the directional move by a further 1.5-3% as staggered forced flow arrives. Entering on confirmed continuation (close beyond mainshock close) rather than at the wick means the captured aftershock leg alone typically clears 1.5%, above the fee floor.",
+      "kill_criterion": "Dies if, conditional on entry, forward returns show no directional persistence \u2014 specifically if the sign-correlation between the mainshock direction and the 12-bar forward return is under +0.1, or if net-of-fee expectancy per fire is below +0.3%, proving aftershocks are noise not clustered continuation."
+    },
+    {
+      "name": "failed_auction_rejection_wick",
+      "lens": "microstructure_from_ohlcv",
+      "mechanism": "A single bar's geometry encodes an auction outcome. A bar that pushes to a new local extreme, prints heavy volume, but closes back near its open with a long rejection wick reveals a FAILED auction: aggressive orders swept into the extreme, were fully absorbed by resting opposite-side liquidity, and price was rejected \u2014 the initiating side is now trapped. This is order-flow information without the book. The trapped side must cover, producing a directional move AWAY from the rejected extreme. The reason it isn't arbitraged at 5-min retail scale: reading absorbed-supply geometry (volume-weighted wick rejection at a fresh extreme) requires distinguishing a rejection from ordinary volatility, which chart-pattern retail conflates with simple pin-bars. We require the volume and fresh-extreme confirmation that separates genuine absorption from noise, and we trade the trapped-side cover as follow-through.",
+      "lineage_check": "Nearest death is volume_thrust_regime_shift (volume-footprint, currently live_arm) and liquidation_cascade_reclaim. Unlike volume-thrust, we do not trade the thrust direction \u2014 we trade AGAINST the rejected extreme (the failed auction's losing side). Unlike cascade-reclaim, we require no multi-bar reclaim confirmation; the single rejection bar's own volume+wick geometry IS the signal, and we enter immediately, avoiding the late-confirmation death.",
+      "entry_rule": "Identify a rejection bar: (a) its high exceeds the max high of the trailing 48 bars (fresh upper extreme) for a SHORT setup, or its low undercuts the min low of the trailing 48 bars for a LONG setup; (b) upper wick (for short) = high minus max(open,close) is at least 2x the body |close-open| AND at least 60% of the total bar range; (c) volume exceeds 2.5x the trailing 48-bar median. Enter SHORT at the next bar's open if the rejection was at a fresh high; enter LONG if at a fresh low. Require the rejection bar's close to be back inside the prior 48-bar range (extreme was fully rejected).",
+      "params": {
+        "extreme_window": 48,
+        "wick_body_mult": 2.0,
+        "wick_range_frac": 0.6,
+        "vol_mult": 2.5
+      },
+      "expected_fire_rate": "Fresh-extreme, high-volume, wick-dominant rejection bars occur ~1 per symbol per 2 days, ~0.4-0.5/symbol/day. Cooldown-compatible.",
+      "fee_survival": "A fully rejected fresh extreme on 2.5x volume traps the aggressive side; their forced covering plus the vacuum below the rejected level typically drives 1.5-2.5% away from the extreme within hours. Because the trapped positioning is real (heavy volume was absorbed, not passive), the follow-through amplitude reliably exceeds the 1% floor \u2014 unlike thin-volume pin bars that mean-revert marginally.",
+      "kill_criterion": "Dies if the +5% target is hit less than 25% of the time while stops hit more than the target, OR if net expectancy per fire is under +0.4% \u2014 indicating the wick geometry does not identify genuine trapped flow and rejections are followed by continuation of the original push as often as reversal."
+    },
+    {
+      "name": "round_number_overshoot_snap",
+      "lens": "behavioral_calendar",
+      "mechanism": "Round numbers (whole thousands for BTC, hundreds for ETH, tens for SOL/LINK/AVAX) are stop-cluster and limit-order magnets. Stops sit just BEYOND round numbers; resting liquidity and profit-taking limits sit just before them. A stop-hunt geometry occurs when price spikes THROUGH a round number, triggers the clustered stops (a brief liquidity vacuum), then snaps back as the stop-driven overshoot is unwound and the round number reasserts as support/resistance. The behavioral mechanism is durable because retail and even algos place stops at psychologically round levels \u2014 the clustering is a human artifact, not an information event, so it recurs. The edge: enter on the snap-back the moment price re-crosses the round number after an overshoot, riding the reversion of the stop-driven spike. This is behavioral geometry, not indicator mean-reversion \u2014 the level is exogenous and fixed, not a rolling statistic.",
+      "lineage_check": "Nearest death is bollinger_family (indicator mean-reversion). Bollinger fades a rolling statistical band; this trades a FIXED exogenous psychological level whose location is set by human number preference, not by recent volatility. The reversion here is caused by stop-cluster exhaustion at a specific price, a mechanically different source than statistical over-extension. Also distinct from dead_zone (no compression required).",
+      "entry_rule": "Define round levels per symbol (BTC: nearest $1000; ETH: nearest $100; SOL/LINK/AVAX: nearest $10). Detect an overshoot: within a single bar, price crosses a round level, its extreme extends at least 0.4% beyond the level, volume exceeds 2x the trailing 48-bar median (stop-cluster trigger), and the bar CLOSES back on the origin side of the level (overshoot rejected). Enter in the reversion direction (away from the overshoot, back toward the origin side) at the next bar's open. Only trade levels not crossed cleanly in the prior 24 bars (fresh, un-eroded cluster).",
+      "params": {
+        "overshoot_frac": 0.004,
+        "vol_mult": 2.0,
+        "vol_window": 48,
+        "fresh_level_window": 24
+      },
+      "expected_fire_rate": "Clean overshoot-and-reject events at fresh round levels with volume confirmation: ~0.3-0.5/symbol/day. Sufficiently rare to respect slots and cooldown.",
+      "fee_survival": "Stop-cluster overshoots create a brief liquidity vacuum; the snap-back plus the round number's reassertion as a barrier typically carries 1.2-2% as the stop-driven flow fully unwinds and momentum traders who chased the false break exit. The 0.4% overshoot plus volume filter ensures we only take genuine cluster-triggering events, whose reversion amplitude clears fees; marginal touches are excluded.",
+      "kill_criterion": "Dies if reversion moves after qualifying overshoots average under 1% before reversing, or if net-of-fee expectancy is under +0.3%/fire, or if false-break continuation (price runs further past the level after our entry) triggers the -3% stop more often than the +5% target by a factor over 1.3."
+    },
+    {
+      "name": "drawdown_regime_contrarian_gate",
+      "lens": "meta_self_referential",
+      "mechanism": "The system's own state carries information about which regime the market is in. When the placebo/null arm has recently been LOSING (random entries getting stopped out), the market is in a directional, trending regime hostile to noise \u2014 the environment where genuine continuation edges pay. When the null arm has been winning (random entries hitting +5% targets by drift), the market is broadly buoyant and undiscriminating. The meta-signal: use the null control's recent hit pattern as a regime detector, then only ARM the portfolio's amplitude-seeking entries when the regime confirms real directional structure. Additionally, condition on the portfolio's own drawdown: after a cluster of stop-outs, the constraint layer's rejection rate and the arm's losses indicate a chop regime where we should raise the entry bar. This is the system observing its own outcomes as a filter, not a standalone entry \u2014 it gates a base continuation signal to fire only when the meta-state says amplitude is available.",
+      "lineage_check": "No prior registry idea is self-referential; the nearest structural relative is any momentum/continuation lineage (macross_family). This differs fundamentally: it does not generate entries from price indicators. It reads the null_baseline arm's realized outcomes and the portfolio drawdown state as a REGIME GATE on a simple continuation trigger. macross died on chop bleed; this idea's entire purpose is to detect chop-vs-trend from the system's own P&L and refuse to fire in chop \u2014 the opposite failure-avoidance posture.",
+      "entry_rule": "Maintain a base continuation trigger: a bar closing above the trailing 24-bar high (long) or below the trailing 24-bar low (short) on volume above 1.5x trailing 48-bar median. GATE it: only take the entry if, over the trailing 288 bars (24h), the null_baseline arm's realized win rate is below 35% (directional/trending regime where random entries fail) AND the portfolio is NOT in a fresh drawdown cluster (fewer than 2 stop-outs in the trailing 24h across all arms). When null win rate is above 45% or drawdown cluster is active, suppress all entries this symbol. Direction = breakout direction.",
+      "params": {
+        "breakout_window": 24,
+        "vol_mult": 1.5,
+        "vol_window": 48,
+        "null_lookback": 288,
+        "null_winrate_gate": 0.35,
+        "drawdown_cluster_max": 2
+      },
+      "expected_fire_rate": "Breakouts are frequent, but the null-regime gate suppresses the majority of the time (gate open perhaps 20-30% of sessions), yielding ~0.2-0.4/symbol/day when armed \u2014 most days produce zero fires. Amplitude bought via the gate, not frequency.",
+      "fee_survival": "By construction the gate only opens in confirmed directional regimes (null arm failing = drift is real and persistent), which is precisely where a 24-bar breakout continues 1.5-3% rather than reverting into chop. Filtering out the buoyant/undiscriminating and choppy regimes removes exactly the fee-bleed conditions that killed macross, so the surviving fires occur when breakout follow-through amplitude structurally exceeds 1%.",
+      "kill_criterion": "Dies if gated breakouts show no better net expectancy than un-gated ones \u2014 specifically if the difference in per-fire net expectancy between gate-open and gate-closed conditions is under +0.5%, proving the null-arm regime signal carries no exploitable information; or if armed-fire expectancy is itself below +0.3%/fire net of fees."
+    }
+  ],
+  "round_thesis": "Prior rounds decoded charts as price patterns; this round decodes the bar stream as an information channel and imports resolution dynamics from outside finance. The unifying bet: the surviving edge above the fee floor lives not in mean price behavior but in second-order structure \u2014 the entropy collapse before a directional impulse, the aftershock clustering after a shock, the geometry of a single failed auction printed in one bar's wick, the magnetic snap through a psychological level, and the system's own regime state as a conditioning prior. Each idea targets amplitude-per-fire over 1% by isolating conditions that PRECEDE follow-through rather than fading exhausted moves, deliberately avoiding both indicator families and all five documented retail lineages."
+}
