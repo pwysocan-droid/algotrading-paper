@@ -499,3 +499,55 @@ def test_check_coverage_no_bars_at_all(tmp_db: Path) -> None:
     assert r.n_bars == 0
     assert r.coverage_pct == 0.0
     assert r.largest_gap_minutes == 0.0
+
+
+# --- Sharpe / max drawdown ---------------------------------------------------
+
+
+class TestSharpeRatio:
+    def test_none_below_two_trades(self) -> None:
+        assert replay.sharpe_ratio([], 30.0) is None
+        assert replay.sharpe_ratio([1.0], 30.0) is None
+
+    def test_none_on_zero_variance(self) -> None:
+        assert replay.sharpe_ratio([0.5, 0.5, 0.5], 30.0) is None
+
+    def test_none_on_zero_window(self) -> None:
+        assert replay.sharpe_ratio([1.0, 2.0], 0.0) is None
+
+    def test_positive_returns_positive_sharpe(self) -> None:
+        s = replay.sharpe_ratio([0.5, 1.0, 0.8, 1.2, 0.6], 30.0)
+        assert s is not None and s > 1.0
+
+    def test_negative_returns_negative_sharpe(self) -> None:
+        s = replay.sharpe_ratio([-0.5, -1.0, -0.8, -1.2, -0.6], 30.0)
+        assert s is not None and s < 0.0
+
+    def test_annualization_scales_with_trade_rate(self) -> None:
+        pcts = [0.5, 1.0, 0.8, 1.2]
+        dense = replay.sharpe_ratio(pcts, 10.0)   # same trades, shorter window
+        sparse = replay.sharpe_ratio(pcts, 100.0)
+        assert dense is not None and sparse is not None
+        assert dense > sparse
+
+
+class TestMaxDrawdown:
+    def test_none_when_no_trades(self) -> None:
+        assert replay.max_drawdown_pct([]) is None
+
+    def test_zero_when_monotonic_gains(self) -> None:
+        assert replay.max_drawdown_pct([10.0, 20.0, 5.0]) == pytest.approx(0.0)
+
+    def test_simple_drawdown(self) -> None:
+        # base 1000 → 1100 (peak) → 990: dd = 110/1100 = 10%
+        dd = replay.max_drawdown_pct([100.0, -110.0])
+        assert dd == pytest.approx(10.0)
+
+    def test_recovery_does_not_erase_drawdown(self) -> None:
+        dd = replay.max_drawdown_pct([100.0, -110.0, 500.0])
+        assert dd == pytest.approx(10.0)
+
+    def test_deepest_of_multiple_drawdowns_wins(self) -> None:
+        # dd1: 1100→990 = 10%; dd2: 1490→1043 = 30%
+        dd = replay.max_drawdown_pct([100.0, -110.0, 500.0, -447.0])
+        assert dd == pytest.approx(30.0, abs=0.1)

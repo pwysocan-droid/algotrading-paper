@@ -14,6 +14,7 @@ simulated trades.
 from __future__ import annotations
 
 import argparse
+import math
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -324,6 +325,49 @@ def apply_portfolio_constraints(
     return ordered
 
 
+def sharpe_ratio(pnl_pcts: list[float], window_days: float) -> float | None:
+    """Annualized Sharpe from per-trade net returns (%).
+
+    mean/std of per-trade returns scaled by sqrt(trades per year), with
+    trades-per-year inferred from the backtest window. No risk-free-rate
+    subtraction — at per-trade horizon of hours it is negligible against
+    3-5% stop/target moves. None (rendered as em-dash) when fewer than 2
+    trades or zero variance — a Sharpe from that is not a number worth
+    printing.
+    """
+    n = len(pnl_pcts)
+    if n < 2 or window_days <= 0:
+        return None
+    mean = sum(pnl_pcts) / n
+    var = sum((x - mean) ** 2 for x in pnl_pcts) / (n - 1)
+    if var == 0.0:
+        return None
+    trades_per_year = n / window_days * 365.0
+    return (mean / math.sqrt(var)) * math.sqrt(trades_per_year)
+
+
+def max_drawdown_pct(
+    pnl_usds: list[float], base_equity: float = MAX_TOTAL_EXPOSURE_USD
+) -> float | None:
+    """Max peak-to-trough drawdown (%) of the cumulative-P&L equity curve.
+
+    Equity starts at the portfolio ceiling ($1,000 — the capital actually
+    at risk, PROJECT.md capital model) and steps by each trade's realized
+    P&L in entry order. None when no trades.
+    """
+    if not pnl_usds:
+        return None
+    equity = base_equity
+    peak = equity
+    max_dd = 0.0
+    for pnl in pnl_usds:
+        equity += pnl
+        peak = max(peak, equity)
+        if peak > 0:
+            max_dd = max(max_dd, (peak - equity) / peak * 100.0)
+    return max_dd
+
+
 def _bars_summary(
     conn: sqlite3.Connection, symbols: list[str], start: datetime, end: datetime
 ) -> list[list[str]]:
@@ -452,13 +496,21 @@ def build_report_data(
         per_variant_rows: list[list[str]] = []
         empty_msg = "no variants registered"
     else:
+        window_days = max((period_end - period_start).total_seconds() / 86400.0, 0.0)
         per_variant_rows = []
         for name, variant in STRATEGY_VARIANTS.items():
-            v_trades = [t for t in accepted if t.variant_name == name]
+            v_trades = sorted(
+                (t for t in accepted if t.variant_name == name),
+                key=lambda t: t.entry_bar_timestamp,
+            )
             n = len(v_trades)
             v_pnl = sum(t.pnl_usd for t in v_trades if t.pnl_usd is not None) if v_trades else 0.0
             v_pcts = [t.pnl_pct for t in v_trades if t.pnl_pct is not None]
             v_pct_avg = (sum(v_pcts) / len(v_pcts)) if v_pcts else None
+            v_sharpe = sharpe_ratio(v_pcts, window_days)
+            v_dd = max_drawdown_pct(
+                [t.pnl_usd for t in v_trades if t.pnl_usd is not None]
+            )
             per_variant_rows.append(
                 [
                     f"`{name}`",
@@ -466,8 +518,8 @@ def build_report_data(
                     EMDASH,
                     format_currency(v_pnl),
                     format_pct(v_pct_avg),
-                    EMDASH,
-                    EMDASH,
+                    f"{v_sharpe:.2f}" if v_sharpe is not None else EMDASH,
+                    f"{v_dd:.1f}%" if v_dd is not None else EMDASH,
                     "ok",
                 ]
             )
