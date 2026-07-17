@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T10:20:06Z",
+  "generated_at": "2026-07-17T10:25:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-17T10:20:04.246241+00:00",
-    "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-17 · 10:20 UTC",
-    "next_run_human": "59m 57s",
-    "uptime_recent": "15759 of 15778 ok · 99.9%",
+    "last_run_iso": "2026-07-17T10:25:04.248738+00:00",
+    "last_run_human": "0m 01s ago",
+    "last_run_human_date": "2026-07-17 · 10:25 UTC",
+    "next_run_human": "59m 58s",
+    "uptime_recent": "15760 of 15779 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -23,7 +23,7 @@
       "qual": "8062 of 8064 expected · 28-day window",
       "figure": "100.0",
       "unit": "%",
-      "spark": "▅▅▅▅▅▅▅▅",
+      "spark": "▅▅▅▁█▅▅▅",
       "spark_class": null
     },
     {
@@ -80,40 +80,40 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "275,193",
+      "count": "275,198",
       "delta": "+1496",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "275193"
+      "value": "275198"
     },
     {
       "name": "bar coverage",
       "count": "98%",
-      "delta": "-28",
+      "delta": "-27",
       "delta_class": "note",
-      "spark": "▂██▁█▄▇▁",
+      "spark": "▃██▁█▄▇▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "98"
     },
     {
       "name": "cron runs",
-      "count": "15,778",
+      "count": "15,779",
       "delta": "+288",
       "delta_class": null,
-      "spark": "▅▅▅▅▅▅▅▅",
+      "spark": "▅▅▅▁█▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15778"
+      "value": "15779"
     },
     {
       "name": "llm calls",
       "count": "22",
       "delta": "+22",
       "delta_class": null,
-      "spark": "▁▁▁▃█▇▁▁",
+      "spark": "▁▁▁▄██▁▁",
       "spark_class": null,
       "key": "llm_calls",
       "value": "22"
