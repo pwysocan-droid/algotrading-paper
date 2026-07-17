@@ -84,7 +84,7 @@ def test_signal_within_limits_is_placed(tmp_db: Path) -> None:
             entry_time=datetime(2026, 5, 1, 12, 5, tzinfo=timezone.utc),
         )
     assert action == "placed"
-    assert "60000" in reason
+    assert "60030" in reason  # 60000 * (1 + SLIPPAGE_PCT): entry slippage against the trader
     with db.connect(tmp_db) as conn:
         decision = conn.execute("SELECT * FROM decisions WHERE id = ?", (decision_id,)).fetchone()
         trade = conn.execute("SELECT * FROM trades WHERE id = ?", (decision["trade_id"],)).fetchone()
@@ -279,8 +279,9 @@ def test_manage_exits_take_profit(tmp_db: Path) -> None:
     row = _trade_row(tmp_db, tid)
     assert row["status"] == "closed"
     assert row["exit_reason"] == "take_profit"
-    assert row["exit_price"] == pytest.approx(105.0)
-    assert row["pnl_usd"] == pytest.approx(10.0)  # (105-100) * 2
+    # sim-to-live parity: exit slippage + taker fees both legs
+    assert row["exit_price"] == pytest.approx(105.0 * 0.9995)
+    assert row["pnl_usd"] == pytest.approx((104.9475 - 100) * 2 - (100 + 104.9475) * 2 * 0.0025)
 
 
 def test_manage_exits_stop_loss_wins_ties(tmp_db: Path) -> None:
@@ -293,8 +294,8 @@ def test_manage_exits_stop_loss_wins_ties(tmp_db: Path) -> None:
 
     row = _trade_row(tmp_db, tid)
     assert row["exit_reason"] == "stop_loss"
-    assert row["exit_price"] == pytest.approx(97.0)
-    assert row["pnl_usd"] == pytest.approx(-6.0)
+    assert row["exit_price"] == pytest.approx(97.0 * 0.9995)
+    assert row["pnl_usd"] == pytest.approx((96.9515 - 100) * 2 - (100 + 96.9515) * 2 * 0.0025)
 
 
 def test_manage_exits_sell_side_directions(tmp_db: Path) -> None:
@@ -307,8 +308,8 @@ def test_manage_exits_sell_side_directions(tmp_db: Path) -> None:
 
     row = _trade_row(tmp_db, tid)
     assert row["exit_reason"] == "take_profit"
-    assert row["exit_price"] == pytest.approx(95.0)
-    assert row["pnl_usd"] == pytest.approx(10.0)  # (100-95) * 2
+    assert row["exit_price"] == pytest.approx(95.0 * 1.0005)  # short exit: slippage against
+    assert row["pnl_usd"] == pytest.approx((100 - 95.0475) * 2 - (100 + 95.0475) * 2 * 0.0025)
 
 
 def test_manage_exits_time_exit(tmp_db: Path) -> None:
@@ -321,7 +322,7 @@ def test_manage_exits_time_exit(tmp_db: Path) -> None:
 
     row = _trade_row(tmp_db, tid)
     assert row["exit_reason"] == "time_exit"
-    assert row["exit_price"] == pytest.approx(100.2)
+    assert row["exit_price"] == pytest.approx(100.2 * 0.9995)
 
 
 def test_manage_exits_leaves_healthy_position_open(tmp_db: Path) -> None:

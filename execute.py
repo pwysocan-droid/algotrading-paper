@@ -29,9 +29,11 @@ from config import (
     MAX_CONCURRENT_POSITIONS,
     MAX_POSITION_USD,
     MAX_TOTAL_EXPOSURE_USD,
+    SLIPPAGE_PCT,
     STOP_LOSS_PCT,
     SYMBOL_COOLDOWN_HOURS,
     TAKE_PROFIT_PCT,
+    TAKER_FEE_PCT,
     TIME_EXIT_HOURS,
 )
 
@@ -208,6 +210,10 @@ def execute_signal(
         )
         return decision_id, "rejected", result.reason
 
+    # Entry slippage against the trader — same model as replay._apply_slippage
+    entry_price = entry_price * (
+        (1.0 + SLIPPAGE_PCT) if sig.side == "buy" else (1.0 - SLIPPAGE_PCT)
+    )
     qty = intended_position_usd / entry_price
     trade_id = _record_trade(
         conn,
@@ -273,12 +279,20 @@ def _close_trade(
     exit_time: str,
     exit_reason: str,
 ) -> None:
+    """Close with the SAME cost model as replay (sim-to-live parity,
+    decision-log 2026-07-17 calibration finding): exit slippage against
+    the trader, taker fees on both legs subtracted from pnl_usd;
+    pnl_pct stays gross-of-fees, mirroring replay's convention."""
     if trade["side"] == "buy":
-        pnl_usd = (exit_price - trade["entry_price"]) * trade["qty"]
+        exit_price = exit_price * (1.0 - SLIPPAGE_PCT)
+        gross = (exit_price - trade["entry_price"]) * trade["qty"]
         pnl_pct = (exit_price / trade["entry_price"] - 1.0) * 100.0
     else:
-        pnl_usd = (trade["entry_price"] - exit_price) * trade["qty"]
+        exit_price = exit_price * (1.0 + SLIPPAGE_PCT)
+        gross = (trade["entry_price"] - exit_price) * trade["qty"]
         pnl_pct = (1.0 - exit_price / trade["entry_price"]) * 100.0
+    fees = (trade["entry_price"] + exit_price) * trade["qty"] * TAKER_FEE_PCT
+    pnl_usd = gross - fees
     conn.execute(
         """
         UPDATE trades

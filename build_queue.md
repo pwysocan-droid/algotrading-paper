@@ -65,3 +65,13 @@ Each item:
   detail: "Gmail connector authorized · read reports/digest-*.md, send · trivial once tools load in a fresh session"
   when: 2d
   kind: build
+
+- thing: Nightly shadow-replay parity check
+  detail: "replay last 24h over the live bars with the same variants; deterministic strategies must reproduce live signals 1:1 — any divergence = engine bug caught same-day"
+  when: open
+  kind: build
+
+- thing: Weekly sim-to-live calibration report
+  detail: "per live arm: fire rate / win rate / expectancy / exit-mix, live vs backtest-predicted · feeds Friday review + dashboard · validates the factory"
+  when: open
+  kind: build
