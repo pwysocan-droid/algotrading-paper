@@ -1,0 +1,75 @@
+{
+  "date": "2026-07-17",
+  "generated_at": "2026-07-17T07:41:04.675628+00:00",
+  "days": 930,
+  "staged": true,
+  "fill_model": "taker",
+  "database": "research_bars.db",
+  "results": [
+    {
+      "name": "epidemic_r0_crossover_ignition",
+      "fill_model": "taker",
+      "candidates": 261,
+      "placed": 248,
+      "total_pnl": -280.18966738755495,
+      "edge_per_slot": -1.1297970459175604,
+      "win_rate": 0.35080645161290325,
+      "sharpe": -0.5890962826619742,
+      "max_dd": 29.77200372191015,
+      "days": 180,
+      "stage": "killed@180d"
+    },
+    {
+      "name": "options_expiry_pin_release",
+      "fill_model": "taker",
+      "candidates": 37,
+      "placed": 37,
+      "total_pnl": -44.59709178336924,
+      "edge_per_slot": -1.2053268049559254,
+      "win_rate": 0.3783783783783784,
+      "sharpe": -0.37148778470234595,
+      "max_dd": 4.726196900373747,
+      "days": 180,
+      "stage": "killed@180d"
+    },
+    {
+      "name": "rejection_streak_gated_ignition",
+      "fill_model": "taker",
+      "candidates": 113,
+      "placed": 109,
+      "total_pnl": -164.0740843585028,
+      "edge_per_slot": -1.5052668289770899,
+      "win_rate": 0.3669724770642202,
+      "sharpe": -0.546000412451008,
+      "max_dd": 21.938922759529948,
+      "days": 930,
+      "stage": "full@930d"
+    },
+    {
+      "name": "conditional_entropy_regime_expansion",
+      "fill_model": "taker",
+      "candidates": 0,
+      "placed": 0,
+      "total_pnl": 0,
+      "edge_per_slot": null,
+      "win_rate": null,
+      "sharpe": null,
+      "max_dd": null,
+      "days": 930,
+      "stage": "full@930d"
+    },
+    {
+      "name": "absorption_shelf_breakout",
+      "fill_model": "taker",
+      "candidates": 0,
+      "placed": 0,
+      "total_pnl": 0,
+      "edge_per_slot": null,
+      "win_rate": null,
+      "sharpe": null,
+      "max_dd": null,
+      "days": 930,
+      "stage": "full@930d"
+    }
+  ]
+}

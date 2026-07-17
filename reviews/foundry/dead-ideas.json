@@ -10,7 +10,8 @@
     "THE GATE SURVIVED, THE ENGINE DIED (r001 exploit direction): drawdown_regime_contrarian_gate scored the best numbers ever tested (43.3% win, gross Sharpe 0.98, -0.33% net) \u2014 the self-referential regime gate (null-arm win rate + stop-out cluster via context_keys=['system_state']) carries real information, but the 24-bar breakout engine behind it is too weak. Strong prior: pair BETTER ENGINES with the same meta-gate.",
     "CALIBRATE FIRE RATES (r001): predictions missed by 3x-8x in both directions. State the base-rate arithmetic (how many qualifying events per 288-bar day) rather than intuiting rarity.",
     "HORIZON IS A LEVER (2026-07-17): per-variant tp/sl/time_exit_hours are now honored in both replay and live. The fee floor is fixed per trade, so theses resolving over days targeting 8-20% moves face ~10x better cost ratios than 24h theses targeting 1-2%.",
-    "COST IS A DESIGN INPUT (2026-07-17): prefer entries where price comes to the level (limit-friendly) and single-fire selectivity \u2014 the denominator of edge-per-slot includes what execution costs, not just what the signal knows."
+    "COST IS A DESIGN INPUT (2026-07-17): prefer entries where price comes to the level (limit-friendly) and single-fire selectivity \u2014 the denominator of edge-per-slot includes what execution costs, not just what the signal knows.",
+    "CONJUNCTIONS MULTIPLY TO ZERO (r002): base-rate arithmetic that multiplies per-condition probabilities as if independent produces fire-rate misses of 4x to infinity when the conjuncts are anti-correlated (high volume x small body is nearly mutually exclusive in crypto candles; entropy jumps of +0.35 bits are impossible when H already sits at 0.95/1.0). Every spec must state WHY its conditions are independent, and any idea whose premise can be checked against the data distribution BEFORE a full gauntlet (entropy ceiling, conjunct correlation) should be \u2014 a 5-minute histogram would have killed two of five r002 ideas."
   ],
   "ideas": [
     {
@@ -145,6 +146,72 @@
         "actual": 0.1,
         "net_expectancy_pct": -0.33
       }
+    },
+    {
+      "name": "conditional_entropy_regime_expansion",
+      "lineage": "foundry r002 \u00b7 information_theory",
+      "tested": "2026-07-17 \u00b7 930d constrained replay, taker AND maker fills",
+      "result": "n=0 \u2014 NEVER FIRED in 2.5 years across 5 symbols",
+      "verdict": "dead",
+      "epitaph": "The premise does not exist in the data: 5-min crypto sign sequences already run at H\u22480.95 bits against a 1.0-bit ceiling (measured: mean order-2 conditional entropy 0.949, p99 jump +0.02, max ever +0.04 vs the required +0.35). There is no 'predictable regime' to break \u2014 the market lives at maximum entropy at this timescale, so an entropy SURGE is mathematically near-impossible, exactly as an entropy COLLAPSE (r001) was commonplace. The entropy lens is now dead in BOTH directions at 5-min resolution; if information theory returns, it must use magnitudes or longer bars, not signs.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.54,
+        "actual": 0.0,
+        "net_expectancy_pct": null
+      }
+    },
+    {
+      "name": "epidemic_r0_crossover_ignition",
+      "lineage": "foundry r002 \u00b7 cross_domain_import",
+      "tested": "2026-07-17 \u00b7 killed@180d (staged), taker AND maker",
+      "result": "taker n=248, -$280, edge/slot -$1.13, win 35.1%; maker n=246, -$180, -$0.73/slot, win 38.6%",
+      "verdict": "dead",
+      "epitaph": "The growth-phase import died like the decay-phase import (Omori): R0>1.5 ignitions of signed volume ARE real events, but they mark the move's midpoint, not its beginning \u2014 by the time flow visibly self-amplifies at 5-min resolution the entry is chasing, and the -3% stop harvests the retraces. Continuation entries triggered by volume acceleration have now failed twice (vol_thrust marginal, r0 clearly negative). Even halved costs (maker) recover only a third of the loss: the timing is wrong, not the fees.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.8,
+        "actual": 0.28,
+        "net_expectancy_pct": -0.57
+      }
+    },
+    {
+      "name": "absorption_shelf_breakout",
+      "lineage": "foundry r002 \u00b7 microstructure_from_ohlcv",
+      "tested": "2026-07-17 \u00b7 930d constrained replay, taker AND maker",
+      "result": "n=0 \u2014 NEVER FIRED; conjunction empty (of 19,788 windows: 442 pass 6-bar volume, 13 also pass small-body, 0 also pass tight-span)",
+      "verdict": "dead",
+      "epitaph": "Absorption is invisible in OHLCV: volume and bar range are strongly POSITIVELY correlated in crypto, so 'high volume + small body' is anti-correlated and demanding it 6 bars running with tight overlap yields the empty set \u2014 measured funnel 19788 \u2192 442 \u2192 13 \u2192 0. The spec's base-rate arithmetic multiplied the conjuncts as if independent; they are nearly mutually exclusive. True absorption needs order-book/footprint data (a Layer-2 argument), not candles.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.5,
+        "actual": 0.0,
+        "net_expectancy_pct": null
+      }
+    },
+    {
+      "name": "options_expiry_pin_release",
+      "lineage": "foundry r002 \u00b7 behavioral_calendar",
+      "tested": "2026-07-17 \u00b7 killed@180d (staged), taker AND maker",
+      "result": "taker n=37, -$44.60, edge/slot -$1.21, win 37.8%; maker n=37, -$32.39, -$0.88/slot, win 43.2%",
+      "verdict": "dead",
+      "epitaph": "The 08:00 UTC release window exists but carries no directional energy on 5-min spot bars: post-settlement breaks of a pre-08:00 pin resolved no better than any coil break (the dead_zone death, relocated to a named timestamp). Fire rate also missed 4x (predicted 0.15/sym/day, actual 0.04) \u2014 pins tight enough to qualify are rarer than the spec's arithmetic assumed, and the survivors were ordinary breakouts. Calendar structure alone doesn't make a coil directional; third coil-release death (dead_zone, weekend partial, this).",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.15,
+        "actual": 0.04,
+        "net_expectancy_pct": -0.6
+      }
+    },
+    {
+      "name": "rejection_streak_gated_ignition",
+      "lineage": "foundry r002 \u00b7 meta_self_referential (prescribed r001 successor)",
+      "tested": "2026-07-17 \u00b7 930d constrained replay, taker AND maker",
+      "result": "930d: taker n=109, -$164, -$1.51/slot, win 36.7% (maker -$120, -$1.10/slot). BUT trailing 180d: +$15.24 taker (+0.22%/trade), +$26.30 maker (+0.38%/trade), n=35 \u2014 the ONLY stage-1-positive idea of rounds 001-002",
+      "verdict": "dead",
+      "epitaph": "Dead by its own criterion over the full window (armed expectancy -0.75% < +0.3%): the saturation gate did not fix the R0 engine's chasing problem across 2.5 years. But the gradient is the loudest yet: positive on the trailing 180d under BOTH fill models, and the gate family is now best-of-round for the SECOND consecutive round (r001 regime gate 43.3% win, r002 gated engine only stage-1 survivor). Either the gate genuinely fits the current regime (testable: it goes on the watchlist for the NEXT 180d, out-of-sample) or best-of-round is what overfitting-to-recency looks like. Small n=35 forbids a claim; the next window will make one.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.16,
+        "actual": 0.024,
+        "net_expectancy_pct": -0.75
+      }
     }
-  ]
+  ],
+  "total_ideas_tested": 18
 }
