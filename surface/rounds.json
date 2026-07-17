@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T07:57:37.671688+00:00",
+  "generated_at": "2026-07-17T14:44:31.231404+00:00",
   "rounds": [
     {
       "round": 1,
@@ -62,6 +62,38 @@
           "name": "rejection_streak_gated_ignition",
           "lens": "meta_self_referential",
           "kill_criterion": "Dies if armed expectancy < +0.3%/trade (the exact bar its predecessor failed) OR if the gated engine shows no improvement over the ungated R0-ignition engine (idea 2) \u2014 i.e. the gate adds no lift, proving the self-referential regime signal does not concentrate amplitude."
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "date": "2026-07-17",
+      "thesis": "This round abandons the fade shapes and coil-releases that have died repeatedly, and instead systematically explores follow-through-through-discontinuity: entries at moments of book ACCEPTANCE (held gaps, session handoffs, retested level-flips) rather than exhaustion or rejection. Three ideas share a family thread \u2014 a decisive-bar continuation engine \u2014 but attack different failure lessons: one applies it raw (microstructure), one anchors it to institutional time (calendar), one gates it with the twice-proven meta regime signal that the prompt explicitly asked to pair with a better engine. The remaining two attack the fee floor from opposite ends of the design space: the multi-day-horizon idea resurrects Omori's dead shock-detection premise but escapes its 24h fee grave via the newly-honored 120h/12% exit lever where costs are a rounding error, and the cost-engineering idea attacks the denominator directly with a patient maker-side limit retest that lets price come to the broken level. Every fire rate is derived from base-rate arithmetic with positively-correlated conjuncts to avoid the conjunction-to-zero trap, and every idea names the exact gauntlet number that kills it.",
+      "ideas": [
+        {
+          "name": "gap_fill_exhaustion_continuation",
+          "lens": "microstructure_from_ohlcv",
+          "kill_criterion": "Dies if net expectancy < +0.3%/trade over the full window, OR if held-gap continuation win rate against the +5/-3 exit is <40% (proving the held gap fades as often as it continues, collapsing it into the dead failed_auction result)."
+        },
+        {
+          "name": "asian_to_london_handoff_thrust",
+          "lens": "behavioral_calendar",
+          "kill_criterion": "Dies if net expectancy < +0.3%/trade, OR if the 07:00-09:00 UTC break win rate is statistically indistinguishable from a random-hour break of the same-length prior range (proving the London hour carries no special energy \u2014 the dead_zone/options-pin result relocated)."
+        },
+        {
+          "name": "slot_scarcity_conviction_gate",
+          "lens": "meta_self_referential",
+          "kill_criterion": "Dies if armed expectancy < +0.3%/trade over the FULL window (not just trailing 180d \u2014 the r002 overfitting-to-recency warning). Specifically killed if gated expectancy does not beat the ungated gap engine by a margin exceeding the sample noise, proving the gate adds nothing to a strong engine."
+        },
+        {
+          "name": "post_shock_multiday_drift",
+          "lens": "multi_day_horizon",
+          "kill_criterion": "Dies if net expectancy < +0.5%/trade over the window, OR if the 120h post-shock drift shows no directional edge (shock-direction 5-day return not distinguishable from the opposite direction), confirming Omori's verdict that shock persistence is fee-sized at ALL horizons, not just 24h."
+        },
+        {
+          "name": "pullback_to_breakout_level_limit",
+          "lens": "cost_engineering",
+          "kill_criterion": "Dies if net expectancy < +0.3%/trade, OR if retest-then-continuation win rate is no better than chasing the same breakout at market net of the assumed fill improvement (proving the retest just re-enters failing breakouts and the patience/limit advantage is illusory). Also killed if fill rate <20% within the 2h window (thesis starves)."
         }
       ]
     }

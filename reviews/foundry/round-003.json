@@ -1,0 +1,104 @@
+{
+  "round": 3,
+  "generated_at": "2026-07-17T14:42:51.156849+00:00",
+  "model": "claude-opus-4-8",
+  "ideas": [
+    {
+      "name": "gap_fill_exhaustion_continuation",
+      "lens": "microstructure_from_ohlcv",
+      "mechanism": "When a 5-min bar opens with a gap from the prior close (>0.4%) and then CLOSES beyond its own open in the gap direction with an above-median body, it signals that the overnight/thin-book repricing was NOT rejected \u2014 the book accepted the new level and continued. This is the opposite of the dead failed_auction/wick-fade family: instead of fading the gap, we ride the gap that holds. The mechanism is that a held gap reveals a genuine inventory imbalance that market makers cannot immediately refill \u2014 they widen and lean the same direction, producing follow-through. It is not arbitraged at 5-min retail scale because the signal requires holding across a discontinuity (limit orders were skipped), and most systematic flow fades gaps (the classic gap-fill trade), leaving a crowded-fade to lean against.",
+      "lineage_check": "Nearest death is failed_auction_rejection_wick (r001), which faded fresh extremes via wick geometry and died because rejections continued as often as reverted. This idea is its INVERSE: it is a continuation-shaped entry that requires the gap to HOLD (close through open, body confirms) rather than a wick that rejects. It explicitly rides the direction the fade-family bet against, engaging the 'asymmetric exit rewards follow-through' lesson directly.",
+      "entry_rule": "On each 5-min bar: compute gap = (open - prev_close)/prev_close. If gap > +0.4% (long) or < -0.4% (short), AND the bar closes beyond its open in the gap direction (close>open for longs), AND the bar body |close-open| exceeds the 50-bar median body, AND bar volume > 50-bar median volume, enter in gap direction at close. One fire per symbol per cooldown. Uses only OHLCV.",
+      "params": {
+        "gap_threshold": 0.004,
+        "body_lookback": 50,
+        "volume_lookback": 50,
+        "tp": 0.05,
+        "sl": 0.03,
+        "time_exit_hours": 24
+      },
+      "expected_fire_rate": "Gaps >0.4% at 5-min occur roughly 8-15 times/symbol/day in crypto (24h market has small gaps constantly). Requiring close-through-open in gap direction ~50% of those, above-median body ~30% conditional (body and gap-hold are positively correlated, so NOT anti-correlated \u2014 a held gap tends to be a decisive bar), above-median volume ~40% conditional (volume and body positively correlated in crypto, so this co-occurs). Net ~8 * 0.5 * 0.4 = ~1.6/symbol/day pre-cooldown, ~0.8/symbol/day after 1h cooldown. Conjuncts are positively correlated, avoiding the conjunction-to-zero trap.",
+      "fee_survival": "Held gaps in crypto that clear 0.4% and confirm with a decisive bar tend to run 1-3% intraday before stalling; the entry is at the moment of book acceptance, not at exhaustion, so the +5% target is reachable and average favorable excursion should exceed the 1% fee-relevant floor. The 0.4% gap + above-median body already positions past ~0.5% of realized move at entry.",
+      "kill_criterion": "Dies if net expectancy < +0.3%/trade over the full window, OR if held-gap continuation win rate against the +5/-3 exit is <40% (proving the held gap fades as often as it continues, collapsing it into the dead failed_auction result)."
+    },
+    {
+      "name": "asian_to_london_handoff_thrust",
+      "lens": "behavioral_calendar",
+      "mechanism": "The 06:00-09:00 UTC window is the London-open liquidity injection after the thin Asian session. When the first hour of London (07:00-08:00 UTC) breaks the entire Asian-session range (00:00-06:00 UTC) with a decisive bar, it reflects European desks repricing against inventory that Asian thinness left mispriced. This is a time-of-day POWER window, not a coil-release: the edge is that London flow initiates directional conviction that persists into the US overlap. It is not arbitraged because the specific handoff geometry (break of a defined prior-session range at a defined institutional wake-up hour) requires session-anchoring most retail bots don't encode, and crypto's 24h nature means most 'session' logic is ignored.",
+      "lineage_check": "Nearest deaths are dead_zone_range_break and options_expiry_pin_release \u2014 both coil-release-at-a-timestamp deaths. This differs because it does NOT require compression: the Asian range can be wide or narrow. The signal is a session-boundary directional handoff (thin session -> liquid session repricing), and it fires as a continuation of a specific institutional-hour thrust, not a break of a pre-defined tight coil. It also is not the weekend lineage \u2014 it targets weekday intraday session structure.",
+      "entry_rule": "Define Asian range as high/low of bars from 00:00-06:00 UTC. During 07:00-09:00 UTC, if a 5-min bar closes above the Asian high (long) or below the Asian low (short) with body > 50-bar median body AND volume > 50-bar median, enter in break direction at close. Weekdays only (Mon-Fri UTC). One fire/symbol/day.",
+      "params": {
+        "asian_start_utc": 0,
+        "asian_end_utc": 6,
+        "london_window_start_utc": 7,
+        "london_window_end_utc": 9,
+        "body_lookback": 50,
+        "volume_lookback": 50,
+        "tp": 0.05,
+        "sl": 0.03,
+        "time_exit_hours": 24
+      },
+      "expected_fire_rate": "One qualifying window per weekday per symbol. Asian range is broken during the 07:00-09:00 window on perhaps ~40% of weekdays (many days trend into London), and the body+volume filter passes ~50% of those breaks. So ~0.2/symbol/weekday = ~1 fire/symbol/week. Across 5 symbols ~5 fires/week \u2014 selective, fits the amplitude-over-frequency mandate.",
+      "fee_survival": "A confirmed London break of the Asian range typically initiates a move that runs into the US session; historical London-open thrusts in crypto commonly extend 1.5-4% over the following hours. The decisive-bar filter ensures we enter on conviction not noise, targeting the >1% favorable excursion needed to clear fees with room toward the 5% target.",
+      "kill_criterion": "Dies if net expectancy < +0.3%/trade, OR if the 07:00-09:00 UTC break win rate is statistically indistinguishable from a random-hour break of the same-length prior range (proving the London hour carries no special energy \u2014 the dead_zone/options-pin result relocated)."
+    },
+    {
+      "name": "slot_scarcity_conviction_gate",
+      "lens": "meta_self_referential",
+      "mechanism": "The system's OWN recent stop-out clustering is a regime signal: when the portfolio's last N closed trades across all symbols show a high stop-out rate, the market is in a chop/whipsaw regime hostile to the +5/-3 exit; when recent closed trades are hitting targets or timing out flat, follow-through is working. Rather than gating a weak breakout (the drawdown_regime_contrarian_gate death), gate a STRONG initiation engine (the gap-hold or session-thrust shape) on the system-state being in follow-through-favorable regime. The gate carries real information (proven twice: r001 43.3% win, r002 best-of-round); this round's contribution is pairing it with a momentum-continuation engine instead of a mean-reversion or vanilla-breakout engine.",
+      "lineage_check": "Direct successor to drawdown_regime_contrarian_gate (dead) and rejection_streak_gated_ignition (dead) \u2014 but the explicit r001/r002 LESSON was 'the gate survived, the engine died; pair better engines with the same meta-gate.' Prior gated engines were a 24-bar breakout (too weak) and an R0 volume-acceleration engine (wrong timing, chasing). This pairs the gate with a HELD-GAP continuation engine (enters on book acceptance, not on visible self-amplification), which is a distinct, earlier-timing engine that neither dead variant used.",
+      "entry_rule": "Maintain system_state = stop_out_rate over the last 10 closed trades (all symbols). ENGINE: same as gap_fill_exhaustion_continuation trigger (gap>0.4%, close-through-open, body>median, vol>median). GATE: only take the engine signal when recent stop_out_rate <= 0.5 (follow-through regime). If stop_out_rate > 0.5, suppress all entries until it recovers. context_keys=['system_state'].",
+      "params": {
+        "trade_window": 10,
+        "stop_rate_gate": 0.5,
+        "gap_threshold": 0.004,
+        "body_lookback": 50,
+        "volume_lookback": 50,
+        "tp": 0.05,
+        "sl": 0.03,
+        "time_exit_hours": 24
+      },
+      "expected_fire_rate": "Base engine fires ~0.8/symbol/day (see gap variant). The gate suppresses roughly 40-50% of periods (when recent stop-out clustering is high), yielding ~0.4/symbol/day when armed. Across 5 symbols and gate-on windows, expect ~1-2 fires/day portfolio-wide \u2014 deliberately scarce, spending slots only in favorable regime.",
+      "fee_survival": "Same held-gap amplitude argument (1-3% typical continuation), but now conditioned on the regime where follow-through is empirically working, which should lift both win rate above the ~40% asymmetric-exit breakeven AND average favorable excursion, pushing net comfortably past the 1% fee floor. The gate's job is to remove the fee-negative chop fires.",
+      "kill_criterion": "Dies if armed expectancy < +0.3%/trade over the FULL window (not just trailing 180d \u2014 the r002 overfitting-to-recency warning). Specifically killed if gated expectancy does not beat the ungated gap engine by a margin exceeding the sample noise, proving the gate adds nothing to a strong engine."
+    },
+    {
+      "name": "post_shock_multiday_drift",
+      "lens": "multi_day_horizon",
+      "mechanism": "A single 5-min bar with an extreme signed range (>3% move in one bar) marks a violent repricing \u2014 a liquidation, a news shock, a large order. Over the following 2-5 DAYS, the asset drifts in the shock direction because large repricings shift the perceived fair value and trigger slow position adjustment by funds who cannot execute instantly. Omori (r001) died because it targeted 5-min-scale aftershock persistence (39.6% vs fees at 24h horizon). This escapes that grave by extending the horizon to days and the target to 8-15%: the multi-day drift is where the persistence lives, and at a 120h horizon the 0.6% fee is a rounding error against a 10% target.",
+      "lineage_check": "Nearest death is omori_aftershock_ladder (r001), which used the SAME shock-detection premise but resolved over 5-min bars at 24h and lost to fees (persistence 39.6% < needed 40%+, smaller than costs). This is explicitly the HORIZON-LEVER escape named in the prompt: same shock trigger, but tp 0.12 / sl 0.05 / time_exit 120h changes the cost ratio ~10x, so a weak-but-real multi-day drift that Omori couldn't monetize at 24h becomes viable. The persistence measured at 5-min was too fast to harvest; the days-scale drift is a different phenomenon.",
+      "entry_rule": "On each 5-min bar: compute bar_move = (close - open)/open. If |bar_move| > 3% AND bar volume > 3x the 100-bar median volume (confirming a real shock not a data glitch), enter in the shock direction at the close of the SIGNAL bar. Hold with per-variant exit tp 0.12 / sl 0.05 / time_exit 120h. One fire/symbol per cooldown.",
+      "params": {
+        "shock_threshold": 0.03,
+        "volume_mult": 3.0,
+        "volume_lookback": 100,
+        "tp": 0.12,
+        "sl": 0.05,
+        "time_exit_hours": 120
+      },
+      "expected_fire_rate": "3%+ single-bar moves with 3x volume occur roughly 0.3-0.8/symbol/day in crypto (Omori over-fired 2.6x its prediction because fat tails make these commoner than intuited \u2014 I calibrate UP accordingly). After 1h cooldown, ~0.3/symbol/day. Across 5 symbols ~1.5/day. With a 120h hold, most slots are occupied by open positions, naturally limiting new fires to the slot ceiling \u2014 good for edge-per-slot.",
+      "fee_survival": "Target is 12% over up to 5 days; even the -5% stop is 8x the round-trip fee. The thesis only needs the multi-day drift to reach 12% on a minority of fires (the fat right tail of post-shock continuation) with the stop containing the rest, because the reward:risk and fee:target ratios are structurally favorable at this horizon. Fees are ~0.6% against a 12% target = negligible.",
+      "kill_criterion": "Dies if net expectancy < +0.5%/trade over the window, OR if the 120h post-shock drift shows no directional edge (shock-direction 5-day return not distinguishable from the opposite direction), confirming Omori's verdict that shock persistence is fee-sized at ALL horizons, not just 24h."
+    },
+    {
+      "name": "pullback_to_breakout_level_limit",
+      "lens": "cost_engineering",
+      "mechanism": "Instead of chasing a breakout at market (paying spread + slippage + the extended price), wait for the breakout to occur, then place a LIMIT entry back at the broken level, letting price come to you on the retest. Breakouts of a meaningful multi-hour level frequently retest the level before continuing (the level flips from resistance to support). The cost attack: entering on the retest fills at or better than the level with a resting limit (maker-side, tighter effective cost) AND at a lower price than chasing, improving both the fill and the reward-to-target distance. The continuation still resolves upward, so this is a follow-through shape, not a fade. Not arbitraged because most retail momentum bots chase the break (crowded, worse fills); the disciplined retest entry is behaviorally hard and thus underpopulated.",
+      "lineage_check": "Distinct from all coil-release deaths (dead_zone, options_pin) because it does not require compression \u2014 it requires a break of a 48-bar (4h) extreme followed by a retest. It is NOT a fade (bollinger_family): the trade direction is WITH the breakout; the retest is merely the cost-optimal entry timing into a continuation. Distinct from macross_family because the entry is level-anchored and event-gated (break then retest), not a perpetual crossover that bleeds in chop.",
+      "entry_rule": "Track the 48-bar (4h) high H and low L. When a 5-min bar closes above H by >0.5% (breakout confirmed) with volume>50-bar median, arm a LONG limit order at price = H (the broken level). Fill only if price returns to H within the next 24 bars (2h); otherwise cancel (no chase). Symmetric for downside breaks (limit at L). Enter long at the retest fill. One fire/symbol per cooldown.",
+      "params": {
+        "level_lookback": 48,
+        "breakout_margin": 0.005,
+        "volume_lookback": 50,
+        "retest_window_bars": 24,
+        "tp": 0.05,
+        "sl": 0.03,
+        "time_exit_hours": 24
+      },
+      "expected_fire_rate": "48-bar extreme breakouts with >0.5% margin and above-median volume: ~2-4/symbol/day. Of those, a retest to the level within 2h occurs on ~35-45% (many breaks run without retesting \u2014 this is the cost of patience, and it is intentional selectivity). Net ~1/symbol/day armed, ~0.5/symbol/day filled after cooldown. Across 5 symbols ~2.5 fills/day \u2014 selective single-fire quality entries.",
+      "fee_survival": "Two-part: (1) the maker-side limit fill at the level reduces effective round-trip cost below the 0.6% taker floor; (2) entering at the level rather than 0.5%+ above it means the full continuation move counts toward the target \u2014 the average favorable excursion of a successful retest-continuation (level-flip holds) commonly runs 1.5-3%. The cost reduction and better entry price BOTH widen the fee-adjusted edge past 1%.",
+      "kill_criterion": "Dies if net expectancy < +0.3%/trade, OR if retest-then-continuation win rate is no better than chasing the same breakout at market net of the assumed fill improvement (proving the retest just re-enters failing breakouts and the patience/limit advantage is illusory). Also killed if fill rate <20% within the 2h window (thesis starves)."
+    }
+  ],
+  "round_thesis": "This round abandons the fade shapes and coil-releases that have died repeatedly, and instead systematically explores follow-through-through-discontinuity: entries at moments of book ACCEPTANCE (held gaps, session handoffs, retested level-flips) rather than exhaustion or rejection. Three ideas share a family thread \u2014 a decisive-bar continuation engine \u2014 but attack different failure lessons: one applies it raw (microstructure), one anchors it to institutional time (calendar), one gates it with the twice-proven meta regime signal that the prompt explicitly asked to pair with a better engine. The remaining two attack the fee floor from opposite ends of the design space: the multi-day-horizon idea resurrects Omori's dead shock-detection premise but escapes its 24h fee grave via the newly-honored 120h/12% exit lever where costs are a rounding error, and the cost-engineering idea attacks the denominator directly with a patient maker-side limit retest that lets price come to the broken level. Every fire rate is derived from base-rate arithmetic with positively-correlated conjuncts to avoid the conjunction-to-zero trap, and every idea names the exact gauntlet number that kills it."
+}
