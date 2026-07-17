@@ -65,11 +65,18 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "absorption_shelf_breakout", "options_expiry_pin_release",
         "rejection_streak_gated_ignition",
     }
+    foundry_003 = {
+        "gap_fill_exhaustion_continuation", "asian_to_london_handoff_thrust",
+        "slot_scarcity_conviction_gate", "post_shock_multiday_drift",
+        "pullback_to_breakout_level_limit",
+    }
     assert set(STRATEGY_VARIANTS.keys()) == (
-        retired | candidates | foundry_001 | foundry_002 | {"null_baseline"}
+        retired | candidates | foundry_001 | foundry_002 | foundry_003
+        | {"null_baseline"}
     )
     assert all(
-        STRATEGY_VARIANTS[n].get("enabled") is False for n in foundry_001 | foundry_002
+        STRATEGY_VARIANTS[n].get("enabled") is False
+        for n in foundry_001 | foundry_002 | foundry_003
     ), "foundry rounds stay disabled pending their gauntlets"
 
     # The live roster: null placebo + the gauntlet's top 2 as A/B arms
@@ -793,3 +800,133 @@ class TestFoundryRound002:
     def test_gated_ignition_none_without_context(self) -> None:
         assert signals.rejection_streak_gated_ignition(
             self._r0_ignition_bars(), {}, {}) is None
+
+
+# --- Foundry round 003 (smoke + gate tests) ----------------------------------
+
+
+class TestFoundryRound003:
+    def test_all_registered(self) -> None:
+        for key in ("gap_exhaustion", "asian_london_handoff", "slot_scarcity_gate",
+                    "post_shock_drift", "breakout_retest_limit"):
+            assert key in signals.STRATEGY_REGISTRY
+
+    def test_insufficient_bars_all_return_none(self) -> None:
+        bars = _flat_series("BTC/USD", 20)
+        ctx = {"system_state": {"stop_out_rate": 0.2}}
+        assert signals.gap_fill_exhaustion_continuation(bars, {}, {}) is None
+        assert signals.asian_to_london_handoff_thrust(bars, {}, {}) is None
+        assert signals.slot_scarcity_conviction_gate(bars, {}, ctx) is None
+        assert signals.post_shock_multiday_drift(bars, {}, {}) is None
+        assert signals.pullback_to_breakout_level_limit(bars, {}, {}) is None
+
+    def test_flat_series_no_fires(self) -> None:
+        bars = _flat_series("ETH/USD", 500)
+        ctx = {"system_state": {"stop_out_rate": 0.2}}
+        assert signals.gap_fill_exhaustion_continuation(bars, {}, {}) is None
+        assert signals.asian_to_london_handoff_thrust(bars, {}, {}) is None
+        assert signals.slot_scarcity_conviction_gate(bars, {}, ctx) is None
+        assert signals.post_shock_multiday_drift(bars, {}, {}) is None
+        assert signals.pullback_to_breakout_level_limit(bars, {}, {}) is None
+
+    # -- idea 1: held gap ----------------------------------------------------
+
+    def _gap_bars(self) -> list[BarRow]:
+        bars = _flat_series("BTC/USD", 100)  # closes 100, bodies 0, vol 100
+        b = bars[-1]  # gap up 0.5%, closes through open, big body + volume
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.5, 101.1, 100.4, 101.0, 300.0)
+        return bars
+
+    def test_gap_held_fires_buy(self) -> None:
+        sig = signals.gap_fill_exhaustion_continuation(self._gap_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_gap_faded_no_fire(self) -> None:
+        bars = self._gap_bars()
+        b = bars[-1]  # gap up but closes back BELOW open — faded, not held
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.5, 100.6, 99.9, 100.1, 300.0)
+        assert signals.gap_fill_exhaustion_continuation(bars, {}, {}) is None
+
+    # -- idea 2: Asian-range break in the London window ----------------------
+
+    def _london_bars(self, break_out: bool = True) -> list[BarRow]:
+        from datetime import datetime, timedelta, timezone
+        start = datetime(2026, 7, 10, 0, 0, tzinfo=timezone.utc)  # Friday
+        bars = []
+        for i in range(91):  # 00:00 .. 07:30, range 99.8-100.2
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.0, 100.2, 99.8, 100.0, 100.0))
+        b = bars[-1]  # 07:30 bar
+        if break_out:
+            bars[-1] = _bar(b.symbol, b.timestamp, 100.1, 100.8, 100.0, 100.7, 300.0)
+        return bars
+
+    def test_london_break_fires_buy(self) -> None:
+        sig = signals.asian_to_london_handoff_thrust(self._london_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_no_fire_on_weekend(self) -> None:
+        from datetime import datetime, timedelta, timezone
+        start = datetime(2026, 7, 11, 0, 0, tzinfo=timezone.utc)  # Saturday
+        bars = []
+        for i in range(91):
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.0, 100.2, 99.8, 100.0, 100.0))
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.1, 100.8, 100.0, 100.7, 300.0)
+        assert signals.asian_to_london_handoff_thrust(bars, {}, {}) is None
+
+    # -- idea 3: stop-rate gate on the gap engine ----------------------------
+
+    def test_gate_open_fires(self) -> None:
+        ctx = {"system_state": {"stop_out_rate": 0.2}}
+        sig = signals.slot_scarcity_conviction_gate(self._gap_bars(), {}, ctx)
+        assert sig is not None and sig.side == "buy"
+
+    def test_gate_shut_or_missing_suppresses(self) -> None:
+        bars = self._gap_bars()
+        assert signals.slot_scarcity_conviction_gate(
+            bars, {}, {"system_state": {"stop_out_rate": 0.8}}) is None
+        assert signals.slot_scarcity_conviction_gate(
+            bars, {}, {"system_state": {"stop_out_rate": None}}) is None
+        assert signals.slot_scarcity_conviction_gate(bars, {}, {}) is None
+
+    # -- idea 4: post-shock drift --------------------------------------------
+
+    def test_shock_fires_buy_with_multiday_exits(self) -> None:
+        bars = _flat_series("SOL/USD", 150)
+        b = bars[-1]  # +3.5% body on 4x volume
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.0, 103.8, 99.9, 103.5, 400.0)
+        sig = signals.post_shock_multiday_drift(bars, {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_shock_without_volume_no_fire(self) -> None:
+        bars = _flat_series("SOL/USD", 150)
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.0, 103.8, 99.9, 103.5, 150.0)
+        assert signals.post_shock_multiday_drift(bars, {}, {}) is None
+
+    # -- idea 5: breakout retest ---------------------------------------------
+
+    def _retest_bars(self) -> list[BarRow]:
+        bars = _flat_series("ETH/USD", 130)  # high 100.2 everywhere
+        i_brk = 126  # breakout bar: close 101 > 100.2 * 1.005, vol 300
+        b = bars[i_brk]
+        bars[i_brk] = _bar(b.symbol, b.timestamp, 100.1, 101.2, 100.0, 101.0, 300.0)
+        for i in (127, 128):  # holds above the level — no touch yet
+            b = bars[i]
+            bars[i] = _bar(b.symbol, b.timestamp, 101.0, 101.3, 100.8, 101.1, 100.0)
+        b = bars[129]  # retest: low touches the broken level (100.01)
+        bars[129] = _bar(b.symbol, b.timestamp, 100.9, 101.0, 100.0, 100.4, 100.0)
+        return bars
+
+    def test_retest_fires_buy_at_level(self) -> None:
+        sig = signals.pullback_to_breakout_level_limit(self._retest_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["level"] == pytest.approx(100.01)  # flat-series high
+
+    def test_no_chase_without_retest(self) -> None:
+        bars = self._retest_bars()
+        b = bars[129]  # stays high — armed but never touches the level
+        bars[129] = _bar(b.symbol, b.timestamp, 101.0, 101.4, 100.9, 101.2, 100.0)
+        assert signals.pullback_to_breakout_level_limit(bars, {}, {}) is None

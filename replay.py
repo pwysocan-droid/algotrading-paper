@@ -296,6 +296,13 @@ def replay_variant(
                 sum(1 for _, _w, s in last_exits if s) / len(last_exits)
                 if last_exits else None
             ),
+            # r003: live spans ALL arms; in replay only the null arm is
+            # simulated, so this reduces to the null arm's own last-10
+            # (same documented approximation as the fields above).
+            "stop_out_rate": (
+                sum(1 for _, _w, s in last_exits if s) / len(last_exits)
+                if last_exits else None
+            ),
         }
 
     out: list[SimulatedTrade] = []

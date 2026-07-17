@@ -1062,6 +1062,210 @@ def rejection_streak_gated_ignition(
     )
 
 
+# ── Foundry round 003 (reviews/foundry/round-003.md) ────────────────────
+# Premise-checked 2026-07-17 against research_bars (BTC, 50k bars):
+# gap>0.4% fires 0.1/day (spec said 8-15 — 100x miss), shock 3%+3xvol
+# 0.04/day (spec 0.3-0.8), breakout+0.5% ~0.4/day both sides. All exist
+# in the data; all far rarer than predicted. Recorded for the epitaphs.
+
+
+def _gap_exhaustion_trigger(bars: list[BarRow], params: dict[str, Any]) -> str | None:
+    """Shared engine for round-003 ideas 1 and 3: a 5-min open gap held
+    through the bar (close-through-open in gap direction) with
+    above-median body and volume."""
+    gap_th = float(params.get("gap_threshold", 0.004))
+    body_w = int(params.get("body_lookback", 50))
+    vol_w = int(params.get("volume_lookback", 50))
+    if len(bars) < max(body_w, vol_w) + 2:
+        return None
+    last, prev = bars[-1], bars[-2]
+    if prev.close <= 0:
+        return None
+    gap = (last.open - prev.close) / prev.close
+    if abs(gap) <= gap_th:
+        return None
+    direction = 1 if gap > 0 else -1
+    body = last.close - last.open
+    if direction > 0 and body <= 0:
+        return None
+    if direction < 0 and body >= 0:
+        return None
+    med_body = statistics.median(abs(b.close - b.open) for b in bars[-1 - body_w: -1])
+    med_vol = statistics.median(b.volume for b in bars[-1 - vol_w: -1])
+    if med_vol <= 0 or abs(body) <= med_body or last.volume <= med_vol:
+        return None
+    return "buy" if direction > 0 else "sell"
+
+
+def gap_fill_exhaustion_continuation(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-003 idea 1 — a >0.4% open gap that HOLDS through the bar is
+    initiative flow, traded as continuation."""
+    side = _gap_exhaustion_trigger(bars, params)
+    if side is None:
+        return None
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="gap_exhaustion",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"gap": (last.open - bars[-2].close) / bars[-2].close},
+    )
+
+
+def asian_to_london_handoff_thrust(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-003 idea 2 — first qualified break of the Asian-session
+    range (00:00-06:00 UTC) during the London handoff window, weekdays.
+    One fire per symbol per day (first break only + platform cooldown)."""
+    a_start = int(params.get("asian_start_utc", 0))
+    a_end = int(params.get("asian_end_utc", 6))
+    w_start = int(params.get("london_window_start_utc", 7))
+    w_end = int(params.get("london_window_end_utc", 9))
+    body_w = int(params.get("body_lookback", 50))
+    vol_w = int(params.get("volume_lookback", 50))
+
+    if len(bars) < max(body_w, vol_w) + 20:
+        return None
+    last = bars[-1]
+    t = _ts(last)
+    if t.weekday() >= 5 or not (w_start <= t.hour < w_end):
+        return None
+    day0 = t.replace(hour=0, minute=0, second=0, microsecond=0)
+    asian = [
+        b for b in bars[:-1]
+        if day0 + timedelta(hours=a_start) <= _ts(b) < day0 + timedelta(hours=a_end)
+    ]
+    if len(asian) < (a_end - a_start) * 12 - 12:  # tolerate one missing bar-hour
+        return None
+    hi = max(b.high for b in asian)
+    lo = min(b.low for b in asian)
+    window_prior = [
+        b for b in bars[:-1] if day0 + timedelta(hours=w_start) <= _ts(b) < t
+    ]
+    if any(b.close > hi or b.close < lo for b in window_prior):
+        return None  # not the first break today
+    med_body = statistics.median(abs(b.close - b.open) for b in bars[-1 - body_w: -1])
+    med_vol = statistics.median(b.volume for b in bars[-1 - vol_w: -1])
+    if med_vol <= 0 or abs(last.close - last.open) <= med_body or last.volume <= med_vol:
+        return None
+    if last.close > hi:
+        side = "buy"
+    elif last.close < lo:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="asian_london_handoff",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"asian_high": hi, "asian_low": lo},
+    )
+
+
+def slot_scarcity_conviction_gate(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-003 idea 3 — the gap engine armed only when the system's
+    recent closed trades are NOT clustering at the stop (follow-through
+    regime). Returns None without the context feed rather than guess."""
+    gate = float(params.get("stop_rate_gate", 0.5))
+    state = context.get("system_state")
+    if not state:
+        return None
+    stop_rate = state.get("stop_out_rate")
+    if stop_rate is None or stop_rate > gate:
+        return None
+    side = _gap_exhaustion_trigger(bars, params)
+    if side is None:
+        return None
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="slot_scarcity_gate",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"stop_out_rate": stop_rate},
+    )
+
+
+def post_shock_multiday_drift(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-003 idea 4 — a single-bar shock (>3% body on 3x volume)
+    entered WITH the shock, held for days (tp 12% / sl 5% / 120h): the
+    horizon lever applied to information arrival."""
+    shock_th = float(params.get("shock_threshold", 0.03))
+    vol_mult = float(params.get("volume_mult", 3.0))
+    vol_w = int(params.get("volume_lookback", 100))
+    if len(bars) < vol_w + 2:
+        return None
+    last = bars[-1]
+    if last.open <= 0:
+        return None
+    move = (last.close - last.open) / last.open
+    if abs(move) <= shock_th:
+        return None
+    med = statistics.median(b.volume for b in bars[-1 - vol_w: -1])
+    if med <= 0 or last.volume <= vol_mult * med:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="post_shock_drift",
+        side="buy" if move > 0 else "sell",
+        bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"move": move, "vol_ratio": last.volume / med},
+    )
+
+
+def pullback_to_breakout_level_limit(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-003 idea 5 — breakout, then enter on the RETEST of the
+    broken level (price comes to you; limit-friendly, pairs with the
+    maker fill model). Documented approximations: the signal fires on
+    the first bar that touches the level after the most recent qualified
+    breakout in the window; entry executes at the platform's next-bar
+    price (or rests as a limit under fill_model='maker')."""
+    lvl_w = int(params.get("level_lookback", 48))
+    margin = float(params.get("breakout_margin", 0.005))
+    vol_w = int(params.get("volume_lookback", 50))
+    retest_w = int(params.get("retest_window_bars", 24))
+    if len(bars) < lvl_w + vol_w + retest_w + 2:
+        return None
+    last = bars[-1]
+    last_i = len(bars) - 1
+    for k in range(1, retest_w + 1):  # most recent breakout wins
+        j = last_i - k
+        if j < max(lvl_w, vol_w) + 1:
+            return None
+        brk = bars[j]
+        med_vol = statistics.median(b.volume for b in bars[j - vol_w: j])
+        if med_vol <= 0 or brk.volume <= med_vol:
+            continue
+        hi = max(b.high for b in bars[j - lvl_w: j])
+        lo = min(b.low for b in bars[j - lvl_w: j])
+        if brk.close > hi * (1.0 + margin):
+            level, side = hi, "buy"
+        elif brk.close < lo * (1.0 - margin):
+            level, side = lo, "sell"
+        else:
+            continue
+        between = bars[j + 1: last_i]
+        touched = (
+            any(b.low <= level for b in between) if side == "buy"
+            else any(b.high >= level for b in between)
+        )
+        if touched:
+            return None  # retest already happened (or level consumed)
+        now_touch = last.low <= level if side == "buy" else last.high >= level
+        if not now_touch:
+            return None  # armed, still waiting — no chase
+        return Signal(
+            symbol=last.symbol, variant_name="", strategy="breakout_retest_limit",
+            side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+            reasoning={"level": level, "breakout_ts": brk.timestamp},
+        )
+    return None
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
@@ -1081,6 +1285,11 @@ STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "absorption_shelf": absorption_shelf_breakout,
     "expiry_pin_release": options_expiry_pin_release,
     "rejection_gated_ignition": rejection_streak_gated_ignition,
+    "gap_exhaustion": gap_fill_exhaustion_continuation,
+    "asian_london_handoff": asian_to_london_handoff_thrust,
+    "slot_scarcity_gate": slot_scarcity_conviction_gate,
+    "post_shock_drift": post_shock_multiday_drift,
+    "breakout_retest_limit": pullback_to_breakout_level_limit,
 }
 
 
@@ -1171,11 +1380,22 @@ def load_system_state(
         sum(1 for r in nulls if r["exit_reason"] == "stop_loss") / len(nulls)
         if nulls else None
     )
+    all_recent = conn.execute(
+        """
+        SELECT exit_reason FROM trades WHERE status = 'closed'
+         ORDER BY exit_time DESC LIMIT 10
+        """
+    ).fetchall()
+    stop_out_rate = (
+        sum(1 for r in all_recent if r["exit_reason"] == "stop_loss") / len(all_recent)
+        if all_recent else None
+    )
     return {
         "null_win_rate": (wins / closed) if closed else None,
         "recent_stopouts": stopouts,
         "rejection_rate": rejection_rate,
         "placebo_stop_rate": placebo_stop_rate,
+        "stop_out_rate": stop_out_rate,  # last 10 closed, ALL arms (r003)
     }
 
 
