@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T13:10:06Z",
+  "generated_at": "2026-07-17T13:15:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-17T13:10:04.153927+00:00",
+    "last_run_iso": "2026-07-17T13:15:04.478070+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-17 · 13:10 UTC",
+    "last_run_human_date": "2026-07-17 · 13:15 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "15793 of 15812 ok · 99.9%",
+    "uptime_recent": "15794 of 15813 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -80,13 +80,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "275,354",
+      "count": "275,359",
       "delta": "+1491",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "275354"
+      "value": "275359"
     },
     {
       "name": "bar coverage",
@@ -100,13 +100,13 @@
     },
     {
       "name": "cron runs",
-      "count": "15,812",
+      "count": "15,813",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15812"
+      "value": "15813"
     },
     {
       "name": "llm calls",
@@ -123,7 +123,7 @@
       "count": "86",
       "delta": "+86",
       "delta_class": null,
-      "spark": "▁▁▃▇▅█▆█",
+      "spark": "▁▁▃█▅█▆█",
       "spark_class": null,
       "key": "decisions",
       "value": "86"
@@ -302,18 +302,18 @@
       {
         "name": "null_baseline",
         "placed": 7,
-        "open": 5,
-        "closed": 2,
+        "open": 4,
+        "closed": 3,
         "wins": 0,
         "win_rate": 0.0,
-        "pnl_usd": -14.16
+        "pnl_usd": -21.25
       }
     ],
     "total": {
       "placed": 7,
-      "open": 5,
-      "closed": 2,
-      "pnl_usd": -14.16
+      "open": 4,
+      "closed": 3,
+      "pnl_usd": -21.25
     }
   }
 }
