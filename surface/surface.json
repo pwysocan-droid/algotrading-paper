@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T12:20:06Z",
+  "generated_at": "2026-07-17T12:25:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-17T12:20:04.020328+00:00",
-    "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-17 · 12:20 UTC",
-    "next_run_human": "59m 57s",
-    "uptime_recent": "15783 of 15802 ok · 99.9%",
+    "last_run_iso": "2026-07-17T12:25:04.062837+00:00",
+    "last_run_human": "0m 01s ago",
+    "last_run_human_date": "2026-07-17 · 12:25 UTC",
+    "next_run_human": "59m 58s",
+    "uptime_recent": "15784 of 15803 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -31,7 +31,7 @@
       "qual": "no strategies registered",
       "figure": "6",
       "unit": "",
-      "spark": "▁▁▁█▁▁▂▁",
+      "spark": "▁▁▁█▁▂▁▁",
       "spark_class": null
     },
     {
@@ -80,33 +80,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "275,305",
+      "count": "275,310",
       "delta": "+1492",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "275305"
+      "value": "275310"
     },
     {
       "name": "bar coverage",
       "count": "98%",
       "delta": "-30",
       "delta_class": "note",
-      "spark": "██▆▇█▇▇▁",
+      "spark": "██▅▇█▆▆▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "98"
     },
     {
       "name": "cron runs",
-      "count": "15,802",
+      "count": "15,803",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15802"
+      "value": "15803"
     },
     {
       "name": "llm calls",
@@ -123,7 +123,7 @@
       "count": "83",
       "delta": "+83",
       "delta_class": null,
-      "spark": "▁▁▁▇▆▅▇█",
+      "spark": "▁▁▁▇▆▆▆█",
       "spark_class": null,
       "key": "decisions",
       "value": "83"
