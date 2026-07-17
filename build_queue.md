@@ -56,16 +56,6 @@ Each item:
   when: open
   kind: build
 
-- thing: Close the seam — autonomous foundry
-  detail: "decision-log 2026-07-17 spec · cloud agent (implement+epitaphs) + VPS cron conditions (synthesis+gauntlet) + escalating survival bar · FIRST TASK next session"
-  when: 2d
-  kind: build
-
-- thing: Wire the digest email
-  detail: "Gmail connector authorized · read reports/digest-*.md, send · trivial once tools load in a fresh session"
-  when: 2d
-  kind: build
-
 - thing: Nightly shadow-replay parity check
   detail: "replay last 24h over the live bars with the same variants; deterministic strategies must reproduce live signals 1:1 — any divergence = engine bug caught same-day"
   when: open
@@ -81,8 +71,8 @@ Each item:
   when: open
   kind: build
 
-- thing: Maker/limit fill modeling
-  detail: "halve the fee floor — model resting-limit entries (fill only when price trades through) in replay + live paper; maker fee tier vs taker 0.25%"
+- thing: Maker/limit fills in LIVE paper execution
+  detail: "replay half SHIPPED 2026-07-17 (fill_model='maker', validated 12/12 matched pairs) · live half = limit orders in execute.py, deliberately deferred until a strategy earns it (decision-log 2026-07-17)"
   when: open
   kind: build
 

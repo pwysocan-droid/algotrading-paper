@@ -103,6 +103,49 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-17 — Seam closed for real; first fully autonomous cycle ran
+
+**What happened:** Both halves of the closed seam went live today and a
+complete research cycle ran with no human in the loop by end of day.
+
+- Cloud routine `foundry-implementer` (trig_01CB7gU6mXGFXSRj4kvDd74N,
+  08:00+20:00 UTC): implements round specs, writes epitaphs. Its prompt
+  now mandates the premise check (see CONJUNCTIONS MULTIPLY TO ZERO).
+- Digest email: VPS-side scripts/send_digest.py in cron-skeptic.sh.
+  Two discoveries forced this design: (1) the claude.ai Gmail connector
+  is DRAFT-ONLY — it cannot send, so the cloud digest-mailer routine
+  (trig_01NjtGaNPuFbLWzikmt5iuQw) is disabled, kept for reference;
+  (2) Hetzner blocks outbound port 465 but leaves 587 open — SMTP via
+  587/STARTTLS. GMAIL_APP_PASSWORD lives in the VPS .env (delivered
+  clipboard→ssh, never through a transcript). Delivery confirmed.
+- Round-002 was processed end-to-end (implemented locally standing in
+  for the then-blocked cloud agent, gauntleted under BOTH fill models,
+  epitaphed), and round-003 was generated, implemented, and queued for
+  gauntlet — the first cycle where every stage ran unattended.
+
+**Bug found and hardened against:** growing LENSES 5→8 silently grew
+the synthesis output demand past max_tokens; the truncated tool input
+validated as {} and died with a misleading "field missing" error.
+Fixes: lenses_for_round() rotates 5-of-8 per round (two consecutive
+rounds cover all lenses); max_tokens 16384; complete_structured raises
+loudly on stop_reason=max_tokens; run_round validates idea count,
+name uniqueness, and collisions against config + registry before
+writing; pipeline_health() puts a FOUNDRY STALLED/ALERT warning at the
+top of the emailed digest when the newest round is >3 days old or the
+foundry log recorded an ALERT. The residual risk accepted: failures
+are now detected within ~24h, not prevented; total silence (no digest
+email at all) is itself the last-resort alarm.
+
+**Watchlist decision:** rejection_streak_gated_ignition (r002) died
+over 930d but was the only stage-1 survivor and is POSITIVE on the
+trailing 180d under both fill models (n=35 — no claim). The gate
+family is best-of-round for the second consecutive round. It gets an
+out-of-sample re-test on the NEXT 180d window before any gate-family
+idea is judged again; that result decides whether the gate fits the
+current regime or best-of-round is what recency overfit looks like.
+
+---
+
 ## 2026-07-17 — First net-positive cell; cost lever validated; holdout NOT burned
 
 **What happened:** The 24-cell exit-grid sweep of
