@@ -103,6 +103,37 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-17 — Correction: the sequence was valuable; the duration was not
+
+The operator challenged the standing narrative that the pre-July phase
+"was the design working." Partially false, and the record should say so
+plainly rather than let the flattering version stand.
+
+**True:** the canon-first SEQUENCE earned its keep — the fee floor,
+constraint dominance, and fade-death lessons all required killing the
+canon on the record first, and foundry round 2 is measurably better
+because those gradients existed.
+
+**False:** that the ~80 days of elapsed time contributed to it. Nearly
+everything the project has ever learned was produced in the ~48 hours
+of 2026-07-16/17. The elapsed weeks bought gate-1 uptime evidence
+(earnable concurrently), live bars (superseded by a 10-minute
+backfill), and perhaps two weeks' worth of operational lessons. The
+one truly incompressible resource — live trade-days for the A/B — was
+NOT accumulating: the live clock started 2026-07-16. Eleven weeks of
+calendar bought one day of the only slow currency.
+
+**The meta-lesson:** entries written at resumption ("the strategies
+were always the control variable", "the sequence was the design")
+converted stall into substrate — an instance of the flattering-
+direction drift the adaptive-clause future-self letter warns about,
+caught this time by the operator, not the machinery. The Friday
+review's drift check should treat resumption-era reframings as
+suspect by default. The closed seam exists precisely so that elapsed
+time and learning time can never again diverge by 40x.
+
+---
+
 ## 2026-07-17 — Close the seam: the foundry runs autonomously; the operator reads asynchronously
 
 Operator directive, verbatim intent: "I want to read, but I can always
