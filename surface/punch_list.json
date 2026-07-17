@@ -2,7 +2,7 @@
   "summary": {
     "due_7d": 3,
     "due_14d": 4,
-    "open": 11,
+    "open": 13,
     "done_this_week": 0
   },
   "gates": [
@@ -171,6 +171,24 @@
       "when_class": "open",
       "thing": "Audit Tier-2 backlog (2026-07-17 four-agent audit)",
       "detail": "runs.bars_added counts upserts not inserts (17x inflated, feeds skeptic); parity_check must exclude the mutable trailing 90min of bars; replay entry-bar exit skip (bars[i+2:] vs live) + time-exit anchor one bar late; gate-1 uptime should filter kind='cron'; trade_cycle needs its own runs audit rows; entropy params half-plumbed (entropy_window/n_bins ignored in _entropy_at calls) + coil-persistence rule dropped; omori volume baseline includes signal bar; same-bar tie-break ordering live (id ASC) vs replay (alphabetical); system_state stop-out scope live-portfolio vs null-only in replay; pages.yml negative-staleness guard; log rotation on vps/logs",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Maker/limit fill modeling",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Maker/limit fill modeling",
+      "detail": "halve the fee floor — model resting-limit entries (fill only when price trades through) in replay + live paper; maker fee tier vs taker 0.25%",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Context layer (Layer 2) revival",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Context layer (Layer 2) revival",
+      "detail": "funding rates / F&G / on-chain via context_keys — data mined less exhaustively than OHLCV; needs decision-log entry per roadmap",
       "kind": "build",
       "promoted": false
     }
