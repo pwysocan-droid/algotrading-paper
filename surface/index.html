@@ -310,6 +310,40 @@
   .tt-row .tag.teal { color: var(--teal); }
 
   /* KAHNEMAN — hidden by default; revealed when surface.json has a trigger */
+  /* ── topline: answer-first status strip ─────────────────────────── */
+  .topline {
+    margin-bottom: 26px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .tl-line {
+    display: flex; gap: 12px; align-items: baseline;
+    font-size: 12px; line-height: 1.9;
+  }
+  .tl-key {
+    flex: 0 0 64px; color: var(--fg-faint);
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .tl-val { color: var(--fg-dim); font-variant-numeric: tabular-nums; }
+  #tl-health.warn .tl-val { color: var(--red); }
+  #tl-health.warn .tl-key { color: var(--red); }
+  .tl-tiles {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 14px; margin-top: 16px;
+  }
+  @media (max-width: 640px) { .tl-tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tl-tile-label {
+    font-size: 9px; color: var(--fg-faint);
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .tl-tile-value {
+    font-size: 17px; font-weight: 600; color: var(--fg);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tl-tile-value.tl-small { font-size: 12px; font-weight: 500; line-height: 1.6; }
+  .tl-tile-sub { font-size: 9px; color: var(--fg-faint); margin-top: 3px; }
+
   .kahneman {
     display: none;
     margin-bottom: 26px;
@@ -388,6 +422,49 @@
           <circle cx="25" cy="25" r="1.4" fill="var(--paddle)" />
         </g>
       </svg>
+    </div>
+  </div>
+
+  <!-- TOPLINE — what is happening, what has happened, no scrolling -->
+  <div class="topline">
+    <div class="tl-line">
+      <span class="tl-key">now</span>
+      <span class="tl-val" data-bind="topline.now_line">—</span>
+    </div>
+    <div class="tl-line">
+      <span class="tl-key">pipeline</span>
+      <span class="tl-val" data-bind="topline.pipeline_line">—</span>
+    </div>
+    <div class="tl-line" id="tl-health">
+      <span class="tl-key">health</span>
+      <span class="tl-val" data-bind="topline.health_line">—</span>
+    </div>
+    <div class="tl-tiles">
+      <div class="tl-tile">
+        <div class="tl-tile-label">closed P&amp;L</div>
+        <div class="tl-tile-value" data-bind="topline.tile_pnl">—</div>
+        <div class="tl-tile-sub" data-bind="topline.tile_pnl_sub">—</div>
+      </div>
+      <div class="tl-tile">
+        <div class="tl-tile-label">best arm</div>
+        <div class="tl-tile-value tl-small" data-bind="topline.tile_best">—</div>
+        <div class="tl-tile-sub">by closed P&amp;L</div>
+      </div>
+      <div class="tl-tile">
+        <div class="tl-tile-label">A/B clock</div>
+        <div class="tl-tile-value tl-small" data-bind="topline.tile_ab">—</div>
+        <div class="tl-tile-sub">gate: 100 + p&lt;0.05</div>
+      </div>
+      <div class="tl-tile">
+        <div class="tl-tile-label">research</div>
+        <div class="tl-tile-value tl-small" data-bind="topline.tile_research">—</div>
+        <div class="tl-tile-sub">tested · falsified</div>
+      </div>
+      <div class="tl-tile">
+        <div class="tl-tile-label">curriculum</div>
+        <div class="tl-tile-value tl-small" data-bind="topline.tile_days">—</div>
+        <div class="tl-tile-sub">phase 1</div>
+      </div>
     </div>
   </div>
 
@@ -495,6 +572,6 @@
     <div class="provenance">github.com/pwysocan-droid/algotrading-paper</div>
   </div>
 
-<script src="./app.js?v=80d4ddd88425"></script>
+<script src="./app.js?v=a7d10652ffd8"></script>
 </body>
 </html>

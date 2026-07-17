@@ -730,3 +730,20 @@ def test_scoreboard_in_surface_json(tmp_db: Path, tmp_path: Path) -> None:
     repo.mkdir()
     data = gs.generate(repo_root=repo, db_path=tmp_db)
     assert "scoreboard" in data
+
+
+def test_topline_shape_and_guards(tmp_db):
+    """The topline must always produce bindable strings — even on an
+    empty database with no foundry files (guards, not crashes)."""
+    import db as db_mod
+    from scripts.generate_surface import build_topline
+    from datetime import datetime, timezone
+    from pathlib import Path
+
+    now = datetime(2026, 7, 17, 12, 0, tzinfo=timezone.utc)
+    with db_mod.connect(tmp_db) as conn:
+        t = build_topline(conn, Path("/nonexistent"), now)
+    for key in ("now_line", "pipeline_line", "health_line", "tile_pnl",
+                "tile_best", "tile_ab", "tile_research", "tile_days"):
+        assert isinstance(t[key], str) and t[key], key
+    assert t["health_warn"] in (True, False)

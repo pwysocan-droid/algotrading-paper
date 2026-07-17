@@ -848,6 +848,124 @@ def build_scoreboard(conn: sqlite3.Connection) -> dict:
     }
 
 
+def build_topline(conn: sqlite3.Connection, repo_root: Path, now: datetime) -> dict:
+    """The answer-first strip: what is happening NOW and what has happened
+    ALL-TIME, composed server-side so the page just binds strings. Every
+    sub-part is guarded — the topline must never take the dashboard down."""
+    # -- now: the live trading loop --------------------------------------
+    try:
+        last = last_ok_cron_run(conn)
+        age = humanize_elapsed((now - last).total_seconds()) if last else "never"
+        pos = conn.execute(
+            "SELECT COUNT(*) AS n, COALESCE(SUM(qty * entry_price), 0) AS usd"
+            " FROM trades WHERE status = 'open'"
+        ).fetchone()
+        now_line = (
+            f"cycle {age} ago · {pos['n']} open · "
+            f"${pos['usd']:,.0f} exposure"
+        )
+    except Exception as exc:  # noqa: BLE001
+        now_line = f"unavailable ({type(exc).__name__})"
+
+    # -- now: the research pipeline (mirrors foundry_autopilot's checks) --
+    try:
+        from scripts.foundry_autopilot import (
+            _epitaphed, _gauntleted, _idea_names, _implemented, _newest_round,
+        )
+
+        rnd = _newest_round()
+        if rnd is None:
+            pipeline_line = "no rounds yet"
+        else:
+            n = rnd.get("round")
+            names = _idea_names(rnd)
+            if not _implemented(names):
+                pipeline_line = (f"round {n:03d} · {len(names)} ideas · "
+                                 "waiting on implementer (cloud 08:00/20:00 UTC)")
+            elif not _gauntleted(names):
+                pipeline_line = (f"round {n:03d} · implemented · "
+                                 "awaiting gauntlet (VPS 04:02/16:02 UTC)")
+            elif not _epitaphed(names):
+                pipeline_line = (f"round {n:03d} · gauntleted · "
+                                 "awaiting epitaphs (cloud 08:00/20:00 UTC)")
+            else:
+                pipeline_line = (f"round {n:03d} · complete · "
+                                 "next round at next autopilot tick")
+    except Exception as exc:  # noqa: BLE001
+        pipeline_line = f"unavailable ({type(exc).__name__})"
+
+    # -- now: health (the digest's stall/alert tripwire, same source) -----
+    try:
+        from scripts.generate_rounds import pipeline_health
+
+        warnings = pipeline_health(repo_root, now=now)
+        health_line = " · ".join(warnings) if warnings else "all clear"
+        health_warn = bool(warnings)
+    except Exception as exc:  # noqa: BLE001
+        health_line, health_warn = f"unavailable ({type(exc).__name__})", False
+
+    # -- all-time scoreboard tiles ----------------------------------------
+    def _tile(fn, fallback="—"):
+        try:
+            return fn()
+        except Exception:  # noqa: BLE001
+            return fallback
+
+    def _pnl_tiles():
+        r = conn.execute(
+            """
+            SELECT COUNT(*) AS closed,
+                   SUM(CASE WHEN pnl_usd > 0 THEN 1 ELSE 0 END) AS wins,
+                   COALESCE(SUM(pnl_usd), 0) AS pnl
+              FROM trades WHERE status = 'closed'
+            """
+        ).fetchone()
+        closed, pnl = int(r["closed"]), float(r["pnl"])
+        wr = f"{(r['wins'] or 0) / closed:.0%} win" if closed else "no closes yet"
+        return f"{pnl:+,.2f}".replace("+", "+$").replace("-", "-$"), f"{closed} closed · {wr}"
+
+    def _best_arm():
+        r = conn.execute(
+            """
+            SELECT variant_name, COALESCE(SUM(pnl_usd), 0) AS pnl
+              FROM trades WHERE status = 'closed'
+             GROUP BY variant_name ORDER BY pnl DESC LIMIT 1
+            """
+        ).fetchone()
+        return f"{r['variant_name']} ${r['pnl']:+,.2f}" if r else "—"
+
+    def _ab():
+        r = conn.execute(
+            "SELECT COUNT(*) AS n FROM trades"
+            " WHERE variant_name = 'null_baseline' AND status = 'closed'"
+        ).fetchone()
+        return f"{int(r['n'])}/100 null closes"
+
+    def _research():
+        reg = json.loads(
+            (repo_root / "reviews" / "foundry" / "dead-ideas.json").read_text())
+        rounds = len(list((repo_root / "reviews" / "foundry").glob("round-*.json")))
+        return f"{len(reg.get('ideas', []))} ideas · {rounds} rounds"
+
+    def _days_live():
+        anchor = first_ok_run(conn)
+        return f"day {(now - anchor).days + 1}" if anchor else "—"
+
+    pnl_value, pnl_sub = _tile(_pnl_tiles, ("—", "—"))
+    return {
+        "now_line": now_line,
+        "pipeline_line": pipeline_line,
+        "health_line": health_line,
+        "health_warn": health_warn,
+        "tile_pnl": pnl_value,
+        "tile_pnl_sub": pnl_sub,
+        "tile_best": _tile(_best_arm),
+        "tile_ab": _tile(_ab),
+        "tile_research": _tile(_research),
+        "tile_days": _tile(_days_live),
+    }
+
+
 def generate(
     repo_root: Path = REPO_ROOT,
     db_path: Path | None = None,
@@ -858,6 +976,7 @@ def generate(
         return {
             "generated_at": now.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
             "masthead": build_masthead(),
+            "topline": build_topline(conn, repo_root, now),
             "kahneman": build_kahneman(conn, repo_root, now),
             "vitals": build_vitals(conn, now),
             "state": build_state(conn, now),

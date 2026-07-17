@@ -156,6 +156,13 @@
       kahnemanEl.classList.toggle('visible', !!surface.kahneman);
     }
 
+    // Topline health goes red when the pipeline tripwire has fired.
+    const healthEl = $('#tl-health');
+    if (healthEl) {
+      healthEl.classList.toggle(
+        'warn', !!(surface.topline && surface.topline.health_warn));
+    }
+
     // Repeating sections — clone the template once per record.
     populateRowList('state-rows', 'state-row-template', surface.state);
     populateRowList(
