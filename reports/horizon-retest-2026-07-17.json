@@ -1,0 +1,92 @@
+{
+  "date": "2026-07-17",
+  "days": 930,
+  "note": "multi-day exit re-trial of registry near-misses",
+  "results": [
+    {
+      "name": "weekend_momentum_5d",
+      "candidates": 1364,
+      "placed": 474,
+      "total_pnl": -647.9181631391526,
+      "edge_per_slot": -1.3669159559897734,
+      "win_rate": 0.33122362869198313,
+      "sharpe": -0.3688500944922088,
+      "max_dd": 93.17010139315204,
+      "days": 930,
+      "base": "weekend_illiquidity_momentum",
+      "exits": {
+        "tp": 0.12,
+        "sl": 0.05,
+        "time_exit_hours": 120
+      }
+    },
+    {
+      "name": "omori_3d",
+      "candidates": 2440,
+      "placed": 477,
+      "total_pnl": -558.2025019434103,
+      "edge_per_slot": -1.1702358531308392,
+      "win_rate": 0.3920335429769392,
+      "sharpe": -0.2687939624799974,
+      "max_dd": 61.66052192552933,
+      "days": 930,
+      "base": "omori_aftershock_ladder",
+      "exits": {
+        "tp": 0.1,
+        "sl": 0.04,
+        "time_exit_hours": 72
+      }
+    },
+    {
+      "name": "vol_thrust_3d",
+      "candidates": 309,
+      "placed": 138,
+      "total_pnl": -100.44873744498378,
+      "edge_per_slot": -0.7278894017752447,
+      "win_rate": 0.39855072463768115,
+      "sharpe": 0.19107319292014577,
+      "max_dd": 20.378243364684653,
+      "days": 930,
+      "base": "volume_thrust_regime_shift",
+      "exits": {
+        "tp": 0.1,
+        "sl": 0.04,
+        "time_exit_hours": 72
+      }
+    },
+    {
+      "name": "regime_gate_5d",
+      "candidates": 1231,
+      "placed": 267,
+      "total_pnl": -91.22042693020256,
+      "edge_per_slot": -0.3416495390644291,
+      "win_rate": 0.4157303370786517,
+      "sharpe": 0.6403900661045188,
+      "max_dd": 25.077817808007385,
+      "days": 930,
+      "base": "drawdown_regime_contrarian_gate",
+      "exits": {
+        "tp": 0.12,
+        "sl": 0.05,
+        "time_exit_hours": 120
+      }
+    },
+    {
+      "name": "deadzone_3d",
+      "candidates": 82,
+      "placed": 82,
+      "total_pnl": -50.35669863520762,
+      "edge_per_slot": -0.6141060809171661,
+      "win_rate": 0.47560975609756095,
+      "sharpe": 0.2541931343891788,
+      "max_dd": 7.235334634867471,
+      "days": 930,
+      "base": "dead_zone_range_break",
+      "exits": {
+        "tp": 0.1,
+        "sl": 0.04,
+        "time_exit_hours": 72
+      }
+    }
+  ]
+}

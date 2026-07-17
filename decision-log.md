@@ -103,6 +103,35 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-17 — The levers are the strategy; retest the dead under new exits
+
+**Decision:** The structural levers — multi-day horizons, cost
+engineering (maker fills), context data, gate-engine pairing — are the
+project's primary research direction, not merely extra lenses feeding
+the foundry. Two operational consequences:
+
+1. **Verdict invalidation.** Every idea in dead-ideas.json was judged
+   under ~24h horizons and taker-fee costs. A lever that changes the
+   cost/horizon arithmetic partially invalidates those verdicts. When
+   a lever lands, the near-misses (gross-positive, fee-killed ideas)
+   get re-gauntleted under it BEFORE new ideas get priority. First
+   instance: the 2026-07-17 horizon re-test (reports/horizon-retest-*)
+   re-trying weekend, omori, vol_thrust, regime_gate, and dead_zone
+   with 3–5 day exits.
+2. **Priority ordering.** Lever work (per-variant exits ✅, maker-fill
+   modeling, Layer-2 context) outranks generating round N+1. The
+   foundry keeps running, but a new round is the *default* action, not
+   the *preferred* one.
+
+**Reasoning (user, verbatim intent):** "these ideas are key to the
+success of this project — not just 5 new tests." Ten ideas died in the
+same corner of design space (short-horizon taker-fee mean-reversion).
+Searching a structurally different space beats sampling the old one
+harder. Epitaphs are conditional on the cost model that produced them
+— the registry must not fossilize verdicts the levers have overturned.
+
+---
+
 ## 2026-07-17 — Correction: the sequence was valuable; the duration was not
 
 The operator challenged the standing narrative that the pre-July phase
