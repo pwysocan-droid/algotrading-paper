@@ -60,12 +60,17 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "failed_auction_rejection_wick", "round_number_overshoot_snap",
         "drawdown_regime_contrarian_gate",
     }
+    foundry_002 = {
+        "conditional_entropy_regime_expansion", "epidemic_r0_crossover_ignition",
+        "absorption_shelf_breakout", "options_expiry_pin_release",
+        "rejection_streak_gated_ignition",
+    }
     assert set(STRATEGY_VARIANTS.keys()) == (
-        retired | candidates | foundry_001 | {"null_baseline"}
+        retired | candidates | foundry_001 | foundry_002 | {"null_baseline"}
     )
     assert all(
-        STRATEGY_VARIANTS[n].get("enabled") is False for n in foundry_001
-    ), "foundry round-001 stays disabled pending the multi-year gauntlet"
+        STRATEGY_VARIANTS[n].get("enabled") is False for n in foundry_001 | foundry_002
+    ), "foundry rounds stay disabled pending their gauntlets"
 
     # The live roster: null placebo + the gauntlet's top 2 as A/B arms
     # (reports/gauntlet-2026-07-16.md; decision-log 2026-07-16). Not a
@@ -626,3 +631,165 @@ def test_load_system_state_from_trades(tmp_db: Path) -> None:
         )
     assert state["null_win_rate"] == pytest.approx(1 / 3)
     assert state["recent_stopouts"] == 2  # null + other_arm stop-outs both count
+
+
+# --- Foundry round 002 (smoke + gate tests) ----------------------------------
+
+
+class TestFoundryRound002:
+    def test_all_registered(self) -> None:
+        for key in ("cond_entropy_expansion", "r0_ignition", "absorption_shelf",
+                    "expiry_pin_release", "rejection_gated_ignition"):
+            assert key in signals.STRATEGY_REGISTRY
+
+    def test_insufficient_bars_all_return_none(self) -> None:
+        bars = _flat_series("BTC/USD", 20)
+        ctx = {"system_state": {"rejection_rate": 0.9, "placebo_stop_rate": 0.9}}
+        assert signals.conditional_entropy_regime_expansion(bars, {}, {}) is None
+        assert signals.epidemic_r0_crossover_ignition(bars, {}, {}) is None
+        assert signals.absorption_shelf_breakout(bars, {}, {}) is None
+        assert signals.options_expiry_pin_release(bars, {}, {}) is None
+        assert signals.rejection_streak_gated_ignition(bars, {}, ctx) is None
+
+    def test_flat_series_no_fires(self) -> None:
+        bars = _flat_series("ETH/USD", 500)
+        ctx = {"system_state": {"rejection_rate": 0.9, "placebo_stop_rate": 0.9}}
+        assert signals.conditional_entropy_regime_expansion(bars, {}, {}) is None
+        assert signals.epidemic_r0_crossover_ignition(bars, {}, {}) is None
+        assert signals.absorption_shelf_breakout(bars, {}, {}) is None
+        assert signals.options_expiry_pin_release(bars, {}, {}) is None
+        assert signals.rejection_streak_gated_ignition(bars, {}, ctx) is None
+
+    # -- idea 1: conditional entropy surge -----------------------------------
+
+    def _entropy_surge_bars(self) -> list[BarRow]:
+        import math as _m
+        # 48 strictly alternating small returns (order-2 predictable),
+        # then a messy 12-return tail ending in two big up bars.
+        rets = [0.002 if i % 2 == 0 else -0.002 for i in range(48)]
+        # tail signs chosen so every order-2 context's next sign is ~50/50
+        # (high conditional entropy), ending in two big same-sign bars
+        tail_signs = [1, 0, 1, 0, 0, 0, 1, 1, 0, 1]
+        rets += [0.002 if s else -0.002 for s in tail_signs] + [0.02, 0.02]
+        closes = [100.0]
+        for r in rets:
+            closes.append(closes[-1] * _m.exp(r))
+        bars = _flat_series("BTC/USD", len(closes) + 10)
+        out = list(bars[:10])
+        prev = closes[0]
+        for i, c in enumerate(closes):
+            b = bars[10 + i]
+            out.append(_bar(b.symbol, b.timestamp, prev, max(prev, c) + 0.01,
+                            min(prev, c) - 0.01, c, 100.0))
+            prev = c
+        return out
+
+    def test_entropy_surge_fires_buy(self) -> None:
+        bars = self._entropy_surge_bars()
+        sig = signals.conditional_entropy_regime_expansion(bars, {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_entropy_no_fire_without_vol_spike(self) -> None:
+        bars = self._entropy_surge_bars()
+        sig = signals.conditional_entropy_regime_expansion(
+            bars, {"vol_mult": 50.0}, {})
+        assert sig is None
+
+    # -- idea 2: R0 ignition --------------------------------------------------
+
+    def _r0_ignition_bars(self) -> list[BarRow]:
+        bars = _flat_series("SOL/USD", 100)  # dojis: signed volume 0
+        def up(b, vol):
+            return _bar(b.symbol, b.timestamp, 100.0, 100.15, 99.95, 100.1, vol)
+        for i in range(88, 94):   # t-11..t-6: moderate steady up-flow
+            bars[i] = up(bars[i], 200.0)
+        for i in range(94, 99):   # t-5..t-1: flow dying (R0 < 1 at t-1)
+            bars[i] = up(bars[i], 10.0)
+        bars[99] = up(bars[99], 5000.0)  # t: ignition
+        return bars
+
+    def test_r0_ignition_fires_buy_on_crossover(self) -> None:
+        sig = signals.epidemic_r0_crossover_ignition(self._r0_ignition_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_r0_no_fire_without_crossover(self) -> None:
+        bars = self._r0_ignition_bars()
+        b = bars[99]
+        bars[99] = _bar(b.symbol, b.timestamp, 100.0, 100.15, 99.95, 100.1, 10.0)
+        assert signals.epidemic_r0_crossover_ignition(bars, {}, {}) is None
+
+    # -- idea 3: absorption shelf ---------------------------------------------
+
+    def _shelf_bars(self) -> list[BarRow]:
+        bars = []
+        flat = _flat_series("ETH/USD", 100)
+        for b in flat:
+            # body 0.2, range 1.0, vol 100 — never a shelf bar (vol too low)
+            bars.append(_bar(b.symbol, b.timestamp, 100.2, 100.75, 99.75, 100.4, 100.0))
+        for i in range(93, 99):  # shelf: high volume, tiny body, overlapping
+            b = bars[i]
+            bars[i] = _bar(b.symbol, b.timestamp, 100.4, 101.0, 100.0, 100.6, 200.0)
+        b = bars[99]  # break: close > shelf_high 101.0 + 0.5*ATR(~1.0)
+        bars[99] = _bar(b.symbol, b.timestamp, 100.6, 101.9, 100.5, 101.8, 200.0)
+        return bars
+
+    def test_shelf_break_fires_buy(self) -> None:
+        sig = signals.absorption_shelf_breakout(self._shelf_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_no_fire_when_break_lacks_volume(self) -> None:
+        bars = self._shelf_bars()
+        b = bars[99]
+        bars[99] = _bar(b.symbol, b.timestamp, 100.6, 101.9, 100.5, 101.8, 100.0)
+        assert signals.absorption_shelf_breakout(bars, {}, {}) is None
+
+    # -- idea 4: expiry pin release -------------------------------------------
+
+    def _pin_bars(self) -> list[BarRow]:
+        from datetime import datetime, timedelta, timezone
+        start = datetime(2026, 7, 10, 3, 40, tzinfo=timezone.utc)
+        bars = []
+        for i in range(55):  # 03:40 .. 08:10
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.1, 100.3, 100.0, 100.2, 100.0))
+        # last bar is 08:10; bars 07:00-07:55 are the pin (span 0.3 < 0.8%)
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.2, 100.9, 100.1, 100.8, 200.0)
+        return bars
+
+    def test_pin_release_fires_buy(self) -> None:
+        sig = signals.options_expiry_pin_release(self._pin_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_no_fire_outside_release_window(self) -> None:
+        from datetime import datetime, timedelta, timezone
+        start = datetime(2026, 7, 10, 9, 40, tzinfo=timezone.utc)  # afternoon
+        bars = []
+        for i in range(55):
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.1, 100.3, 100.0, 100.2, 100.0))
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.2, 100.9, 100.1, 100.8, 200.0)
+        assert signals.options_expiry_pin_release(bars, {}, {}) is None
+
+    # -- idea 5: rejection-streak gate on the R0 engine -----------------------
+
+    def test_gated_ignition_fires_when_gate_open(self) -> None:
+        bars = self._r0_ignition_bars()
+        ctx = {"system_state": {"rejection_rate": 0.8, "placebo_stop_rate": 0.7}}
+        sig = signals.rejection_streak_gated_ignition(bars, {}, ctx)
+        assert sig is not None and sig.side == "buy"
+
+    def test_gated_ignition_suppressed_when_gate_shut(self) -> None:
+        bars = self._r0_ignition_bars()
+        for state in (
+            {"rejection_rate": 0.2, "placebo_stop_rate": 0.7},   # low rejections
+            {"rejection_rate": 0.8, "placebo_stop_rate": 0.2},   # placebo fine
+            {"rejection_rate": None, "placebo_stop_rate": 0.7},  # no data yet
+        ):
+            assert signals.rejection_streak_gated_ignition(
+                bars, {}, {"system_state": state}) is None
+
+    def test_gated_ignition_none_without_context(self) -> None:
+        assert signals.rejection_streak_gated_ignition(
+            self._r0_ignition_bars(), {}, {}) is None

@@ -750,6 +750,318 @@ def drawdown_regime_contrarian_gate(
     )
 
 
+# ── Foundry round 002 (reviews/foundry/round-002.md) ────────────────────
+# Round thesis: invert each dead polarity — trade phase TRANSITIONS as
+# continuation (entropy delta not level, contagion growth not decay,
+# absorption breaks not wick fades, named expiry releases not generic
+# coils) and remount the proven meta-gate on a strong engine.
+
+
+def _sign(x: float) -> int:
+    return 1 if x > 0 else 0
+
+
+def _conditional_entropy(signs: list[int], order: int = 2) -> float | None:
+    """H(next sign | previous `order` signs), in bits. None when there are
+    no transitions to estimate from."""
+    if len(signs) <= order:
+        return None
+    ctx_counts: dict[tuple[int, ...], dict[int, int]] = {}
+    for i in range(order, len(signs)):
+        ctx = tuple(signs[i - order: i])
+        ctx_counts.setdefault(ctx, {}).setdefault(signs[i], 0)
+        ctx_counts[ctx][signs[i]] += 1
+    total = sum(sum(d.values()) for d in ctx_counts.values())
+    if total == 0:
+        return None
+    h = 0.0
+    for d in ctx_counts.values():
+        n_ctx = sum(d.values())
+        p_ctx = n_ctx / total
+        h_ctx = -sum((c / n_ctx) * math.log2(c / n_ctx) for c in d.values())
+        h += p_ctx * h_ctx
+    return h
+
+
+def conditional_entropy_regime_expansion(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-002 idea 1 — trade the SURGE in conditional entropy of the
+    sign sequence (information arrival breaking a predictable regime) as
+    continuation in the surprising bar's direction. Inverts the dead
+    entropy_collapse_impulse, which traded low entropy LEVEL."""
+    jump = float(params.get("entropy_jump", 0.35))
+    vol_mult = float(params.get("vol_mult", 2.2))
+    order = int(params.get("cond_order", 2))
+    long_w = int(params.get("long_window", 60))
+    short_w = int(params.get("short_window", 12))
+
+    if len(bars) < long_w + order + 2:
+        return None
+    window = bars[-(long_w + 1):]
+    rets = [
+        math.log(window[i].close / window[i - 1].close)
+        for i in range(1, len(window))
+        if window[i - 1].close > 0 and window[i].close > 0
+    ]
+    if len(rets) < long_w:
+        return None
+    signs = [_sign(r) for r in rets]
+    h_long = _conditional_entropy(signs, order)
+    h_short = _conditional_entropy(signs[-short_w:], order)
+    if h_long is None or h_short is None or (h_short - h_long) <= jump:
+        return None
+    mean_abs = sum(abs(r) for r in rets) / len(rets)
+    if mean_abs <= 0 or abs(rets[-1]) <= vol_mult * mean_abs:
+        return None
+    if _sign(rets[-1]) != _sign(rets[-2]):  # last two bars share a sign
+        return None
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="cond_entropy_expansion",
+        side="buy" if rets[-1] > 0 else "sell",
+        bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"h_short": h_short, "h_long": h_long, "r_t": rets[-1]},
+    )
+
+
+def _signed_volume(b: BarRow) -> float:
+    """sv = volume * sign(close - open); a doji carries no direction."""
+    if b.close > b.open:
+        return b.volume
+    if b.close < b.open:
+        return -b.volume
+    return 0.0
+
+
+def _r0_at(bars: list[BarRow], idx: int, decay: float, window: int) -> tuple[float, float]:
+    """(R0, IP_cur) at bars[idx]: reproduction ratio of signed volume.
+    IP_cur decays over the last `window` bars; the prior window's pressure
+    is naturally decayed by its distance in the same kernel."""
+    ip_cur = sum(_signed_volume(bars[idx - k]) * (decay ** k) for k in range(window))
+    ip_prev = sum(
+        _signed_volume(bars[idx - k]) * (decay ** k)
+        for k in range(window, 2 * window)
+    )
+    r0 = abs(ip_cur) / (abs(ip_prev) + 1e-9)
+    return r0, ip_cur
+
+
+def _r0_ignition_trigger(
+    bars: list[BarRow], r0_thresh: float, consistency_bars: int,
+    decay: float = 0.85, window: int = 6, median_window: int = 60,
+) -> tuple[str, float] | None:
+    """Shared engine for round-002 ideas 2 and 5: signed-volume R0 crossing
+    from <1 to >r0_thresh with directional consistency and above-median
+    6-bar flow. Returns (side, r0) or None."""
+    need = median_window + 2 * window + 2
+    if len(bars) < need:
+        return None
+    last_i = len(bars) - 1
+    r0_now, ip_cur = _r0_at(bars, last_i, decay, window)
+    r0_prev, _ = _r0_at(bars, last_i - 1, decay, window)
+    if not (r0_prev < 1.0 and r0_now > r0_thresh):
+        return None
+    direction = 1 if ip_cur > 0 else -1
+    same = sum(
+        1 for k in range(window)
+        if _signed_volume(bars[last_i - k]) * direction > 0
+    )
+    if same < consistency_bars:
+        return None
+    def six_sum(idx: int) -> float:
+        return abs(sum(_signed_volume(bars[idx - k]) for k in range(window)))
+    hist = sorted(six_sum(last_i - j) for j in range(1, median_window + 1))
+    med = hist[len(hist) // 2]
+    if six_sum(last_i) <= med:
+        return None
+    return ("buy" if direction > 0 else "sell", r0_now)
+
+
+def epidemic_r0_crossover_ignition(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-002 idea 2 — epidemiology's GROWTH phase: fire when the
+    signed-volume reproduction number crosses from <1 (impulses dying)
+    to >r0_thresh (self-amplifying contagion). Inverts dead Omori decay."""
+    trig = _r0_ignition_trigger(
+        bars,
+        r0_thresh=float(params.get("r0_thresh", 1.5)),
+        consistency_bars=int(params.get("consistency_bars", 5)),
+        decay=float(params.get("decay_lambda", 0.85)),
+        window=int(params.get("window", 6)),
+        median_window=int(params.get("median_window", 60)),
+    )
+    if trig is None:
+        return None
+    side, r0 = trig
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="r0_ignition",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"r0": r0},
+    )
+
+
+def absorption_shelf_breakout(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-002 idea 3 — high-volume/low-progress shelf (iceberg being
+    eaten) breaking on expansion: continuation, the inverse of the dead
+    wick fade. Documented approximation: the break may come up to 3 bars
+    after the shelf ends; intermediate bars must not already have broken
+    (first-break-only), and per-event dedup leans on the 1h cooldown."""
+    shelf_len = int(params.get("shelf_len", 6))
+    vol_mult = float(params.get("vol_mult", 1.3))
+    body_frac = float(params.get("body_frac", 0.4))
+    span_frac = float(params.get("span_frac", 1.2))
+    break_atr = float(params.get("break_atr", 0.5))
+    atr_w = int(params.get("atr_window", 14))
+    med_w = 60
+    max_gap = 3  # bars between shelf end and break
+
+    if len(bars) < med_w + shelf_len + atr_w + max_gap + 2:
+        return None
+    last = bars[-1]
+    last_i = len(bars) - 1
+
+    med_vol = statistics.median(b.volume for b in bars[-1 - med_w: -1])
+    if med_vol <= 0 or last.volume <= vol_mult * med_vol:
+        return None
+
+    tr = []
+    for k in range(1, atr_w + 1):
+        b, prev = bars[last_i - k], bars[last_i - k - 1]
+        tr.append(max(b.high - b.low, abs(b.high - prev.close), abs(b.low - prev.close)))
+    atr = sum(tr) / len(tr)
+    if atr <= 0:
+        return None
+
+    for gap in range(max_gap + 1):
+        end = last_i - 1 - gap  # last shelf bar
+        shelf = bars[end - shelf_len + 1: end + 1]
+        if len(shelf) < shelf_len:
+            continue
+        ok = True
+        for b in shelf:
+            rng = b.high - b.low
+            if rng <= 0 or b.volume <= vol_mult * med_vol or abs(b.close - b.open) >= body_frac * rng:
+                ok = False
+                break
+        if not ok:
+            continue
+        span = max(b.high for b in shelf) - min(b.low for b in shelf)
+        avg_rng = sum(b.high - b.low for b in shelf) / shelf_len
+        if span >= span_frac * avg_rng:
+            continue
+        shelf_high = max(b.high for b in shelf)
+        shelf_low = min(b.low for b in shelf)
+        up_lvl = shelf_high + break_atr * atr
+        dn_lvl = shelf_low - break_atr * atr
+        between = bars[end + 1: last_i]
+        if any(b.close > up_lvl or b.close < dn_lvl for b in between):
+            continue  # not the first break
+        if last.close > up_lvl:
+            side = "buy"
+        elif last.close < dn_lvl:
+            side = "sell"
+        else:
+            continue
+        return Signal(
+            symbol=last.symbol, variant_name="", strategy="absorption_shelf",
+            side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+            reasoning={"shelf_high": shelf_high, "shelf_low": shelf_low, "atr": atr},
+        )
+    return None
+
+
+def options_expiry_pin_release(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-002 idea 4 — post-08:00-UTC pin release: gamma/funding
+    pinning compresses the pre-settlement range; trade the first
+    qualifying break after the suppressor is removed. Documented
+    approximation: friday_weight is not implementable on a fixed-$200
+    platform (no position sizing), so Fridays get no extra weight."""
+    pin_span = float(params.get("pin_span_pct", 0.8)) / 100.0
+    brk = float(params.get("break_frac_pct", 0.35)) / 100.0
+    vol_mult = float(params.get("vol_mult", 1.5))
+    pre_w = int(params.get("pre_window", 12))
+    post_min = int(params.get("post_window_min", 60))
+
+    if len(bars) < pre_w + 20:
+        return None
+    last = bars[-1]
+    t = _ts(last)
+    release = t.replace(hour=8, minute=0, second=0, microsecond=0)
+    if not (release + timedelta(minutes=5) <= t < release + timedelta(minutes=5 + post_min)):
+        return None
+
+    pin = [b for b in bars[:-1] if release - timedelta(minutes=5 * pre_w) <= _ts(b) < release]
+    if len(pin) < pre_w:
+        return None
+    pin_high = max(b.high for b in pin)
+    pin_low = min(b.low for b in pin)
+    ref = pin[-1].close
+    if ref <= 0 or (pin_high - pin_low) >= pin_span * ref:
+        return None
+    med_vol = statistics.median(b.volume for b in pin)
+    if med_vol <= 0 or last.volume <= vol_mult * med_vol:
+        return None
+
+    up_lvl = pin_high * (1.0 + brk)
+    dn_lvl = pin_low * (1.0 - brk)
+    post = [b for b in bars[:-1] if release <= _ts(b) < t]
+    if any(b.close > up_lvl or b.close < dn_lvl for b in post):
+        return None  # not the first break of the released pin
+    if last.close > up_lvl:
+        side = "buy"
+    elif last.close < dn_lvl:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="expiry_pin_release",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"pin_high": pin_high, "pin_low": pin_low, "release": release.isoformat()},
+    )
+
+
+def rejection_streak_gated_ignition(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-002 idea 5 — the prescribed successor to the dead
+    drawdown_regime_contrarian_gate: the same self-referential saturation
+    gate (system rejection rate + placebo stop rate via system_state)
+    mounted on the strong R0-ignition engine instead of a weak breakout.
+    Returns None without the context feed rather than guess."""
+    gate_rej = float(params.get("gate_rej", 0.6))
+    gate_stop = float(params.get("gate_stop", 0.5))
+
+    state = context.get("system_state")
+    if not state:
+        return None
+    rej = state.get("rejection_rate")
+    stop = state.get("placebo_stop_rate")
+    if rej is None or stop is None or rej <= gate_rej or stop <= gate_stop:
+        return None
+
+    trig = _r0_ignition_trigger(
+        bars,
+        r0_thresh=float(params.get("r0_thresh", 1.5)),
+        consistency_bars=int(params.get("consistency_bars", 5)),
+    )
+    if trig is None:
+        return None
+    side, r0 = trig
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="rejection_gated_ignition",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"r0": r0, "rejection_rate": rej, "placebo_stop_rate": stop},
+    )
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
@@ -764,6 +1076,11 @@ STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "auction_wick": failed_auction_rejection_wick,
     "round_number_snap": round_number_overshoot_snap,
     "regime_gate_breakout": drawdown_regime_contrarian_gate,
+    "cond_entropy_expansion": conditional_entropy_regime_expansion,
+    "r0_ignition": epidemic_r0_crossover_ignition,
+    "absorption_shelf": absorption_shelf_breakout,
+    "expiry_pin_release": options_expiry_pin_release,
+    "rejection_gated_ignition": rejection_streak_gated_ignition,
 }
 
 
@@ -834,9 +1151,31 @@ def load_system_state(
         """,
         (since,),
     ).fetchone()["n"]
+    # Round-002 gate inputs: the constraint layer's own recent behavior.
+    dec = conn.execute(
+        """
+        SELECT action FROM decisions ORDER BY decided_at DESC LIMIT 50
+        """
+    ).fetchall()
+    rejection_rate = (
+        sum(1 for d in dec if d["action"] == "rejected") / len(dec) if dec else None
+    )
+    nulls = conn.execute(
+        """
+        SELECT exit_reason FROM trades
+         WHERE variant_name = 'null_baseline' AND status = 'closed'
+         ORDER BY exit_time DESC LIMIT 10
+        """
+    ).fetchall()
+    placebo_stop_rate = (
+        sum(1 for r in nulls if r["exit_reason"] == "stop_loss") / len(nulls)
+        if nulls else None
+    )
     return {
         "null_win_rate": (wins / closed) if closed else None,
         "recent_stopouts": stopouts,
+        "rejection_rate": rejection_rate,
+        "placebo_stop_rate": placebo_stop_rate,
     }
 
 

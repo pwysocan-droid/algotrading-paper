@@ -247,6 +247,8 @@ def replay_variant(
     wants_state = "system_state" in variant.get("context_keys", [])
     null_exits: list[tuple[str, bool, bool]] = []  # (exit_ts, win, stop)
     null_exit_ts: list[str] = []
+    null_cand_ts: list[str] = []
+    null_cand_rejected: list[bool] = []
     if wants_state:
         from config import STRATEGY_VARIANTS as _ALL
 
@@ -267,6 +269,11 @@ def replay_variant(
             for t in closed
         ]
         null_exit_ts = [e[0] for e in null_exits]
+        # Round-002 gate inputs, approximated from the null arm (documented:
+        # live rejection_rate spans all arms; here only null is simulated).
+        by_entry = sorted(null_trades, key=lambda t: t.entry_bar_timestamp)
+        null_cand_ts = [t.entry_bar_timestamp for t in by_entry]
+        null_cand_rejected = [not t.accepted for t in by_entry]
 
     def _state_at(ts_str: str) -> dict[str, Any]:
         hi = bisect.bisect_right(null_exit_ts, ts_str)
@@ -276,9 +283,19 @@ def replay_variant(
         closed_n = len(window_exits)
         wins = sum(1 for _, w, _s in window_exits if w)
         stops = sum(1 for _, _w, s in window_exits if s)
+        c_hi = bisect.bisect_right(null_cand_ts, ts_str)
+        recent_cand = null_cand_rejected[max(0, c_hi - 50): c_hi]
+        last_exits = null_exits[max(0, hi - 10): hi]
         return {
             "null_win_rate": (wins / closed_n) if closed_n else None,
             "recent_stopouts": stops,
+            "rejection_rate": (
+                sum(recent_cand) / len(recent_cand) if recent_cand else None
+            ),
+            "placebo_stop_rate": (
+                sum(1 for _, _w, s in last_exits if s) / len(last_exits)
+                if last_exits else None
+            ),
         }
 
     out: list[SimulatedTrade] = []
