@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T03:50:05Z",
+  "generated_at": "2026-07-17T03:55:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-17T03:50:03.827217+00:00",
+    "last_run_iso": "2026-07-17T03:55:04.508339+00:00",
     "last_run_human": "0m 01s ago",
-    "last_run_human_date": "2026-07-17 · 03:50 UTC",
+    "last_run_human_date": "2026-07-17 · 03:55 UTC",
     "next_run_human": "59m 58s",
-    "uptime_recent": "15681 of 15700 ok · 99.9%",
+    "uptime_recent": "15682 of 15701 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -31,7 +31,7 @@
       "qual": "no strategies registered",
       "figure": "5",
       "unit": "",
-      "spark": "▁▁▁▁▁▃█▁",
+      "spark": "▁▁▁▁▁▆█▁",
       "spark_class": null
     },
     {
@@ -80,33 +80,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "274,809",
+      "count": "274,814",
       "delta": "+1491",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "274809"
+      "value": "274814"
     },
     {
       "name": "bar coverage",
       "count": "98%",
-      "delta": "-34",
+      "delta": "-33",
       "delta_class": "note",
-      "spark": "▁▆▃▇█▃▇▃",
+      "spark": "▁▇▃██▂█▃",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "98"
     },
     {
       "name": "cron runs",
-      "count": "15,700",
+      "count": "15,701",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15700"
+      "value": "15701"
     },
     {
       "name": "llm calls",
@@ -123,7 +123,7 @@
       "count": "34",
       "delta": "+34",
       "delta_class": null,
-      "spark": "▁▁▁▁▁▁█▅",
+      "spark": "▁▁▁▁▁▂█▅",
       "spark_class": null,
       "key": "decisions",
       "value": "34"
