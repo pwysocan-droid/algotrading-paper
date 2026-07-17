@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T19:25:05Z",
+  "generated_at": "2026-07-17T19:30:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-17T19:25:03.622466+00:00",
+    "last_run_iso": "2026-07-17T19:30:03.848551+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-17 · 19:25 UTC",
+    "last_run_human_date": "2026-07-17 · 19:30 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "15868 of 15887 ok · 99.9%",
+    "uptime_recent": "15869 of 15888 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -35,7 +35,7 @@
       "qual": "8062 of 8064 expected · 28-day window",
       "figure": "100.0",
       "unit": "%",
-      "spark": "▁█▅▅▅▅▅▅",
+      "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null
     },
     {
@@ -92,13 +92,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "275,729",
+      "count": "275,734",
       "delta": "+1495",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "275729"
+      "value": "275734"
     },
     {
       "name": "bar coverage",
@@ -112,13 +112,13 @@
     },
     {
       "name": "cron runs",
-      "count": "15,887",
+      "count": "15,888",
       "delta": "+288",
       "delta_class": null,
-      "spark": "▁█▅▅▅▅▅▅",
+      "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15887"
+      "value": "15888"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "118",
-      "delta": "+118",
+      "count": "119",
+      "delta": "+119",
       "delta_class": null,
-      "spark": "▁▇▅▇▅▇█▅",
+      "spark": "▁█▄▇▆▆█▅",
       "spark_class": null,
       "key": "decisions",
-      "value": "118"
+      "value": "119"
     },
     {
       "name": "letters",
