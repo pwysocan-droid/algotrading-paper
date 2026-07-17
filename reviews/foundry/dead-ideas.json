@@ -5,7 +5,10 @@
     "CONSTRAINT DOMINANCE: 5 slots, $1k ceiling, 1h/symbol cooldown kill 99.6% of frequent signals. Fitness = edge per constraint slot. Frequency is worthless; amplitude per fire is everything.",
     "FIXED EXITS: +5% target / -3% stop / 24h time exit, checked every 5min. Ideas needing custom exits are inadmissible; ideas whose wins resolve slower than 24h are silently truncated.",
     "CANON LINEAGES DIE: both indicator mean-reversion AND the surviving retail structural plays (documented lineages: capitulation reversal, lead-lag, ORB, volume footprint, weekend effect) tested negative net of fees. The arbitraged-away frontier is past the documented-retail-edge line.",
-    "GROSS-POSITIVE IS THE TRAP SHAPE: several ideas found real but too-small structure. The question for a new idea is not 'is there signal' but 'why would the remaining signal exceed 1% per event'."
+    "GROSS-POSITIVE IS THE TRAP SHAPE: several ideas found real but too-small structure. The question for a new idea is not 'is there signal' but 'why would the remaining signal exceed 1% per event'.",
+    "FADE-SHAPED ENTRIES DIE (r001): every entry that fades a move (wick rejection, overshoot snap, band reversion) has lost against the +5%/-3%/24h exit, which structurally rewards follow-through. Propose continuation/initiation shapes, or argue explicitly why a fade survives an asymmetric exit.",
+    "THE GATE SURVIVED, THE ENGINE DIED (r001 exploit direction): drawdown_regime_contrarian_gate scored the best numbers ever tested (43.3% win, gross Sharpe 0.98, -0.33% net) — the self-referential regime gate (null-arm win rate + stop-out cluster via context_keys=['system_state']) carries real information, but the 24-bar breakout engine behind it is too weak. Strong prior: pair BETTER ENGINES with the same meta-gate.",
+    "CALIBRATE FIRE RATES (r001): predictions missed by 3x-8x in both directions. State the base-rate arithmetic (how many qualifying events per 288-bar day) rather than intuiting rarity."
   ],
   "ideas": [
     {
