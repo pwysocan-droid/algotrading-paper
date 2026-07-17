@@ -1,0 +1,75 @@
+{
+  "date": "2026-07-17",
+  "generated_at": "2026-07-17T23:07:50.970816+00:00",
+  "days": 930,
+  "staged": true,
+  "fill_model": "taker",
+  "database": "/home/trader/algotrading-paper/research_bars.db",
+  "results": [
+    {
+      "name": "slot_scarcity_conviction_gate",
+      "fill_model": "taker",
+      "candidates": 11,
+      "placed": 7,
+      "total_pnl": 24.44613869399173,
+      "edge_per_slot": 3.4923055277131043,
+      "win_rate": 0.7142857142857143,
+      "sharpe": 0.9891330959657022,
+      "max_dd": 1.4236515000000054,
+      "days": 930,
+      "stage": "full@930d"
+    },
+    {
+      "name": "gap_fill_exhaustion_continuation",
+      "fill_model": "taker",
+      "candidates": 18,
+      "placed": 14,
+      "total_pnl": -4.458455934057666,
+      "edge_per_slot": -0.31846113814697613,
+      "win_rate": 0.42857142857142855,
+      "sharpe": 0.21515354445916615,
+      "max_dd": 2.54005846280495,
+      "days": 930,
+      "stage": "full@930d"
+    },
+    {
+      "name": "post_shock_multiday_drift",
+      "fill_model": "taker",
+      "candidates": 53,
+      "placed": 35,
+      "total_pnl": -72.4946806821613,
+      "edge_per_slot": -2.0712765909188944,
+      "win_rate": 0.2857142857142857,
+      "sharpe": -0.2738371653709127,
+      "max_dd": 9.554454701050826,
+      "days": 930,
+      "stage": "full@930d"
+    },
+    {
+      "name": "asian_to_london_handoff_thrust",
+      "fill_model": "taker",
+      "candidates": 49,
+      "placed": 49,
+      "total_pnl": -104.64964929626565,
+      "edge_per_slot": -2.135707128495217,
+      "win_rate": 0.30612244897959184,
+      "sharpe": -2.341800341784799,
+      "max_dd": 12.12144884469098,
+      "days": 180,
+      "stage": "killed@180d"
+    },
+    {
+      "name": "pullback_to_breakout_level_limit",
+      "fill_model": "taker",
+      "candidates": 197,
+      "placed": 178,
+      "total_pnl": -419.03604636819745,
+      "edge_per_slot": -2.354135091956165,
+      "win_rate": 0.3089887640449438,
+      "sharpe": -4.371870586829576,
+      "max_dd": 43.88625736165784,
+      "days": 180,
+      "stage": "killed@180d"
+    }
+  ]
+}
