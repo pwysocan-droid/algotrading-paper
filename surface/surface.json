@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T14:40:06Z",
+  "generated_at": "2026-07-17T14:45:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-17T14:40:04.464187+00:00",
+    "last_run_iso": "2026-07-17T14:45:04.153162+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-17 · 14:40 UTC",
+    "last_run_human_date": "2026-07-17 · 14:45 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "15811 of 15830 ok · 99.9%",
+    "uptime_recent": "15812 of 15831 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -80,13 +80,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "275,444",
+      "count": "275,449",
       "delta": "+1495",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "275444"
+      "value": "275449"
     },
     {
       "name": "bar coverage",
@@ -100,33 +100,33 @@
     },
     {
       "name": "cron runs",
-      "count": "15,830",
+      "count": "15,831",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15830"
+      "value": "15831"
     },
     {
       "name": "llm calls",
-      "count": "23",
-      "delta": "+23",
+      "count": "24",
+      "delta": "+24",
       "delta_class": null,
       "spark": "▁▁█▂▇▁▁▂",
       "spark_class": null,
       "key": "llm_calls",
-      "value": "23"
+      "value": "24"
     },
     {
       "name": "decisions",
-      "count": "92",
-      "delta": "+92",
+      "count": "93",
+      "delta": "+93",
       "delta_class": null,
-      "spark": "▁▁▆▆▅▆█▅",
+      "spark": "▁▁▆▆▆▆█▅",
       "spark_class": null,
       "key": "decisions",
-      "value": "92"
+      "value": "93"
     },
     {
       "name": "letters",
@@ -201,15 +201,15 @@
     }
   ],
   "llm": {
-    "total_calls": 23,
-    "total_cost_usd": 1.6695,
+    "total_calls": 24,
+    "total_cost_usd": 1.8557,
     "by_caller": [
       {
         "called_from": "idea_foundry",
         "model": "claude-opus-4-8",
-        "calls": 3,
-        "tokens": 35847,
-        "cost_usd": 0.6073
+        "calls": 4,
+        "tokens": 48298,
+        "cost_usd": 0.7934
       },
       {
         "called_from": "friday_bear_case_investigated#t1",
