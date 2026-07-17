@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T03:40:06Z",
+  "generated_at": "2026-07-17T03:45:05Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -10,11 +10,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-17T03:40:04.295853+00:00",
+    "last_run_iso": "2026-07-17T03:45:04.162887+00:00",
     "last_run_human": "0m 01s ago",
-    "last_run_human_date": "2026-07-17 · 03:40 UTC",
+    "last_run_human_date": "2026-07-17 · 03:45 UTC",
     "next_run_human": "59m 58s",
-    "uptime_recent": "15679 of 15698 ok · 99.9%",
+    "uptime_recent": "15680 of 15699 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -31,7 +31,7 @@
       "qual": "no strategies registered",
       "figure": "5",
       "unit": "",
-      "spark": "▁▁▁▁▁▁█▁",
+      "spark": "▁▁▁▁▁▃█▁",
       "spark_class": null
     },
     {
@@ -80,41 +80,41 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "274,800",
+      "count": "274,805",
       "delta": "+1492",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "274800"
+      "value": "274805"
     },
     {
       "name": "bar coverage",
       "count": "98%",
       "delta": "-33",
       "delta_class": "note",
-      "spark": "▁▆▃▇█▃▆▃",
+      "spark": "▁▆▃▇█▃▇▃",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "98"
     },
     {
       "name": "cron runs",
-      "count": "15,698",
+      "count": "15,699",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15698"
+      "value": "15699"
     },
     {
       "name": "llm calls",
       "count": "22",
       "delta": "+22",
       "delta_class": null,
-      "spark": "▁▁▁▁▁▂██",
-      "spark_class": "growing",
+      "spark": "▁▁▁▁▁▂█▇",
+      "spark_class": null,
       "key": "llm_calls",
       "value": "22"
     },
