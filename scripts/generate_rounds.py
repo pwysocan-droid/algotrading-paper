@@ -78,15 +78,16 @@ def pipeline_health(repo_root: Path = REPO_ROOT,
 
     log_dir = repo_root / "vps" / "logs"
     if log_dir.exists():
-        for offset in (0, 1):
-            day = date.fromtimestamp(ts.timestamp() - offset * 86400).isoformat()
-            log = log_dir / f"foundry-{day}.log"
-            if log.exists() and "ALERT" in log.read_text():
-                warnings.append(
-                    f"⚠ FOUNDRY ALERT in {log.name} — the autopilot failed; "
-                    "read the log tail for the traceback."
-                )
-                break
+        for prefix in ("foundry", "implementer"):
+            for offset in (0, 1):
+                day = date.fromtimestamp(ts.timestamp() - offset * 86400).isoformat()
+                log = log_dir / f"{prefix}-{day}.log"
+                if log.exists() and "ALERT" in log.read_text():
+                    warnings.append(
+                        f"⚠ {prefix.upper()} ALERT in {log.name} — "
+                        "read the log tail for the traceback."
+                    )
+                    break
     return warnings
 
 
