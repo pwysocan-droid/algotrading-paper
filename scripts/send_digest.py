@@ -76,7 +76,10 @@ def main() -> int:
     msg["From"] = address
     msg["To"] = address
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as smtp:
+    # Port 587 + STARTTLS, not 465/SSL: Hetzner blocks outbound 465
+    # from this box (measured 2026-07-17) but leaves 587 open.
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
+        smtp.starttls()
         smtp.login(address, password)
         smtp.sendmail(address, [address], msg.as_string())
     print(f"send_digest: sent {subject!r} to {address}")
