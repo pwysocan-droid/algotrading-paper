@@ -203,6 +203,18 @@ def execute_signal(
     """
     now = entry_time or datetime.now(timezone.utc)
     decided_at = now.isoformat()
+    # Staleness guard (audit 2026-07-17): a signal that sat undecided
+    # (outage, crash) must not fill at its old price as if fresh.
+    sig_ts = datetime.fromisoformat(sig.bar_timestamp)
+    if sig_ts.tzinfo is None:
+        sig_ts = sig_ts.replace(tzinfo=timezone.utc)
+    if now - sig_ts > timedelta(minutes=15):
+        decision_id = _record_decision(
+            conn, sig.id, "rejected",
+            f"stale signal: bar {sig.bar_timestamp} is >15min old at execution",
+            decided_at, trade_id=None,
+        )
+        return decision_id, "rejected", "stale signal"
     result = check_limits(conn, sig, intended_position_usd, now)
     if not result.ok:
         decision_id = _record_decision(
@@ -257,7 +269,7 @@ def pending_signals(conn: sqlite3.Connection) -> list[PendingSignal]:
     ]
 
 
-def process_pending(db_path: Path | None = None) -> int:
+def process_pending(db_path: Path | None = None, now: datetime | None = None) -> int:
     """Process every pending signal in the DB. Returns count of placed trades.
 
     For Week 1 with no strategies registered there are no pending signals,
@@ -266,7 +278,9 @@ def process_pending(db_path: Path | None = None) -> int:
     placed = 0
     with db.connect(db_path) as conn:
         for sig in pending_signals(conn):
-            _, action, _ = execute_signal(conn, sig, entry_price=sig.price_at_signal)
+            _, action, _ = execute_signal(
+                conn, sig, entry_price=sig.price_at_signal, entry_time=now
+            )
             if action == "placed":
                 placed += 1
     return placed
@@ -324,13 +338,17 @@ def manage_exits(
     closed = 0
     with db.connect(db_path) as conn:
         for trade in open_positions(conn):
+            # Only bars that BEGIN at/after entry may close a trade — the
+            # signal bar's range predates the fill and once closed trades
+            # same-cycle on pre-entry price action (audit 2026-07-17).
             bar = conn.execute(
                 """
                 SELECT timestamp, high, low, close FROM bars
                  WHERE symbol = (SELECT symbol FROM trades WHERE id = ?)
+                   AND timestamp >= (SELECT entry_time FROM trades WHERE id = ?)
                  ORDER BY timestamp DESC LIMIT 1
                 """,
-                (trade["id"],),
+                (trade["id"], trade["id"]),
             ).fetchone()
             if bar is None:
                 continue

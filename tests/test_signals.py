@@ -216,9 +216,9 @@ class TestBollingerStrategy:
 
 class TestMacrossStrategy:
     def test_fast_must_be_less_than_slow(self) -> None:
-        bars = _bars_from_closes([10.0] * 5)
-        with pytest.raises(ValueError, match="must be <"):
-            macross_strategy(bars, {"fast": 26, "slow": 12}, {})
+        # invalid config returns None rather than killing the cycle
+        bars = _bars_from_closes([10.0] * 30)
+        assert macross_strategy(bars, {"fast": 26, "slow": 12}, {}) is None
 
     def test_insufficient_bars_returns_none(self) -> None:
         bars = _bars_from_closes([10.0, 10.0, 10.0])  # need slow+1=4

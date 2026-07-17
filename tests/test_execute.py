@@ -119,7 +119,7 @@ def test_total_exposure_cap_rejects_new_signal(tmp_db: Path) -> None:
     placed = 0
     for i, symbol in enumerate(symbols):
         sid = _seed_signal(tmp_db, symbol=symbol, variant=f"v{i}", price=100.0,
-                           bar_timestamp=f"2026-05-01T12:0{i}:00+00:00")
+                           bar_timestamp=f"2026-05-01T{13 + i}:00:00+00:00")
         sig = _pending(tmp_db, sid)
         with db.connect(tmp_db) as conn:
             _, action, _ = execute.execute_signal(
@@ -131,7 +131,7 @@ def test_total_exposure_cap_rejects_new_signal(tmp_db: Path) -> None:
     assert placed == 5
 
     sid = _seed_signal(tmp_db, symbol="DOGE/USD", variant="v6", price=100.0,
-                       bar_timestamp="2026-05-01T13:00:00+00:00")
+                       bar_timestamp="2026-05-01T21:55:00+00:00")
     sig = _pending(tmp_db, sid)
     with db.connect(tmp_db) as conn:
         _, action, reason = execute.execute_signal(
@@ -148,7 +148,7 @@ def test_concurrent_position_cap(tmp_db: Path) -> None:
     symbols = ["S1", "S2", "S3", "S4", "S5"]
     for i, symbol in enumerate(symbols):
         sid = _seed_signal(tmp_db, symbol=symbol, variant=f"v{i}", price=10.0,
-                           bar_timestamp=f"2026-05-01T12:0{i}:00+00:00")
+                           bar_timestamp=f"2026-05-01T{13 + i}:00:00+00:00")
         sig = _pending(tmp_db, sid)
         with db.connect(tmp_db) as conn:
             _, action, _ = execute.execute_signal(
@@ -159,7 +159,7 @@ def test_concurrent_position_cap(tmp_db: Path) -> None:
         assert action == "placed"
 
     sid = _seed_signal(tmp_db, symbol="S6", variant="v6", price=10.0,
-                       bar_timestamp="2026-05-01T13:00:00+00:00")
+                       bar_timestamp="2026-05-01T21:55:00+00:00")
     sig = _pending(tmp_db, sid)
     with db.connect(tmp_db) as conn:
         _, action, reason = execute.execute_signal(
@@ -202,7 +202,7 @@ def test_symbol_cooldown_clears_after_window(tmp_db: Path) -> None:
     assert action == "placed"
 
     sid2 = _seed_signal(tmp_db, symbol="BTC/USD", variant="v2", price=60_000.0,
-                        bar_timestamp="2026-05-01T13:30:00+00:00")
+                        bar_timestamp="2026-05-01T13:55:00+00:00")
     sig2 = _pending(tmp_db, sid2)
     with db.connect(tmp_db) as conn:
         _, action, _ = execute.execute_signal(
@@ -351,7 +351,9 @@ def test_closed_position_frees_slot_for_new_trade(tmp_db: Path) -> None:
                        bar_timestamp="2026-07-16T00:05:00+00:00")
     sig = _pending(tmp_db, sid)
     with db.connect(tmp_db) as conn:
-        _, action, reason = execute.execute_signal(conn, sig, entry_price=10.0)
+        _, action, reason = execute.execute_signal(
+            conn, sig, entry_price=10.0,
+            entry_time=datetime(2026, 7, 16, 0, 10, tzinfo=timezone.utc))
     assert action == "rejected"
     assert "concurrent" in reason
 
@@ -364,5 +366,7 @@ def test_closed_position_frees_slot_for_new_trade(tmp_db: Path) -> None:
                         bar_timestamp="2026-07-16T00:10:00+00:00")
     sig2 = _pending(tmp_db, sid2)
     with db.connect(tmp_db) as conn:
-        _, action2, _ = execute.execute_signal(conn, sig2, entry_price=10.0)
+        _, action2, _ = execute.execute_signal(
+            conn, sig2, entry_price=10.0,
+            entry_time=datetime(2026, 7, 16, 0, 15, tzinfo=timezone.utc))
     assert action2 == "placed"

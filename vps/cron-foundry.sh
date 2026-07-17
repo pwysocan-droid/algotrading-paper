@@ -16,5 +16,7 @@ cd "${REPO}" || exit 1
 source .venv/bin/activate || exit 1
 git pull --rebase --autostash >>"${LOG}" 2>&1 || true
 echo "=== autopilot $(date -u +%FT%TZ) ===" >> "${LOG}"
-python scripts/foundry_autopilot.py >>"${LOG}" 2>&1
+if ! python scripts/foundry_autopilot.py >>"${LOG}" 2>&1; then
+  echo "ALERT: foundry_autopilot FAILED $(date -u +%FT%TZ)" >> "${LOG}"
+fi
 echo "=== done $(date -u +%FT%TZ) ===" >> "${LOG}"

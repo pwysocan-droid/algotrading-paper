@@ -51,7 +51,11 @@ def _implemented(names: list[str]) -> bool:
 
 def _gauntleted(names: list[str]) -> bool:
     for path in sorted((REPO_ROOT / "reports").glob("gauntlet-*.json")):
-        data = json.loads(path.read_text())
+        try:
+            data = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"WARN: unreadable {path.name}: {exc}")  # never wedge on one bad file
+            continue
         covered = {r["name"] for r in data.get("results", [])}
         if set(names) <= covered:
             return True
@@ -70,15 +74,25 @@ def _sh(cmd: list[str]) -> None:
 
 
 def _git_push(paths: list[str], message: str) -> None:
-    _sh(["git", "add", *paths])
-    diff = subprocess.run(["git", "diff", "--staged", "--quiet"], cwd=REPO_ROOT)
-    if diff.returncode == 0:
-        print("nothing to commit")
-        return
-    _sh(["git", "commit", "-m", message,
-         "-m", "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"])
-    subprocess.run(["git", "pull", "--rebase", "--autostash"], cwd=REPO_ROOT)
-    _sh(["git", "push"])
+    """Retrying push: results MUST reach the remote or the pipeline's other
+    half (the cloud agent) never sees them and the autopilot waits forever
+    on itself — the Pages-bug shape (audit 2026-07-17)."""
+    for attempt in range(3):
+        try:
+            _sh(["git", "add", *paths])
+            diff = subprocess.run(["git", "diff", "--staged", "--quiet"], cwd=REPO_ROOT)
+            if diff.returncode == 0:
+                print("nothing to commit")
+                return
+            _sh(["git", "commit", "-m", message,
+                 "-m", "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"])
+            subprocess.run(["git", "pull", "--rebase", "--autostash"], cwd=REPO_ROOT)
+            _sh(["git", "push"])
+            return
+        except subprocess.CalledProcessError as exc:
+            print(f"push attempt {attempt + 1} failed: {exc}; recovering")
+            subprocess.run(["git", "rebase", "--abort"], cwd=REPO_ROOT)
+    raise RuntimeError(f"could not push {paths} after 3 attempts — pipeline state is local-only")
 
 
 def ensure_research_db() -> None:

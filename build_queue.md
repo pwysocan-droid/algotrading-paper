@@ -75,3 +75,8 @@ Each item:
   detail: "per live arm: fire rate / win rate / expectancy / exit-mix, live vs backtest-predicted · feeds Friday review + dashboard · validates the factory"
   when: open
   kind: build
+
+- thing: "Audit Tier-2 backlog (2026-07-17 four-agent audit)"
+  detail: "runs.bars_added counts upserts not inserts (17x inflated, feeds skeptic); parity_check must exclude the mutable trailing 90min of bars; replay entry-bar exit skip (bars[i+2:] vs live) + time-exit anchor one bar late; gate-1 uptime should filter kind='cron'; trade_cycle needs its own runs audit rows; entropy params half-plumbed (entropy_window/n_bins ignored in _entropy_at calls) + coil-persistence rule dropped; omori volume baseline includes signal bar; same-bar tie-break ordering live (id ASC) vs replay (alphabetical); system_state stop-out scope live-portfolio vs null-only in replay; pages.yml negative-staleness guard; log rotation on vps/logs"
+  when: open
+  kind: build

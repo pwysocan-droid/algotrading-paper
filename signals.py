@@ -111,8 +111,8 @@ def macross_strategy(
     """
     fast_n = int(params.get("fast", 12))
     slow_n = int(params.get("slow", 26))
-    if fast_n >= slow_n:
-        raise ValueError(f"fast period ({fast_n}) must be < slow period ({slow_n})")
+    if fast_n >= slow_n or fast_n <= 0:
+        return None  # invalid config must not kill the cycle (audit 2026-07-17)
     if len(bars) < slow_n + 1:
         return None
 
@@ -215,7 +215,7 @@ def liquidation_cascade_reclaim(
     rets = [
         math.log(window[i].close / window[i - 1].close)
         for i in range(1, len(window))
-        if window[i - 1].close > 0
+        if window[i - 1].close > 0 and window[i].close > 0
     ]
     if len(rets) < 2:
         return None
@@ -276,6 +276,8 @@ def btc_leads_alt_lag_capture(
     if len(btc) < max(btc_look + 1, 6):
         return None
 
+    if btc[-1 - btc_look].close <= 0 or bars[-1 - btc_look].close <= 0:
+        return None
     btc_ret = btc[-1].close / btc[-1 - btc_look].close - 1.0
     alt_ret = bars[-1].close / bars[-1 - btc_look].close - 1.0
     alt_window = bars[-window_n:]
@@ -414,6 +416,8 @@ def weekend_illiquidity_momentum(
     if _ts(last).weekday() not in (5, 6):  # Sat, Sun
         return None
 
+    if bars[-1 - mom_look].close <= 0:
+        return None
     mom = last.close / bars[-1 - mom_look].close - 1.0
     if mom < mom_min:
         return None
@@ -461,7 +465,8 @@ def _entropy_at(bars: list[BarRow], idx: int, n_bins: int = 5,
     window = bars[idx + 1 - sym_window: idx + 1]
     rets = [
         math.log(window[i].close / window[i - 1].close)
-        for i in range(1, len(window)) if window[i - 1].close > 0
+        for i in range(1, len(window))
+        if window[i - 1].close > 0 and window[i].close > 0
     ]
     if len(rets) < ent_window:
         return None
@@ -526,7 +531,7 @@ def entropy_collapse_impulse(
     rets = [
         math.log(bars[i].close / bars[i - 1].close)
         for i in range(last_i - ent_window + 1, last_i + 1)
-        if bars[i - 1].close > 0
+        if bars[i - 1].close > 0 and bars[i].close > 0
     ]
     if len(rets) < 2:
         return None
@@ -578,7 +583,8 @@ def omori_aftershock_ladder(
             break
         rets = [
             math.log(base[j].close / base[j - 1].close)
-            for j in range(1, len(base)) if base[j - 1].close > 0
+            for j in range(1, len(base))
+            if base[j - 1].close > 0 and base[j].close > 0
         ]
         sd = statistics.pstdev(rets) if len(rets) > 1 else 0.0
         med_vol = statistics.median(b.volume for b in base)
@@ -918,6 +924,15 @@ def run_all_variants(
     all_signals: list[Signal] = []
     with db.connect(db_path) as conn:
         for name, variant in registry.items():
-            sigs = run_variant(conn, name, variant, symbols, context=context)
+            try:
+                sigs = run_variant(conn, name, variant, symbols, context=context)
+            except KeyError:
+                raise  # unknown strategy is a config error — keep loud
+            except Exception as exc:
+                # One misbehaving variant must not silence the rest
+                # (audit 2026-07-17); strategies should return None, not
+                # raise, but a poisoned bar must never kill the cycle.
+                print(f"ERROR variant {name}: {type(exc).__name__}: {exc}")
+                continue
             all_signals.extend(sigs)
     return all_signals

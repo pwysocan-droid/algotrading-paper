@@ -25,7 +25,10 @@ cd "${REPO}" || { log "FATAL: cannot cd to ${REPO}"; exit 1; }
 # shellcheck disable=SC1091
 source "${VENV}/bin/activate" || { log "FATAL: cannot activate venv"; exit 1; }
 
-git pull --rebase --autostash >>"${LOG}" 2>&1 || log "WARN: git pull failed; continuing"
+if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+  git rebase --abort >>"${LOG}" 2>&1 || true
+fi
+git pull --rebase --autostash >>"${LOG}" 2>&1 || { git rebase --abort >>"${LOG}" 2>&1 || true; log "WARN: git pull failed; continuing"; }
 
 # Fresh calibration report first, so the investigator can read it.
 python scripts/calibration_report.py >>"${LOG}" 2>&1 || log "WARN: calibration_report failed"
@@ -46,7 +49,7 @@ else
       break
     fi
     log "push failed (attempt ${attempt}); pull --rebase and retry"
-    git pull --rebase --autostash >>"${LOG}" 2>&1 || break
+    git pull --rebase --autostash >>"${LOG}" 2>&1 || { git rebase --abort >>"${LOG}" 2>&1 || true; break; }
   done
 fi
 

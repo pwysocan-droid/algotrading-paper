@@ -35,6 +35,17 @@ log "=== cron run ${NOW_UTC} ==="
 
 cd "${REPO}" || { log "FATAL: cannot cd to ${REPO}"; exit 1; }
 
+# Prevent overlapping */5 runs (slow fetch + push retries can exceed 5min)
+exec 8>"${LOG_DIR}/fetch.lock"
+flock -n 8 || { log "previous fetch run still active — skipping"; exit 0; }
+
+# Recover a wedged rebase from a prior crashed run (audit 2026-07-17:
+# an unresolved rebase left the repo detached and froze all pushes).
+if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+  git rebase --abort >>"${DAY_LOG:-/dev/null}" 2>&1 || true
+fi
+
+
 # shellcheck disable=SC1091
 source "${VENV}/bin/activate" || { log "FATAL: cannot activate venv"; exit 1; }
 
@@ -85,7 +96,7 @@ else
       break
     fi
     log "push failed (attempt ${attempt}); pull --rebase and retry"
-    git pull --rebase --autostash >>"${DAY_LOG}" 2>&1 || break
+    git pull --rebase --autostash >>"${DAY_LOG}" 2>&1 || { git rebase --abort >>"${DAY_LOG}" 2>&1 || true; break; }
   done
   [ "${PUSHED}" -eq 0 ] && log "WARN: push failed after retries; next run will catch up"
 fi
