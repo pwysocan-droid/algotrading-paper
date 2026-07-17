@@ -60,6 +60,15 @@ else
   log "WARN: generate_rounds.py failed"
 fi
 
+# Digest email — SMTP with GMAIL_APP_PASSWORD from .env; no-ops with a
+# log line when unconfigured. Sends STALE warning instead of skipping
+# when the digest is old (the email IS the heartbeat).
+if python scripts/send_digest.py >>"${LOG}" 2>&1; then
+  log "send_digest.py ok"
+else
+  log "WARN: send_digest.py failed — no digest email went out"
+fi
+
 git add reviews/nightly pending.md surface/learnings.json surface/rounds.json reports
 if git diff --staged --quiet; then
   log "nothing to commit"
