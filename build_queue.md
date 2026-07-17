@@ -55,3 +55,13 @@ Each item:
   detail: "Haiku 4.5 nightly skeptic · frontier model for Friday review + synthesis · CLAUDE_MODEL env on VPS"
   when: open
   kind: build
+
+- thing: Close the seam — autonomous foundry
+  detail: "decision-log 2026-07-17 spec · cloud agent (implement+epitaphs) + VPS cron conditions (synthesis+gauntlet) + escalating survival bar · FIRST TASK next session"
+  when: 2d
+  kind: build
+
+- thing: Wire the digest email
+  detail: "Gmail connector authorized · read reports/digest-*.md, send · trivial once tools load in a fresh session"
+  when: 2d
+  kind: build

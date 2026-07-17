@@ -103,6 +103,49 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-17 — Close the seam: the foundry runs autonomously; the operator reads asynchronously
+
+Operator directive, verbatim intent: "I want to read, but I can always
+catch up — I want to optimize this." Learning speed must never wait on
+a human opening a session. The one remaining manual step (implement →
+gauntlet → epitaphs) becomes autonomous.
+
+**Cadence: information-gated, not calendar-gated.** Cycles run
+back-to-back as fast as the pipeline allows (~1 round per 1–2 days),
+because the constraint on honest learning is new-information arrival
+(fresh market days; live A/B verdicts), not wall-clock. Iterating
+faster than information arrives mines noise — so speed is paired with
+the guards below, and the guards, not a schedule, set the pace.
+
+**Architecture (no new secrets anywhere):**
+1. *Scheduled cloud agent, daily*: clones the repo; if the newest
+   foundry round has specs but no implementations, implements them
+   with tests and pushes; if gauntlet results exist without epitaphs,
+   writes gradient-rich epitaphs to the registry and pushes. Pure
+   code work — needs no API keys.
+2. *VPS cron conditions* (the box holds the keys): if epitaphs are
+   complete and no next round exists → run idea_foundry.py; if a
+   round has implementations but no gauntlet results → build/refresh
+   research_bars.db locally and run the staged parallel gauntlet;
+   push results. Both idempotent, both logged.
+
+**Guards (the price of speed):**
+- The 2026 holdout window is never used for selection.
+- The registry gains a total_ideas_tested counter; the gauntlet's
+  survival bar escalates with it (more ideas tested → stronger
+  evidence demanded), the multiple-comparisons correction.
+- Backtests never touch the live roster. The only door remains the
+  live A/B against null_baseline at p<0.05 over 100+ closed trades —
+  and that runs at the speed of reality no matter how fast the lab
+  spins.
+- The Friday investigator's drift check watches for foundry theater.
+
+**The operator's role narrows to what it should be:** reading the
+digest and dashboards on their own time, and the two decisions the
+machine refuses to make — promotions, and the Phase 1b gate.
+
+---
+
 ## 2026-07-16 — The foundry: the aggressive-iteration phase begins
 
 The operator named the design intent tonight, and the record supports
