@@ -25,17 +25,20 @@ just say it again — every step is idempotent or checkpointed in git.
 - Live: https://pwysocan-droid.github.io/algotrading-paper/surface/
 - Learnings dashboard: .../surface/learnings.html
 - Rounds by date: .../surface/rounds.html
-- Digest: reports/digest-YYYY-MM-DD.md — emailed daily ~06:30 Pacific
-  to pwysocan@gmail.com by the `digest-mailer` cloud routine
-  (trig_01NjtGaNPuFbLWzikmt5iuQw). If the digest is >1 day stale it
-  emails a STALE warning instead — that email is the heartbeat.
+- Digest: reports/digest-YYYY-MM-DD.md — emailed nightly by the VPS
+  itself (scripts/send_digest.py in cron-skeptic.sh, Gmail SMTP with
+  GMAIL_APP_PASSWORD from .env). If the digest is >1 day stale it
+  emails a STALE warning instead — that email is the heartbeat; an
+  inbox with neither means the VPS is down.
 
 Cloud routines (manage at https://claude.ai/code/routines):
 - `foundry-implementer` (trig_01CB7gU6mXGFXSRj4kvDd74N, 08:00+20:00
   UTC): the keyless half of the closed seam — implements new round
   specs and writes epitaphs, pushing to the repo. Pairs with the VPS
   autopilot (gauntlets + next-round generation).
-- `digest-mailer` (trig_01NjtGaNPuFbLWzikmt5iuQw, 13:30 UTC): above.
+- `digest-mailer` (trig_01NjtGaNPuFbLWzikmt5iuQw): DISABLED — the
+  claude.ai Gmail connector proved draft-only; delivery moved to the
+  VPS (above). Kept for reference.
 
 ## 3. Decisions only you can make
 
