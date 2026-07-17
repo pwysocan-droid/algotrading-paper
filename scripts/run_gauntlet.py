@@ -38,7 +38,8 @@ def _score_candidate(args: tuple) -> dict:
     """One candidate, one window — importable top-level so multiprocessing
     (spawn, macOS default) can pickle it. Each worker opens its own
     read-only-use sqlite connection."""
-    name, days, db_path_str = args
+    name, days, db_path_str = args[:3]
+    fill_model = args[3] if len(args) > 3 else "taker"
     db_path = Path(db_path_str) if db_path_str else None
     end = datetime.now(timezone.utc)
     start = end - timedelta(days=days)
@@ -50,6 +51,7 @@ def _score_candidate(args: tuple) -> dict:
         trades = replay.replay_variant(
             conn, name, variant, WATCHED_SYMBOLS, start, end,
             fee_pct=TAKER_FEE_PCT, slippage_pct=SLIPPAGE_PCT,
+            fill_model=fill_model,
         )
     candidates_n = len(trades)
     trades = replay.apply_portfolio_constraints(trades)
@@ -61,6 +63,7 @@ def _score_candidate(args: tuple) -> dict:
     wins = sum(1 for p in pnls if p > 0)
     return {
         "name": name,
+        "fill_model": fill_model,
         "candidates": candidates_n,
         "placed": n,
         "total_pnl": total,
@@ -73,13 +76,14 @@ def _score_candidate(args: tuple) -> dict:
 
 
 def run_gauntlet(days: int = 180, db_path: Path | None = None,
-                 names: list[str] | None = None) -> list[dict]:
+                 names: list[str] | None = None,
+                 fill_model: str = "taker") -> list[dict]:
     """All candidates in parallel — one process each (they're independent
     and CPU-bound; observed ~4x wall-clock on this hardware)."""
     from multiprocessing import Pool, cpu_count
 
     todo = names if names is not None else CANDIDATES
-    args = [(n, days, str(db_path) if db_path else None) for n in todo]
+    args = [(n, days, str(db_path) if db_path else None, fill_model) for n in todo]
     with Pool(min(len(args), max(1, cpu_count() - 1))) as pool:
         results = pool.map(_score_candidate, args)
     for r in results:
@@ -94,13 +98,15 @@ def run_gauntlet(days: int = 180, db_path: Path | None = None,
 
 def run_staged(filter_days: int = 180, full_days: int = 930,
                db_path: Path | None = None,
-               names: list[str] | None = None) -> list[dict]:
+               names: list[str] | None = None,
+               fill_model: str = "taker") -> list[dict]:
     """Curriculum-cascade: a cheap short-window filter kills the obvious
     deaths (>=30 placed and net-negative); only survivors earn the full
     multi-year window. Small samples pass the filter — they haven't
     earned a verdict either way."""
     todo = names if names is not None else CANDIDATES
-    stage1 = run_gauntlet(days=filter_days, db_path=db_path, names=todo)
+    stage1 = run_gauntlet(days=filter_days, db_path=db_path, names=todo,
+                          fill_model=fill_model)
     survivors, killed = [], []
     for r in stage1:
         if r["placed"] >= 30 and r["total_pnl"] < 0:
@@ -111,7 +117,8 @@ def run_staged(filter_days: int = 180, full_days: int = 930,
     print(f"\nstage 1: {len(killed)} killed, {len(survivors)} advance to {full_days}d\n")
     stage2 = []
     if survivors:
-        stage2 = run_gauntlet(days=full_days, db_path=db_path, names=survivors)
+        stage2 = run_gauntlet(days=full_days, db_path=db_path, names=survivors,
+                              fill_model=fill_model)
         for r in stage2:
             r["stage"] = f"full@{full_days}d"
     results = stage2 + killed
@@ -165,6 +172,8 @@ def main() -> int:
                         help="alternate bars database (e.g. research_bars.db)")
     parser.add_argument("--names", default=None,
                         help="comma-separated variant names (default: the synthesis candidates)")
+    parser.add_argument("--fill-model", default="taker", choices=["taker", "maker"],
+                        help="fill model axis (decision-log 2026-07-17: test both)")
     parser.add_argument("--staged", action="store_true",
                         help="cheap short-window filter first; only survivors run the full window")
     parser.add_argument("--filter-days", type=int, default=180,
@@ -177,9 +186,10 @@ def main() -> int:
         db.migrate()
     if args.staged:
         results = run_staged(filter_days=args.filter_days, full_days=args.days,
-                             db_path=args.db, names=names)
+                             db_path=args.db, names=names, fill_model=args.fill_model)
     else:
-        results = run_gauntlet(days=args.days, db_path=args.db, names=names)
+        results = run_gauntlet(days=args.days, db_path=args.db, names=names,
+                               fill_model=args.fill_model)
     report = render_report(results, args.days)
     stamp = datetime.now(timezone.utc)
     base = Path(__file__).resolve().parent.parent / "reports"
@@ -194,6 +204,7 @@ def main() -> int:
         "generated_at": stamp.isoformat(),
         "days": args.days,
         "staged": args.staged,
+        "fill_model": args.fill_model,
         "database": str(args.db) if args.db else "trader.db",
         "results": results,
     }, indent=2) + "\n")
