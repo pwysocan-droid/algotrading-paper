@@ -771,8 +771,11 @@ def get_strategy_fn(name: str) -> StrategyFn:
 
 
 def load_recent_bars(
-    conn: sqlite3.Connection, symbol: str, limit: int = 200
+    conn: sqlite3.Connection, symbol: str, limit: int = 400
 ) -> list[BarRow]:
+    """Default 400 matches replay's window_cap — sim-to-live parity. The
+    old 200 silently starved any strategy needing more (vol_thrust needs
+    289: it could NEVER fire live — found designing the parity check)."""
     rows = conn.execute(
         """
         SELECT symbol, timestamp, open, high, low, close, volume

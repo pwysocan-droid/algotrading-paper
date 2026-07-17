@@ -42,6 +42,14 @@ else
   log "WARN: generate_learnings.py failed"
 fi
 
+# Shadow-replay parity — deterministic engine tripwire; a hard failure
+# writes reports/parity-*.md, which the nightly commit carries.
+if python scripts/parity_check.py >>"${LOG}" 2>&1; then
+  log "parity_check.py ok"
+else
+  log "ALERT: parity_check.py found an engine bug — see reports/parity-*.md"
+fi
+
 # Rounds/digest aggregation — pure file aggregation, no LLM.
 if python scripts/generate_rounds.py >>"${LOG}" 2>&1; then
   log "generate_rounds.py ok"

@@ -27,12 +27,15 @@ source "${VENV}/bin/activate" || { log "FATAL: cannot activate venv"; exit 1; }
 
 git pull --rebase --autostash >>"${LOG}" 2>&1 || log "WARN: git pull failed; continuing"
 
+# Fresh calibration report first, so the investigator can read it.
+python scripts/calibration_report.py >>"${LOG}" 2>&1 || log "WARN: calibration_report failed"
+
 if ! python adversarial_cron.py --friday >>"${LOG}" 2>&1; then
   log "adversarial_cron.py --friday FAILED — no commit"
   exit 1
 fi
 
-git add reviews
+git add reviews reports
 if git diff --staged --quiet; then
   log "nothing to commit"
 else
