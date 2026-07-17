@@ -551,3 +551,93 @@ class TestMaxDrawdown:
         # dd1: 1100→990 = 10%; dd2: 1490→1043 = 30%
         dd = replay.max_drawdown_pct([100.0, -110.0, 500.0, -447.0])
         assert dd == pytest.approx(30.0, abs=0.1)
+
+
+class TestMakerFillModel:
+    """fill_model='maker' — the cost lever (decision-log 2026-07-17).
+
+    Entries are resting limits at the signal bar's close: they fill only on
+    strict trade-through within the timeout, pay MAKER_FEE_PCT, no slippage.
+    TP exits are also maker limits; SL/time exits stay taker + slippage.
+    """
+
+    BASE = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+
+    def _bar(self, i: int, o: float, h: float, lo: float, c: float):
+        from fetch import Bar
+        ts = (self.BASE + timedelta(minutes=5 * i)).isoformat()
+        return Bar(symbol="BTC/USD", timestamp=ts, open=o, high=h, low=lo,
+                   close=c, volume=1000.0)
+
+    def _run(self, tmp_db: Path, bars, **kwargs):
+        _seed_bars(tmp_db, bars)
+
+        def fire_on_first_bar(bars_so_far, params, ctx):
+            if len(bars_so_far) != 1:
+                return None
+            last = bars_so_far[-1]
+            return Signal(symbol=last.symbol, variant_name="", strategy="maker_fire",
+                          side="buy", bar_timestamp=last.timestamp,
+                          price_at_signal=last.close, reasoning={})
+
+        signals.STRATEGY_REGISTRY["maker_fire"] = fire_on_first_bar
+        try:
+            variant = {"strategy": "maker_fire", "params": kwargs.pop("params", {}),
+                       "context_keys": [], "enabled": True}
+            with db.connect(tmp_db) as conn:
+                return replay.replay_variant(
+                    conn, "maker_fire_v", variant, ["BTC/USD"],
+                    self.BASE - timedelta(minutes=1),
+                    self.BASE + timedelta(hours=6),
+                    fee_pct=0.0025, slippage_pct=0.0005,
+                    fill_model="maker", **kwargs,
+                )
+        finally:
+            del signals.STRATEGY_REGISTRY["maker_fire"]
+
+    def test_entry_fills_on_trade_through_at_limit_price(self, tmp_db: Path) -> None:
+        bars = [
+            self._bar(0, 100, 100.5, 99.8, 100.0),   # signal bar: limit rests at 100
+            self._bar(1, 100.2, 100.4, 99.5, 100.1),  # low 99.5 < 100 → fills
+            self._bar(2, 100.1, 106.0, 100.0, 105.5),  # high 106 > tp 105 → maker tp
+        ]
+        trades = self._run(tmp_db, bars, params={"tp": 0.05, "sl": 0.03})
+        assert len(trades) == 1
+        t = trades[0]
+        assert t.entry_price == 100.0  # limit price, no slippage
+        assert t.entry_bar_timestamp == bars[1].timestamp  # fill bar, not signal+1 open
+        assert t.exit_reason == "take_profit"
+        assert t.exit_price == pytest.approx(105.0)  # no exit slippage on maker tp
+        qty = 200.0 / 100.0
+        assert t.fees_usd == pytest.approx((100.0 * 0.0015 + 105.0 * 0.0015) * qty)
+
+    def test_unfilled_limit_drops_the_signal(self, tmp_db: Path) -> None:
+        bars = [self._bar(0, 100, 100.5, 99.8, 100.0)] + [
+            self._bar(i, 101, 102, 100.2, 101) for i in range(1, 8)  # never below 100
+        ]
+        trades = self._run(tmp_db, bars, limit_fill_timeout_bars=5)
+        assert trades == []
+
+    def test_touch_without_trade_through_does_not_fill(self, tmp_db: Path) -> None:
+        bars = [self._bar(0, 100, 100.5, 99.8, 100.0)] + [
+            self._bar(i, 101, 102, 100.0, 101) for i in range(1, 8)  # low == 100 exactly
+        ]
+        trades = self._run(tmp_db, bars, limit_fill_timeout_bars=5)
+        assert trades == []
+
+    def test_stop_loss_exit_stays_taker_with_slippage(self, tmp_db: Path) -> None:
+        bars = [
+            self._bar(0, 100, 100.5, 99.8, 100.0),
+            self._bar(1, 100.2, 100.4, 99.5, 100.1),   # fills at 100
+            self._bar(2, 99.0, 99.2, 96.5, 96.8),      # low 96.5 <= sl 97 → stop
+        ]
+        trades = self._run(tmp_db, bars, params={"tp": 0.05, "sl": 0.03})
+        assert len(trades) == 1
+        t = trades[0]
+        assert t.exit_reason == "stop_loss"
+        expected_exit = 97.0 * (1.0 - 0.0005)  # slippage against a sell exit
+        assert t.exit_price == pytest.approx(expected_exit)
+        qty = 200.0 / 100.0
+        assert t.fees_usd == pytest.approx(
+            (100.0 * 0.0015 + expected_exit * 0.0025) * qty
+        )

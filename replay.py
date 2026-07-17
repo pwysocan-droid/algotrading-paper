@@ -24,6 +24,8 @@ from typing import Any
 import db
 from config import (
     BAR_TIMEFRAME_MINUTES,
+    LIMIT_FILL_TIMEOUT_BARS,
+    MAKER_FEE_PCT,
     MAX_CONCURRENT_POSITIONS,
     MAX_POSITION_USD,
     MAX_TOTAL_EXPOSURE_USD,
@@ -122,11 +124,16 @@ def simulate_exit(
     take_profit_pct: float = TAKE_PROFIT_PCT,
     stop_loss_pct: float = STOP_LOSS_PCT,
     time_exit_hours: int = TIME_EXIT_HOURS,
+    tp_requires_trade_through: bool = False,
 ) -> tuple[str | None, float | None, str | None]:
     """Walk forward through bars, return (exit_bar_ts, exit_price, exit_reason).
 
     Conservative simulation: if a bar's high crosses take-profit and low
     crosses stop-loss, assume stop-loss hit first (worst-case for the trade).
+
+    tp_requires_trade_through: a resting limit at the take-profit price only
+    fills if price trades strictly THROUGH it (maker fill model); a touch at
+    exactly tp may leave the order unfilled in the queue.
     """
     if not bars_after_entry:
         return (None, None, None)
@@ -151,10 +158,10 @@ def simulate_exit(
             bar_ts = bar_ts.replace(tzinfo=timezone.utc)
         if side == "buy":
             sl_hit = bar.low <= sl
-            tp_hit = bar.high >= tp
+            tp_hit = bar.high > tp if tp_requires_trade_through else bar.high >= tp
         else:
             sl_hit = bar.high >= sl
-            tp_hit = bar.low <= tp
+            tp_hit = bar.low < tp if tp_requires_trade_through else bar.low <= tp
 
         if sl_hit and tp_hit:
             return (bar.timestamp, sl, "stop_loss")
@@ -180,6 +187,9 @@ def replay_variant(
     fee_pct: float = 0.0,
     slippage_pct: float = 0.0,
     window_cap: int = 400,
+    fill_model: str = "taker",
+    maker_fee_pct: float = MAKER_FEE_PCT,
+    limit_fill_timeout_bars: int = LIMIT_FILL_TIMEOUT_BARS,
 ) -> list[SimulatedTrade]:
     """Run a strategy variant in backtest mode over [start, end].
 
@@ -196,6 +206,15 @@ def replay_variant(
     fee_pct/slippage_pct default to 0.0 so callers that test signal timing
     (e.g. the look-ahead-bias guard) get exact bar-open prices unless they
     opt in. run_replay passes the real config values explicitly.
+
+    fill_model='maker' models limit-order entries (the cost lever): a limit
+    rests at the signal bar's CLOSE and fills only if a bar within
+    limit_fill_timeout_bars trades strictly through it — otherwise the
+    signal expires unfilled and is dropped. Filled legs pay maker_fee_pct
+    and zero slippage. Take-profit exits are also resting limits (maker,
+    trade-through required); stop-loss and time exits remain market orders
+    (taker fee + slippage). Conservative by construction: no price
+    improvement, touch-without-trade-through never fills.
 
     Portfolio constraints (cooldown, exposure, concurrent-position caps) are
     NOT applied here — this produces unconstrained candidate trades for one
@@ -279,26 +298,50 @@ def replay_variant(
             sig: Signal | None = fn(window, params, ctx)
             if sig is None:
                 continue
-            entry_bar = bars[i + 1]
-            entry_price = _apply_slippage(entry_bar.open, sig.side, "entry", slippage_pct)
+            if fill_model == "maker":
+                limit_px = bars[i].close
+                fill_i = None
+                for j in range(i + 1, min(i + 1 + limit_fill_timeout_bars, len(bars))):
+                    traded_through = (
+                        bars[j].low < limit_px if sig.side == "buy"
+                        else bars[j].high > limit_px
+                    )
+                    if traded_through:
+                        fill_i = j
+                        break
+                if fill_i is None:
+                    continue  # limit expired unfilled — the cost of being maker
+                entry_bar = bars[fill_i]
+                entry_price = limit_px
+                entry_fee_pct = maker_fee_pct
+                forward = bars[fill_i + 1:]
+            else:
+                entry_bar = bars[i + 1]
+                entry_price = _apply_slippage(entry_bar.open, sig.side, "entry", slippage_pct)
+                entry_fee_pct = fee_pct
+                forward = bars[i + 2 :]
             qty = position_usd / entry_price
-            forward = bars[i + 2 :]
             exit_ts, raw_exit_price, exit_reason = simulate_exit(
                 forward, entry_price=entry_price, side=sig.side,
                 take_profit_pct=float(params.get("tp", TAKE_PROFIT_PCT)),
                 stop_loss_pct=float(params.get("sl", STOP_LOSS_PCT)),
                 time_exit_hours=int(params.get("time_exit_hours", TIME_EXIT_HOURS)),
+                tp_requires_trade_through=(fill_model == "maker"),
             )
-            exit_price = (
-                _apply_slippage(raw_exit_price, sig.side, "exit", slippage_pct)
-                if raw_exit_price is not None
-                else None
-            )
+            if raw_exit_price is None:
+                exit_price = None
+                exit_fee_pct = fee_pct
+            elif fill_model == "maker" and exit_reason == "take_profit":
+                exit_price = raw_exit_price  # resting limit: maker, no slippage
+                exit_fee_pct = maker_fee_pct
+            else:
+                exit_price = _apply_slippage(raw_exit_price, sig.side, "exit", slippage_pct)
+                exit_fee_pct = fee_pct
             pnl_usd: float | None = None
             pnl_pct: float | None = None
             fees_usd = 0.0
             if exit_price is not None:
-                fees_usd = (entry_price + exit_price) * qty * fee_pct
+                fees_usd = (entry_price * entry_fee_pct + exit_price * exit_fee_pct) * qty
                 if sig.side == "buy":
                     gross = (exit_price - entry_price) * qty
                     pnl_pct = (exit_price / entry_price - 1.0) * 100.0

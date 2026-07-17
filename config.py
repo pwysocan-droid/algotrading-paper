@@ -38,6 +38,16 @@ SYMBOL_COOLDOWN_HOURS: int = 1
 TAKER_FEE_PCT: float = 0.0025
 SLIPPAGE_PCT: float = 0.0005
 
+# Maker/limit fill model (the cost lever — decision-log 2026-07-17 "The
+# levers are the strategy"). Alpaca crypto base fee tier is 0.15% maker /
+# 0.25% taker. A maker fill pays no slippage (it IS the resting liquidity)
+# but carries fill risk: replay models entries as a limit at the signal
+# bar's close that must be traded THROUGH (strictly) within the timeout
+# window or the signal expires unfilled. Backtest-only until validated;
+# live execution still sends market orders.
+MAKER_FEE_PCT: float = 0.0015
+LIMIT_FILL_TIMEOUT_BARS: int = 12  # 1 hour of 5-min bars
+
 ALPACA_PAPER_BASE_URL: str = "https://paper-api.alpaca.markets"
 ALPACA_DATA_BASE_URL: str = "https://data.alpaca.markets"
 
