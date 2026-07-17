@@ -1,7 +1,7 @@
 {
   "summary": {
-    "due_7d": 1,
-    "due_14d": 2,
+    "due_7d": 3,
+    "due_14d": 4,
     "open": 8,
     "done_this_week": 0
   },
@@ -126,6 +126,24 @@
       "when_class": "open",
       "thing": "Model routing per LLM role",
       "detail": "Haiku 4.5 nightly skeptic · frontier model for Friday review + synthesis · CLAUDE_MODEL env on VPS",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Close the seam — autonomous foundry",
+      "when": "2d",
+      "when_class": "urgent",
+      "thing": "Close the seam — autonomous foundry",
+      "detail": "decision-log 2026-07-17 spec · cloud agent (implement+epitaphs) + VPS cron conditions (synthesis+gauntlet) + escalating survival bar · FIRST TASK next session",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Wire the digest email",
+      "when": "2d",
+      "when_class": "urgent",
+      "thing": "Wire the digest email",
+      "detail": "Gmail connector authorized · read reports/digest-*.md, send · trivial once tools load in a fresh session",
       "kind": "build",
       "promoted": false
     }

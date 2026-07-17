@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-17T01:15:05Z
+2026-07-17T01:20:05Z
 
 7 surfaces tracked
 
@@ -17,7 +17,7 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [decision-log.md](decision-log.md) | 2026-07-16T23:50:15Z | The idea foundry — the aggres… |
+| [decision-log.md](decision-log.md) | 2026-07-17T01:15:22Z | Close the seam — spec committ… |
 | [philosophy.md](philosophy.md) | 2026-07-02T20:25:50Z | Merge the adaptation-ladder a… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
