@@ -55,7 +55,17 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "dead_zone_range_break", "volume_thrust_regime_shift",
         "weekend_illiquidity_momentum",
     }
-    assert set(STRATEGY_VARIANTS.keys()) == retired | candidates | {"null_baseline"}
+    foundry_001 = {
+        "entropy_collapse_impulse", "omori_aftershock_ladder",
+        "failed_auction_rejection_wick", "round_number_overshoot_snap",
+        "drawdown_regime_contrarian_gate",
+    }
+    assert set(STRATEGY_VARIANTS.keys()) == (
+        retired | candidates | foundry_001 | {"null_baseline"}
+    )
+    assert all(
+        STRATEGY_VARIANTS[n].get("enabled") is False for n in foundry_001
+    ), "foundry round-001 stays disabled pending the multi-year gauntlet"
 
     # The live roster: null placebo + the gauntlet's top 2 as A/B arms
     # (reports/gauntlet-2026-07-16.md; decision-log 2026-07-16). Not a
@@ -491,3 +501,128 @@ class TestWeekendMomentum:
 def test_all_candidates_registered() -> None:
     for key in ("cascade_reclaim", "btc_lag", "deadzone_break", "vol_thrust", "weekend_momentum"):
         assert key in signals.STRATEGY_REGISTRY
+
+
+# --- Foundry round 001 (smoke + gate tests) ----------------------------------
+
+
+class TestFoundryRound001:
+    def test_all_registered(self) -> None:
+        for key in ("entropy_impulse", "omori_aftershock", "auction_wick",
+                    "round_number_snap", "regime_gate_breakout"):
+            assert key in signals.STRATEGY_REGISTRY
+
+    def test_insufficient_bars_all_return_none(self) -> None:
+        bars = _flat_series("BTC/USD", 30)
+        ctx = {"system_state": {"null_win_rate": 0.2, "recent_stopouts": 0}}
+        assert signals.entropy_collapse_impulse(bars, {}, {}) is None
+        assert signals.omori_aftershock_ladder(bars, {}, {}) is None
+        assert signals.failed_auction_rejection_wick(bars, {}, {}) is None
+        assert signals.round_number_overshoot_snap(bars, {}, {}) is None
+        assert signals.drawdown_regime_contrarian_gate(bars, {}, ctx) is None
+
+    def test_flat_series_no_fires(self) -> None:
+        bars = _flat_series("ETH/USD", 500)
+        ctx = {"system_state": {"null_win_rate": 0.2, "recent_stopouts": 0}}
+        assert signals.entropy_collapse_impulse(bars, {}, {}) is None
+        assert signals.omori_aftershock_ladder(bars, {}, {}) is None
+        assert signals.failed_auction_rejection_wick(bars, {}, {}) is None
+        assert signals.round_number_overshoot_snap(bars, {}, {}) is None
+        assert signals.drawdown_regime_contrarian_gate(bars, {}, ctx) is None
+
+    def _breakout_bars(self) -> list[BarRow]:
+        bars = _flat_series("SOL/USD", 100, price=100.0, vol=100.0)
+        last = bars[-1]
+        bars[-1] = _bar(last.symbol, last.timestamp, 100.0, 103.2, 99.9, 103.0, 300.0)
+        return bars
+
+    def test_regime_gate_fires_only_when_gate_open(self) -> None:
+        bars = self._breakout_bars()
+        open_gate = {"system_state": {"null_win_rate": 0.20, "recent_stopouts": 0}}
+        sig = signals.drawdown_regime_contrarian_gate(bars, {}, open_gate)
+        assert sig is not None and sig.side == "buy"
+
+    def test_regime_gate_suppressed_when_null_winning(self) -> None:
+        bars = self._breakout_bars()
+        shut = {"system_state": {"null_win_rate": 0.50, "recent_stopouts": 0}}
+        assert signals.drawdown_regime_contrarian_gate(bars, {}, shut) is None
+
+    def test_regime_gate_suppressed_in_drawdown_cluster(self) -> None:
+        bars = self._breakout_bars()
+        shut = {"system_state": {"null_win_rate": 0.20, "recent_stopouts": 3}}
+        assert signals.drawdown_regime_contrarian_gate(bars, {}, shut) is None
+
+    def test_regime_gate_none_without_context(self) -> None:
+        assert signals.drawdown_regime_contrarian_gate(self._breakout_bars(), {}, {}) is None
+
+    def test_round_number_snap_up_spike_rejected(self) -> None:
+        # SOL grid = $10. Spike through 110 to 110.6 (0.55% overshoot), close back at 109.5
+        bars = _flat_series("SOL/USD", 100, price=108.0, vol=100.0)
+        last = bars[-1]
+        bars[-1] = _bar(last.symbol, last.timestamp, 109.0, 110.6, 108.9, 109.5, 300.0)
+        sig = signals.round_number_overshoot_snap(bars, {}, {})
+        assert sig is not None and sig.side == "sell"
+
+    def test_round_number_snap_needs_fresh_level(self) -> None:
+        bars = _flat_series("SOL/USD", 100, price=108.0, vol=100.0)
+        # a prior bar already straddles 110 → level not fresh
+        b = bars[-10]
+        bars[-10] = _bar(b.symbol, b.timestamp, 109.9, 110.2, 109.8, 109.9, 100.0)
+        last = bars[-1]
+        bars[-1] = _bar(last.symbol, last.timestamp, 109.0, 110.6, 108.9, 109.5, 300.0)
+        assert signals.round_number_overshoot_snap(bars, {}, {}) is None
+
+    def test_auction_wick_short_on_rejected_fresh_high(self) -> None:
+        bars = _flat_series("LINK/USD", 100, price=100.0, vol=100.0)
+        last = bars[-1]
+        # fresh high 103, huge upper wick, close back INSIDE the prior
+        # range (prior high ~100.01)
+        bars[-1] = _bar(last.symbol, last.timestamp, 100.05, 103.0, 99.95, 100.0, 300.0)
+        sig = signals.failed_auction_rejection_wick(bars, {}, {})
+        assert sig is not None and sig.side == "sell"
+
+    def test_omori_continuation_fires(self) -> None:
+        bars = _flat_series("AVAX/USD", 200, price=100.0, vol=100.0)
+        # gentle noise so sigma is small but nonzero
+        for i in range(50, 190):
+            b = bars[i]
+            px = 100.0 + (0.02 if i % 2 else -0.02)
+            bars[i] = _bar(b.symbol, b.timestamp, 100.0, px + 0.05, px - 0.05, px, 100.0)
+        # mainshock at -3: +4% bar on 5x volume
+        b = bars[-3]
+        bars[-3] = _bar(b.symbol, b.timestamp, 100.0, 104.2, 99.9, 104.0, 500.0)
+        # aftershock continuation: closes beyond mainshock close on elevated volume
+        b = bars[-2]
+        bars[-2] = _bar(b.symbol, b.timestamp, 104.0, 104.6, 103.8, 104.4, 200.0)
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 104.4, 105.1, 104.2, 104.9, 200.0)
+        sig = signals.omori_aftershock_ladder(bars, {}, {})
+        assert sig is not None and sig.side == "buy"
+
+
+def test_load_system_state_from_trades(tmp_db: Path) -> None:
+    with db.connect(tmp_db) as conn:
+        for i, (variant, pnl, reason) in enumerate([
+            ("null_baseline", -2.0, "stop_loss"),
+            ("null_baseline", -1.0, "time_exit"),
+            ("null_baseline", 3.0, "take_profit"),
+            ("other_arm", -2.0, "stop_loss"),
+        ]):
+            conn.execute(
+                "INSERT INTO signals (symbol, variant_name, strategy, side, bar_timestamp,"
+                " price_at_signal, reasoning_json, emitted_at)"
+                " VALUES ('BTC/USD', ?, 's', 'buy', ?, 100.0, '{}', 't')",
+                (variant, f"2026-07-16T0{i}:00:00+00:00"),
+            )
+            conn.execute(
+                "INSERT INTO trades (signal_id, variant_name, symbol, side, qty, entry_price,"
+                " entry_time, exit_time, exit_reason, pnl_usd, is_real_money, status)"
+                " VALUES (?, ?, 'BTC/USD', 'buy', 1.0, 100.0, ?, ?, ?, ?, 0, 'closed')",
+                (i + 1, variant, f"2026-07-16T0{i}:00:00+00:00",
+                 f"2026-07-16T1{i}:00:00+00:00", reason, pnl),
+            )
+        state = signals.load_system_state(
+            conn, now=datetime(2026, 7, 16, 20, 0, tzinfo=timezone.utc)
+        )
+    assert state["null_win_rate"] == pytest.approx(1 / 3)
+    assert state["recent_stopouts"] == 2  # null + other_arm stop-outs both count

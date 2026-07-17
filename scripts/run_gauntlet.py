@@ -120,10 +120,19 @@ def render_report(results: list[dict], days: int, now: datetime | None = None) -
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the candidate gauntlet")
     parser.add_argument("--days", type=int, default=180)
+    parser.add_argument("--db", type=Path, default=None,
+                        help="alternate bars database (e.g. research_bars.db)")
+    parser.add_argument("--names", default=None,
+                        help="comma-separated variant names (default: the synthesis candidates)")
     args = parser.parse_args()
 
-    db.migrate()
-    results = run_gauntlet(days=args.days)
+    if args.names:
+        global CANDIDATES
+        CANDIDATES = [n.strip() for n in args.names.split(",") if n.strip()]
+
+    if args.db is None:
+        db.migrate()
+    results = run_gauntlet(days=args.days, db_path=args.db)
     report = render_report(results, args.days)
     out = Path(__file__).resolve().parent.parent / "reports" / (
         f"gauntlet-{datetime.now(timezone.utc).date().isoformat()}.md"

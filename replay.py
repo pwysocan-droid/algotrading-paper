@@ -179,8 +179,15 @@ def replay_variant(
     position_usd: float = MAX_POSITION_USD,
     fee_pct: float = 0.0,
     slippage_pct: float = 0.0,
+    window_cap: int = 400,
 ) -> list[SimulatedTrade]:
     """Run a strategy variant in backtest mode over [start, end].
+
+    window_cap bounds the per-step bar window handed to the strategy
+    (matching live, where load_recent_bars caps at ~200-300). Without it
+    the growing bars[:i+1] slice makes multi-year replays O(n^2). 400
+    trailing bars exceeds every registered strategy's deepest lookback
+    (344 for entropy_collapse_impulse).
 
     Look-ahead-bias guard: for a signal generated at bar N's close, the entry
     price is the OPEN of bar N+1, not bar N's close. If bar N is the last bar
@@ -204,14 +211,56 @@ def replay_variant(
     # Cross-symbol context (context_keys=['btc_bars']): preload BTC bars
     # once; per step, slice to timestamps <= the signal bar's timestamp so
     # the look-ahead guard holds for the context series too.
+    import bisect
+
     wants_btc = "btc_bars" in variant.get("context_keys", [])
     btc_bars: list[BarRow] = []
     btc_ts: list[str] = []
     if wants_btc:
-        import bisect
-
         btc_bars = load_bars_in_range(conn, "BTC/USD", start, end)
         btc_ts = [b.timestamp for b in btc_bars]
+
+    # Meta context (context_keys=['system_state']): simulate the null
+    # arm's constrained trades over the same window once (deterministic,
+    # so reproducible), then serve trailing-24h win rate / stop-outs per
+    # step. Backtest approximation of live load_system_state(), where
+    # "portfolio stop-outs" reduce to the null arm's own — documented.
+    wants_state = "system_state" in variant.get("context_keys", [])
+    null_exits: list[tuple[str, bool, bool]] = []  # (exit_ts, win, stop)
+    null_exit_ts: list[str] = []
+    if wants_state:
+        from config import STRATEGY_VARIANTS as _ALL
+
+        null_variant = dict(_ALL["null_baseline"])
+        null_variant["enabled"] = True
+        null_trades = replay_variant(
+            conn, "null_baseline", null_variant, symbols, start, end,
+            position_usd=position_usd, fee_pct=fee_pct, slippage_pct=slippage_pct,
+        )
+        null_trades = apply_portfolio_constraints(null_trades)
+        closed = [
+            t for t in null_trades
+            if t.accepted and t.exit_bar_timestamp and t.pnl_usd is not None
+        ]
+        closed.sort(key=lambda t: t.exit_bar_timestamp)
+        null_exits = [
+            (t.exit_bar_timestamp, t.pnl_usd > 0, t.exit_reason == "stop_loss")
+            for t in closed
+        ]
+        null_exit_ts = [e[0] for e in null_exits]
+
+    def _state_at(ts_str: str) -> dict[str, Any]:
+        hi = bisect.bisect_right(null_exit_ts, ts_str)
+        cutoff = (_parse_ts(ts_str) - timedelta(hours=24)).isoformat()
+        lo = bisect.bisect_left(null_exit_ts, cutoff)
+        window_exits = null_exits[lo:hi]
+        closed_n = len(window_exits)
+        wins = sum(1 for _, w, _s in window_exits if w)
+        stops = sum(1 for _, _w, s in window_exits if s)
+        return {
+            "null_win_rate": (wins / closed_n) if closed_n else None,
+            "recent_stopouts": stops,
+        }
 
     out: list[SimulatedTrade] = []
     for symbol in symbols:
@@ -219,13 +268,14 @@ def replay_variant(
         if len(bars) < 2:
             continue
         for i in range(len(bars) - 1):
-            window = bars[: i + 1]
+            lo = max(0, i + 1 - window_cap) if window_cap else 0
+            window = bars[lo: i + 1]
             ctx: dict[str, Any] = {}
             if wants_btc:
-                import bisect
-
                 cut = bisect.bisect_right(btc_ts, window[-1].timestamp)
                 ctx["btc_bars"] = btc_bars[:cut]
+            if wants_state:
+                ctx["system_state"] = _state_at(window[-1].timestamp)
             sig: Signal | None = fn(window, params, ctx)
             if sig is None:
                 continue

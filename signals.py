@@ -17,7 +17,7 @@ import math
 import sqlite3
 import statistics
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -438,6 +438,312 @@ def weekend_illiquidity_momentum(
     )
 
 
+# ── Foundry round 001 (reviews/foundry/round-001.md) ────────────────────
+# Implemented from the round specs. Documented approximations are noted
+# per strategy; per-coil/per-event dedup leans on the platform's 1h
+# cooldown as with the earlier candidates.
+
+
+_ENTROPY_CACHE: dict[tuple[str, str], float] = {}
+
+
+def _entropy_at(bars: list[BarRow], idx: int, n_bins: int = 5,
+                sym_window: int = 48, ent_window: int = 24) -> float | None:
+    """Shannon entropy (bits) of the 5-bin return-symbol distribution over
+    the ent_window returns ending at bars[idx]. Cached by (symbol, ts) —
+    each bar's H is computed once per process, which keeps the rolling-
+    percentile scan tractable over multi-year replays."""
+    key = (bars[idx].symbol, bars[idx].timestamp)
+    if key in _ENTROPY_CACHE:
+        return _ENTROPY_CACHE[key]
+    if idx + 1 < sym_window + 1:
+        return None
+    window = bars[idx + 1 - sym_window: idx + 1]
+    rets = [
+        math.log(window[i].close / window[i - 1].close)
+        for i in range(1, len(window)) if window[i - 1].close > 0
+    ]
+    if len(rets) < ent_window:
+        return None
+    mags = sorted(abs(r) for r in rets)
+    t1 = mags[len(mags) // 3]
+    t2 = mags[2 * len(mags) // 3]
+
+    def symbol(r: float) -> int:
+        a = abs(r)
+        if a <= t1:
+            return 2  # flat-ish
+        big = a > t2
+        if r > 0:
+            return 4 if big else 3
+        return 0 if big else 1
+
+    tail = rets[-ent_window:]
+    counts: dict[int, int] = {}
+    for r in tail:
+        s = symbol(r)
+        counts[s] = counts.get(s, 0) + 1
+    h = -sum((c / ent_window) * math.log2(c / ent_window) for c in counts.values())
+    _ENTROPY_CACHE[key] = h
+    return h
+
+
+def entropy_collapse_impulse(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-001 idea 1. Approximations vs spec, documented: the 15th-
+    percentile test uses a linear count against the trailing hist_window
+    H values (no sort), the same threshold is applied to all coil_min_bars
+    bars, and one-entry-per-coil is enforced by requiring the previous bar
+    not to have been a qualifying surprise (plus the platform cooldown)."""
+    ent_window = int(params.get("entropy_window", 24))
+    pctile = float(params.get("coil_percentile", 15))
+    coil_min = int(params.get("coil_min_bars", 6))
+    sigma_mult = float(params.get("surprise_sigma", 2.5))
+    hist = int(params.get("hist_window", 288))
+
+    need = hist + coil_min + 48 + 2
+    if len(bars) < need:
+        return None
+    last_i = len(bars) - 1
+
+    h_hist = []
+    for k in range(hist):
+        h = _entropy_at(bars, last_i - 1 - coil_min - k)
+        if h is None:
+            return None
+        h_hist.append(h)
+    cut_rank = int(len(h_hist) * pctile / 100)
+
+    def below_threshold(h_val: float) -> bool:
+        return sum(1 for x in h_hist if x < h_val) < cut_rank
+
+    for j in range(1, coil_min + 1):  # bars[-2] .. bars[-1-coil_min]
+        h = _entropy_at(bars, last_i - j)
+        if h is None or not below_threshold(h):
+            return None
+
+    rets = [
+        math.log(bars[i].close / bars[i - 1].close)
+        for i in range(last_i - ent_window + 1, last_i + 1)
+        if bars[i - 1].close > 0
+    ]
+    if len(rets) < 2:
+        return None
+    prior = rets[:-1]
+    mu = sum(prior) / len(prior)
+    sd = math.sqrt(sum((r - mu) ** 2 for r in prior) / len(prior))
+    if sd == 0:
+        return None
+    r_t = rets[-1]
+    if abs(r_t) <= sigma_mult * sd:
+        return None
+    # one-entry-per-coil dedup: previous bar must not already have surprised
+    if len(rets) >= 3 and abs(rets[-2]) > sigma_mult * sd:
+        return None
+
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="entropy_impulse",
+        side="buy" if r_t > 0 else "sell",
+        bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"r_t": r_t, "sigma": sd},
+    )
+
+
+def omori_aftershock_ladder(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-001 idea 2 — trade WITH the mainshock during its aftershock
+    decay window, unless the window already retraced (exhaustion)."""
+    ms_sigma = float(params.get("mainshock_sigma", 4.0))
+    ms_vol = float(params.get("mainshock_vol_mult", 3.0))
+    std_w = int(params.get("std_window", 96))
+    after_w = int(params.get("aftershock_window", 12))
+    retrace_pct = float(params.get("retrace_skip_pct", 50)) / 100.0
+    vol_w = int(params.get("aftershock_vol_window", 24))
+
+    if len(bars) < std_w + after_w + 2:
+        return None
+    last = bars[-1]
+
+    for k in range(2, after_w + 2):  # mainshock strictly before the latest bar
+        i = len(bars) - k
+        ms = bars[i]
+        prev = bars[i - 1]
+        if prev.close <= 0 or ms.close <= 0:
+            continue
+        base = bars[i - std_w: i]
+        if len(base) < std_w:
+            break
+        rets = [
+            math.log(base[j].close / base[j - 1].close)
+            for j in range(1, len(base)) if base[j - 1].close > 0
+        ]
+        sd = statistics.pstdev(rets) if len(rets) > 1 else 0.0
+        med_vol = statistics.median(b.volume for b in base)
+        if sd == 0 or med_vol <= 0:
+            continue
+        r_ms = math.log(ms.close / prev.close)
+        if abs(r_ms) <= ms_sigma * sd or ms.volume <= ms_vol * med_vol:
+            continue
+        direction = 1 if r_ms > 0 else -1
+        ms_range = ms.high - ms.low
+        if ms_range <= 0:
+            continue
+        after = bars[i + 1:]
+        if direction > 0:
+            worst = min((b.low for b in after), default=ms.close)
+            retraced = (ms.close - worst) > retrace_pct * ms_range
+            beyond = last.close > ms.close
+        else:
+            worst = max((b.high for b in after), default=ms.close)
+            retraced = (worst - ms.close) > retrace_pct * ms_range
+            beyond = last.close < ms.close
+        recent_med = statistics.median(b.volume for b in bars[-vol_w:])
+        if retraced or not beyond or last.volume <= recent_med:
+            continue
+        return Signal(
+            symbol=last.symbol, variant_name="", strategy="omori_aftershock",
+            side="buy" if direction > 0 else "sell",
+            bar_timestamp=last.timestamp, price_at_signal=last.close,
+            reasoning={"mainshock_ts": ms.timestamp, "r_ms": r_ms},
+        )
+    return None
+
+
+def failed_auction_rejection_wick(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-001 idea 3 — fresh-extreme, high-volume rejection bar; trade
+    the trapped side's forced cover away from the rejected extreme."""
+    ext_w = int(params.get("extreme_window", 48))
+    wick_body = float(params.get("wick_body_mult", 2.0))
+    wick_frac = float(params.get("wick_range_frac", 0.6))
+    vol_mult = float(params.get("vol_mult", 2.5))
+
+    if len(bars) < ext_w + 2:
+        return None
+    rej = bars[-1]
+    prior = bars[-1 - ext_w: -1]
+    rng = rej.high - rej.low
+    body = abs(rej.close - rej.open)
+    if rng <= 0:
+        return None
+    med_vol = statistics.median(b.volume for b in prior)
+    if med_vol <= 0 or rej.volume <= vol_mult * med_vol:
+        return None
+    prior_high = max(b.high for b in prior)
+    prior_low = min(b.low for b in prior)
+
+    upper_wick = rej.high - max(rej.open, rej.close)
+    lower_wick = min(rej.open, rej.close) - rej.low
+
+    if (rej.high > prior_high and upper_wick >= wick_body * body
+            and upper_wick >= wick_frac * rng and rej.close < prior_high):
+        side = "sell"
+    elif (rej.low < prior_low and lower_wick >= wick_body * body
+            and lower_wick >= wick_frac * rng and rej.close > prior_low):
+        side = "buy"
+    else:
+        return None
+    return Signal(
+        symbol=rej.symbol, variant_name="", strategy="auction_wick",
+        side=side, bar_timestamp=rej.timestamp, price_at_signal=rej.close,
+        reasoning={"upper_wick": upper_wick, "lower_wick": lower_wick, "range": rng},
+    )
+
+
+def round_number_overshoot_snap(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-001 idea 4 — stop-hunt overshoot through a fresh round level,
+    rejected within the bar; enter the reversion."""
+    over_frac = float(params.get("overshoot_frac", 0.004))
+    vol_mult = float(params.get("vol_mult", 2.0))
+    vol_w = int(params.get("vol_window", 48))
+    fresh_w = int(params.get("fresh_level_window", 24))
+
+    if len(bars) < max(vol_w, fresh_w) + 2:
+        return None
+    last = bars[-1]
+    if last.symbol.startswith("BTC"):
+        grid = 1000.0
+    elif last.symbol.startswith("ETH"):
+        grid = 100.0
+    else:
+        grid = 10.0
+
+    med_vol = statistics.median(b.volume for b in bars[-1 - vol_w: -1])
+    if med_vol <= 0 or last.volume <= vol_mult * med_vol:
+        return None
+
+    lo_level = math.floor(last.low / grid) * grid
+    for level in (lo_level + grid * k for k in range(0, 3)):
+        if not (last.low < level < last.high):
+            continue
+        opened_below = last.open < level
+        closed_below = last.close < level
+        if opened_below and closed_below and (last.high - level) >= over_frac * level:
+            side = "sell"  # up-spike through level, rejected back down
+        elif not opened_below and not closed_below and (level - last.low) >= over_frac * level:
+            side = "buy"  # down-spike through level, rejected back up
+        else:
+            continue
+        fresh = all(
+            not (b.low < level < b.high) for b in bars[-1 - fresh_w: -1]
+        )
+        if not fresh:
+            continue
+        return Signal(
+            symbol=last.symbol, variant_name="", strategy="round_number_snap",
+            side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+            reasoning={"level": level, "grid": grid},
+        )
+    return None
+
+
+def drawdown_regime_contrarian_gate(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-001 idea 5 — the system observing itself: a 24-bar breakout
+    armed ONLY when context['system_state'] says the null arm is failing
+    (directional regime) and the portfolio isn't in a stop-out cluster.
+    Returns None without the context feed rather than guess."""
+    brk_w = int(params.get("breakout_window", 24))
+    vol_mult = float(params.get("vol_mult", 1.5))
+    vol_w = int(params.get("vol_window", 48))
+    gate_wr = float(params.get("null_winrate_gate", 0.35))
+    dd_max = int(params.get("drawdown_cluster_max", 2))
+
+    state = context.get("system_state")
+    if not state:
+        return None
+    wr = state.get("null_win_rate")
+    stopouts = state.get("recent_stopouts", 0)
+    if wr is None or wr >= gate_wr or stopouts >= dd_max:
+        return None
+
+    if len(bars) < max(brk_w, vol_w) + 2:
+        return None
+    last = bars[-1]
+    prior = bars[-1 - brk_w: -1]
+    med_vol = statistics.median(b.volume for b in bars[-1 - vol_w: -1])
+    if med_vol <= 0 or last.volume <= vol_mult * med_vol:
+        return None
+    if last.close > max(b.high for b in prior):
+        side = "buy"
+    elif last.close < min(b.low for b in prior):
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="regime_gate_breakout",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"null_win_rate": wr, "recent_stopouts": stopouts},
+    )
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
@@ -447,6 +753,11 @@ STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "deadzone_break": dead_zone_range_break,
     "vol_thrust": volume_thrust_regime_shift,
     "weekend_momentum": weekend_illiquidity_momentum,
+    "entropy_impulse": entropy_collapse_impulse,
+    "omori_aftershock": omori_aftershock_ladder,
+    "auction_wick": failed_auction_rejection_wick,
+    "round_number_snap": round_number_overshoot_snap,
+    "regime_gate_breakout": drawdown_regime_contrarian_gate,
 }
 
 
@@ -486,6 +797,38 @@ def load_recent_bars(
     ]
     bars.reverse()
     return bars
+
+
+def load_system_state(
+    conn: sqlite3.Connection, now: datetime | None = None, lookback_hours: int = 24
+) -> dict[str, Any]:
+    """The meta context feed (context_keys=['system_state']): the null
+    arm's realized win rate and the portfolio's stop-out count over the
+    trailing window — the system's own outcomes as a regime signal."""
+    ts = now or datetime.now(timezone.utc)
+    since = (ts - timedelta(hours=lookback_hours)).isoformat()
+    row = conn.execute(
+        """
+        SELECT SUM(CASE WHEN pnl_usd > 0 THEN 1 ELSE 0 END) AS wins,
+               COUNT(*) AS closed
+          FROM trades
+         WHERE variant_name = 'null_baseline' AND status = 'closed'
+           AND exit_time >= ?
+        """,
+        (since,),
+    ).fetchone()
+    wins, closed = row["wins"] or 0, row["closed"] or 0
+    stopouts = conn.execute(
+        """
+        SELECT COUNT(*) AS n FROM trades
+         WHERE status = 'closed' AND exit_reason = 'stop_loss' AND exit_time >= ?
+        """,
+        (since,),
+    ).fetchone()["n"]
+    return {
+        "null_win_rate": (wins / closed) if closed else None,
+        "recent_stopouts": stopouts,
+    }
 
 
 def _persist_signal(conn: sqlite3.Connection, sig: Signal) -> int:
@@ -530,6 +873,8 @@ def run_variant(
     # strategies the BTC window alongside the traded symbol's bars.
     if "btc_bars" in variant.get("context_keys", []) and "btc_bars" not in ctx:
         ctx["btc_bars"] = load_recent_bars(conn, "BTC/USD", limit=300)
+    if "system_state" in variant.get("context_keys", []) and "system_state" not in ctx:
+        ctx["system_state"] = load_system_state(conn)
 
     emitted: list[Signal] = []
     for symbol in symbols:

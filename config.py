@@ -225,4 +225,49 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "enabled": True,
         "phase_qualified": False,
     },
+    # ── Foundry round 001 (reviews/foundry/round-001.md) ────────────────
+    # Disabled: awaiting the multi-year gauntlet. Kill criteria in the
+    # round file; deaths get epitaphs in reviews/foundry/dead-ideas.json.
+    "entropy_collapse_impulse": {
+        "strategy": "entropy_impulse",
+        "params": {"entropy_window": 24, "coil_percentile": 15, "coil_min_bars": 6,
+                   "surprise_sigma": 2.5, "hist_window": 288, "n_bins": 5},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "omori_aftershock_ladder": {
+        "strategy": "omori_aftershock",
+        "params": {"mainshock_sigma": 4.0, "mainshock_vol_mult": 3.0, "std_window": 96,
+                   "aftershock_window": 12, "retrace_skip_pct": 50,
+                   "aftershock_vol_window": 24},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "failed_auction_rejection_wick": {
+        "strategy": "auction_wick",
+        "params": {"extreme_window": 48, "wick_body_mult": 2.0,
+                   "wick_range_frac": 0.6, "vol_mult": 2.5},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "round_number_overshoot_snap": {
+        "strategy": "round_number_snap",
+        "params": {"overshoot_frac": 0.004, "vol_mult": 2.0, "vol_window": 48,
+                   "fresh_level_window": 24},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "drawdown_regime_contrarian_gate": {
+        "strategy": "regime_gate_breakout",
+        "params": {"breakout_window": 24, "vol_mult": 1.5, "vol_window": 48,
+                   "null_lookback": 288, "null_winrate_gate": 0.35,
+                   "drawdown_cluster_max": 2},
+        "context_keys": ["system_state"],
+        "enabled": False,
+        "phase_qualified": False,
+    },
 }
