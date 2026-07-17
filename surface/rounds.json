@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-17T00:33:58.733667+00:00",
+  "generated_at": "2026-07-17T03:32:45.241343+00:00",
   "rounds": [
     {
       "round": 1,
@@ -30,6 +30,38 @@
           "name": "drawdown_regime_contrarian_gate",
           "lens": "meta_self_referential",
           "kill_criterion": "Dies if gated breakouts show no better net expectancy than un-gated ones \u2014 specifically if the difference in per-fire net expectancy between gate-open and gate-closed conditions is under +0.5%, proving the null-arm regime signal carries no exploitable information; or if armed-fire expectancy is itself below +0.3%/fire net of fees."
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "date": "2026-07-17",
+      "thesis": "This round attacks the r001 post-mortem head-on: every prior death was either a fade-shaped entry against an asymmetric exit, a signal traded at the wrong phase (entropy LEVEL not delta, seismic DECAY not growth), or the best-ever meta-gate wasted on a weak engine. So this round systematically inverts each dead polarity \u2014 trading conditional-entropy SURGES as continuation instead of low-entropy coils, importing epidemiology's GROWTH/ignition (R0>1) instead of seismology's decay, reading absorption-shelf BREAKS instead of wick fades, trading named expiry-pin RELEASES instead of generic coils \u2014 and executes the explicit r001 exploit prescription by mounting a strong signed-volume ignition engine behind the proven-informative system-saturation meta-gate. The unifying bet is that amplitude-per-fire, not frequency, is manufactured by entering at genuine phase transitions (information arrival, contagion ignition, liquidity exhaustion, mechanical-suppressor removal) where follow-through \u2014 not reversion \u2014 is the base case, which is the only shape the +5%/-3%/24h exit pays for.",
+      "ideas": [
+        {
+          "name": "conditional_entropy_regime_expansion",
+          "lens": "information_theory",
+          "kill_criterion": "Dies if net expectancy < +0.3%/trade OR if the continuation win rate after an entropy-jump bar is statistically indistinguishable from the null_baseline arm (i.e. the entropy delta carries no directional information beyond the vol filter alone \u2014 test by ablating the entropy term)."
+        },
+        {
+          "name": "epidemic_r0_crossover_ignition",
+          "lens": "cross_domain_import",
+          "kill_criterion": "Dies if net expectancy < +0.3%/trade OR if fires cluster so tightly under the 1h cooldown that effective sample < 30 in 6 months (starved like the dead lead-lag idea) OR if R0>1.5 crossings show no forward-return edge over the median-volume filter alone."
+        },
+        {
+          "name": "absorption_shelf_breakout",
+          "lens": "microstructure_from_ohlcv",
+          "kill_criterion": "Dies if net expectancy < +0.4%/trade OR if post-shelf breaks reverse back through the shelf (false breaks) more than 55% of the time, indicating the shelf is not absorption but distribution \u2014 measured directly as the fraction of fires that hit the -3% stop before +5%."
+        },
+        {
+          "name": "options_expiry_pin_release",
+          "lens": "behavioral_calendar",
+          "kill_criterion": "Dies if net expectancy < +0.4%/trade OR if post-08:00 breaks show no larger forward move than breaks at random non-expiry timestamps (i.e. the expiry timestamp carries no excess release energy \u2014 test by comparing to a placebo window at, say, 20:00 UTC)."
+        },
+        {
+          "name": "rejection_streak_gated_ignition",
+          "lens": "meta_self_referential",
+          "kill_criterion": "Dies if armed expectancy < +0.3%/trade (the exact bar its predecessor failed) OR if the gated engine shows no improvement over the ungated R0-ignition engine (idea 2) \u2014 i.e. the gate adds no lift, proving the self-referential regime signal does not concentrate amplitude."
         }
       ]
     }

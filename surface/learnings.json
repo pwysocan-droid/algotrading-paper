@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-16T22:05:13.349199+00:00",
-  "decision_log_sha256": "aabc87b510ac6bf8d0ad8f03c0bf35e7fdca26c4f9ee963963543dc42adff679",
+  "generated_at": "2026-07-17T03:32:10.169961+00:00",
+  "decision_log_sha256": "9dd77e0071c82324e62acba2b37ae9691aa8d70a1cad0d960199b6732f8a3494",
   "questions": [
     {
       "id": "fees-slippage",
@@ -49,161 +49,113 @@
   ],
   "learnings": [
     {
-      "claim": "GitHub Actions free-tier */5 cron on small/inactive public repos delivers ~24 runs/day (~3-5% of the documented 288/day), not the assumed 5-minute cadence.",
+      "claim": "GitHub Actions free-tier */5 cron on small/inactive public repos delivers only ~3-5% of scheduled invocations (~24/day vs assumed 288/day), not the documented cadence.",
       "status": "validated",
-      "evidence": "2026-05-18 GH cron cadence entry; confirmed by 2026-05-23 migration entry (69 of 1,712 expected = 4.0% invocation rate)",
+      "evidence": "2026-05-18 (GH cron cadence recalibration) and 2026-05-23 (69 of 1,712 expected = 4.0% invocation rate)",
       "next_check": null
     },
     {
-      "claim": "GitHub delays then drops scheduled triggers infrastructure-side (runs scatter across minutes-of-hour rather than clustering at multiples of 5), not because of a config error.",
+      "claim": "Migrating the cron to a Hetzner CX22 VPS delivers near-100% invocation reliability, satisfying the 95% uptime gate.",
       "status": "validated",
-      "evidence": "2026-05-23 migration entry, config audit clean and scatter diagnostic",
+      "evidence": "2026-07-02 (47-day gap entry: 11,490+ fetch commits every 5 min, zero gaps >1h, runs 84->11,574 all status='ok'; 95% uptime gate mechanically satisfied)",
       "next_check": null
     },
     {
-      "claim": "Migrating the cron to a Hetzner CX22 VPS running system cron makes the 95% uptime gate achievable as written without amending Phase 2 entry criteria.",
+      "claim": "Both base strategies (Bollinger mean-reversion and MA-crossover) lose money net of fees over a real 6-month window; every variant with n>100 is negative.",
       "status": "validated",
-      "evidence": "2026-07-02 47-day-gap entry: VPS produced 11,490+ fetch commits with zero >1h gaps, runs 84->11,574 all status='ok', satisfying Phase 2 gate 1",
+      "evidence": "2026-07-02 (Retire Bollinger and MA-crossover: 1,371 trades, net -$1,719.44 (-0.13%), bollinger_default n=539 -$636.75, only positives at n=3 and n=13)",
       "next_check": null
     },
     {
-      "claim": "A monitoring/infrastructure system running cleanly is not a substitute for the operator showing up \u2014 the VPS ran 47 days clean while the curriculum did not move at all.",
+      "claim": "Realistic constraints (cooldown/exposure/concurrency) dominate strategy behavior, rejecting 99.6% of candidate signals.",
       "status": "validated",
-      "evidence": "2026-07-02 47-day-gap entry: signals/trades/decisions/llm_calls still 0, STRATEGY_VARIANTS still {}, no Friday review since W21",
+      "evidence": "2026-07-02 (Retire entry and Front-loaded 12 variants entry: 390,519 candidates, 99.6% rejected)",
       "next_check": null
     },
     {
-      "claim": "The 2026-05-23 review's bear case that 'the infrastructure was the project' was confirmed by 47 additional days of the VPS running while zero trades/decisions were produced.",
+      "claim": "The shared position ceiling means adding variants does not add exposure, so all variants can run in parallel with no risk cost.",
       "status": "validated",
-      "evidence": "2026-07-02 47-day-gap entry, reading section",
-      "next_check": "2026-07-12"
+      "evidence": "2026-07-02 (Front-loaded all 12 variants: total exposure never breached; P&L moved only via selection within the cap)",
+      "next_check": null
     },
     {
-      "claim": "Both Phase 1 base strategies (Bollinger mean-reversion and MA-crossover) lose money over a realistic 6-month window; every variant with a real sample (n>100) is negative.",
+      "claim": "The fee-floor failure shape (gross-positive, fee-negative) replicates on novel LLM-surfaced strategies, not just textbook ones.",
       "status": "validated",
-      "evidence": "2026-07-02 retire-Bollinger-and-MA entry: 12 variants, 6-month replay, net -$1,719.44, bollinger_default n=539 -$636.75",
+      "evidence": "2026-07-16 (Gauntlet results: weekend_illiquidity_momentum win rate 49.4%, gross Sharpe 1.51, but -$0.21/trade net; edge smaller than ~0.6% round-trip cost)",
       "next_check": null
     },
     {
-      "claim": "The only positive base-strategy variants (macross_slow n=3, macross_default n=13) are noise, not signal, because their sample sizes are far below the significance threshold.",
+      "claim": "None of the five LLM-surfaced gauntlet candidates earned promotion; all five lost money net of fees over the 180-day replay.",
       "status": "validated",
-      "evidence": "2026-07-02 retire-Bollinger-and-MA entry; contrasted against bollinger_default n=539 negative",
+      "evidence": "2026-07-16 (Gauntlet results: all five negative net of fees, ranked -$0.21 to -$2.56/trade)",
       "next_check": null
     },
     {
-      "claim": "Constraints (cooldown/exposure/concurrency) dominate strategy: 99.6% of candidate signals are rejected before execution.",
+      "claim": "No real credential was ever committed to the repo; the .env exposure surface was the Claude Code session transcript, not the repository.",
       "status": "validated",
-      "evidence": "2026-07-02 retire entry (1,371 trades / 390,519 candidates) and 2026-07-02 front-loaded-variants entry",
+      "evidence": "2026-07-16 (Post-incident record: full git-history search confirms only placeholders in .env.template, .env never tracked)",
       "next_check": null
     },
     {
-      "claim": "bollinger_loose (sigma=2.5) is too wide in every regime, not just one \u2014 it fired zero times across all six months.",
+      "claim": "Deferring incident logging destroys the facts a real postmortem needs; a ~10-minute write-up deferred ~60 days lost exact date, echoing command, and transcript persistence.",
       "status": "validated",
-      "evidence": "2026-07-02 retire-Bollinger-and-MA entry",
+      "evidence": "2026-07-16 (Post-incident record: written ~60 days late from memory, details gone)",
       "next_check": null
     },
     {
-      "claim": "Running all 12 variants in parallel on Day 1 adds no risk because the shared $1,000 position ceiling means variants compete for the same cap rather than adding exposure.",
+      "claim": "The operator stopped contributing for 47 days while the VPS infrastructure ran clean, confirming the 2026-05-23 bear case that 'the infrastructure was the project.'",
       "status": "validated",
-      "evidence": "2026-07-02 front-loaded-variants entry: total exposure never breached; adding variants moved P&L only through selection within the cap",
+      "evidence": "2026-07-02 (47-day operator gap: no human commits 2026-05-23 to 2026-07-02; signals/trades/decisions/llm_calls all still 0)",
       "next_check": null
     },
     {
-      "claim": "Deterministic hash-based signal generation (hash of symbol+bar_timestamp) plus the signals table UNIQUE constraint makes each cron cycle idempotent, whereas random() would double-signal on re-runs and break backtest reproducibility.",
+      "claim": "The initial diagnosis that the VPS had died silently was wrong; checking the live GitHub repo directly showed the VPS never stopped.",
       "status": "validated",
-      "evidence": "2026-07-16 null-variant entry, determinism section",
+      "evidence": "2026-07-02 (47-day operator gap: local trader.db was 47 days stale, live repo showed continuous operation)",
       "next_check": null
     },
     {
-      "claim": "Without Layer 4 exits (stop/target/24h time exit), the 5-position cap deadlocks the loop after 5 trades.",
+      "claim": "Ten weeks of operation produced zero signals, decisions, and trades \u2014 the terminal gap named by both machine reviews ('2016 successful runs, 0 decisions').",
       "status": "validated",
-      "evidence": "2026-07-16 null-variant entry, Layer 4 exits section",
+      "evidence": "2026-07-16 (Null variant live entry) and 2026-07-02 (47-day gap: signals/trades/decisions/llm_calls all 0)",
       "next_check": null
-    },
-    {
-      "claim": "No real credential was ever committed to the repo \u2014 every .env.template version contains only placeholders and .env was never tracked; the .env exposure surface was the Claude Code session transcript.",
-      "status": "validated",
-      "evidence": "2026-07-16 post-incident .env entry: full git-history search 2026-07-16",
-      "next_check": null
-    },
-    {
-      "claim": "Deferring an incident write-up loses the facts that matter in a postmortem \u2014 this record was written ~60 days late from memory and the exact date/command/transcript persistence are gone.",
-      "status": "validated",
-      "evidence": "2026-07-16 post-incident .env entry, lesson 1",
-      "next_check": null
-    },
-    {
-      "claim": "A VPS hiccup is a bounded, visible failure (logged status='failed', data resumes) whereas a missing GitHub Actions invocation is invisible with no audit trail.",
-      "status": "validated",
-      "evidence": "2026-05-23 migration entry, letter to future self",
-      "next_check": null
-    },
-    {
-      "claim": "At ~10 trades/day per variant (~300 data points/month) the sample is far too few to train a useful model \u2014 any model appearing to work on 300 points is overfitting.",
-      "status": "pending",
-      "evidence": "2026-04-26 online-ML-out-of-scope entry",
-      "next_check": null
-    },
-    {
-      "claim": "$1,000 vs $200 capital is mostly psychological; what $1,000 buys is experimental longevity \u2014 a 30% drawdown leaves $700 (survivable) vs $140 (out of the experiment).",
-      "status": "pending",
-      "evidence": "2026-04-26 $1,000-capital-cap entry",
-      "next_check": null
-    },
-    {
-      "claim": "At the project's scale (~10 trades/day per variant) one-factor-at-a-time yields more learnable results than a factorial design, which needs large samples to populate its cells.",
-      "status": "pending",
-      "evidence": "2026-04-26 one-factor-at-a-time entry",
-      "next_check": null
-    },
-    {
-      "claim": "The epistemic infrastructure produced a clean, defensible negative when the signal wasn't there, which was the actual experimental goal (not whether Bollinger makes money).",
-      "status": "validated",
-      "evidence": "2026-07-02 retire-Bollinger-and-MA entry, 'the call' section",
-      "next_check": null
-    },
-    {
-      "claim": "If null_baseline shows a positive edge over a real sample, the simulator, fee model, or market data is wrong \u2014 expected P&L for random entries is slowly negative due to fees.",
-      "status": "pending",
-      "evidence": "2026-07-16 null-variant entry, expected P&L section",
-      "next_check": "2026-07-24"
     }
   ],
   "hypotheses": [
     {
       "commitment": "By end of the first calendar week of cron operation, the runs table should contain ~2,016 rows with status='ok' (90%+ success rate); if below 90%, investigate before Week 2 strategy-roster review begins.",
-      "source_entry": "2026-05-17 \u2014 Curriculum anchor / cron wire-up / SQLite-in-repo",
+      "source_entry": "2026-05-17 \u2014 Curriculum anchor is first cron run; cron wire-up; SQLite-in-repo as data store",
       "due": null,
       "status": "resolved-against",
-      "resolution": "Amended by the 2026-05-18 and 2026-05-23 entries: GitHub Actions delivered only ~4% invocation rate (69 of 1,712), far below the assumed cadence, so the original 90%-success hypothesis was unfalsifiable and was replaced by separate invocation-rate and code-success-rate metrics."
+      "resolution": "Resolved against by the 2026-05-18 and 2026-05-23 entries: GitHub Actions delivered only ~4% invocation rate (69 of 1,712), far below 90%. The 2026-05-23 migration amended/replaced this hypothesis."
     },
     {
-      "commitment": "By end of Week 2, the operator commits a decision-log entry naming one of (a) keep GH cron for fetch+signals, move execute to real scheduler before Phase 2; (b) move signals+execute together to one scheduler now; (c) move everything to one real scheduler before Week 3. If not committed by end of Week 2, the Week 3 build does not begin until it's made.",
+      "commitment": "By end of Week 2, the operator commits a decision-log entry choosing one of (a) keep GH cron for fetch+signals, move execute to real scheduler; (b) move signals+execute together now; or (c) move everything to one real scheduler before Week 3. If no decision is committed by end of Week 2, the scheduler issue becomes the most expensive un-made call and Week 3 build doesn't begin.",
       "source_entry": "2026-05-18 \u2014 GH cron cadence does not match assumed 5-min",
       "due": null,
       "status": "resolved-for",
-      "resolution": "Resolved by the 2026-05-23 migration decision, which moved the cron to a Hetzner VPS running the existing fetch.py."
+      "resolution": "Effectively resolved by the 2026-05-23 migration entry, which moved the cron (fetch.py) to a Hetzner VPS \u2014 a scheduler-migration decision committed in a decision-log entry."
     },
     {
-      "commitment": "By end of Week 2, Claude-mediated synthesis will produce either (a) a defensible justification for keeping Bollinger and MA-crossover naming which modern-filter criteria they pass/fail, or (b) a defensible alternative roster with the same justification structure. If neither is achievable, Week 3 starts a postmortem on the reframe itself.",
-      "source_entry": "2026-04-26 \u2014 Claude as epistemological backbone (project reframe)",
+      "commitment": "90%+ success rate by end of first calendar week of GitHub-Actions-invoked runs.",
+      "source_entry": "2026-05-17 (original hypothesis, amended in 2026-05-23)",
       "due": null,
       "status": "resolved-against",
-      "resolution": "The 2026-07-02 roster call retired both base strategies on 6-month evidence rather than at end of Week 2; the resolution came from a real replay window, not a Week-2 modern-filter justification, and the deadline was long past."
+      "resolution": "Amended in the 2026-05-23 entry into two separately-tracked metrics (invocation rate VPS-controlled \u226599%, code success rate \u226595%) because the platform-induced ceiling made the original unfalsifiable."
     },
     {
-      "commitment": "If neither base strategy clears the bar over a real window, replace them (the reframe's falsifiable hypothesis on the base strategies).",
-      "source_entry": "2026-04-26 reframe (restated at 2026-07-02 retire entry)",
+      "commitment": "By end of Week 2, the Claude-mediated synthesis will produce either (a) a defensible justification for keeping Bollinger and MA-crossover naming which modern-filter criteria they pass/fail, or (b) a defensible alternative roster with the same justification structure. If neither, the LLM-as-epistemological-backbone thesis is weaker than expected and Week 3 starts a postmortem on the reframe itself.",
+      "source_entry": "2026-04-26 \u2014 Claude as epistemological backbone (project reframe)",
       "due": null,
       "status": "resolved-for",
-      "resolution": "2026-07-02: the 6-month replay showed every real-sample variant negative; both base strategies retired from the active roster."
+      "resolution": "Resolved for: the 2026-07-02 retirement entry, resolving on 6-month evidence, retired both base strategies and deferred replacement to LLM-surfaced candidates \u2014 the alternative-roster path (b)."
     },
     {
-      "commitment": "Original 2026-05-17 hypothesis: 90%+ success rate by end of first calendar week of GitHub-Actions-invoked runs.",
-      "source_entry": "2026-05-23 \u2014 Migrating cron from GitHub Actions to Hetzner VPS (amendment)",
+      "commitment": "If neither base strategy clears the bar over a real window, replace them.",
+      "source_entry": "2026-04-26 reframe entry (falsifiable hypothesis restated in 2026-07-02 retirement entry)",
       "due": null,
       "status": "resolved-for",
-      "resolution": "Amended into two separately tracked metrics \u2014 invocation rate (VPS-controlled, target >=99%) and code success rate (project-controlled, target >=95%) \u2014 combining to 95%+ uptime of expected runs over any 4-week window, matching the Phase 2 architectural gate; this removed the platform-induced ceiling making the original hypothesis unfalsifiable."
+      "resolution": "Resolved for on the 6-month replay evidence: both Bollinger and MA-crossover retired 2026-07-02; every n>100 variant negative."
     }
   ],
   "overdue": []

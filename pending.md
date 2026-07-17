@@ -31,7 +31,7 @@ machine-managed by adversarial_cron.py — replaced nightly, don't edit.
   when: open
   kind: ops
 
-- thing: "Nightly skeptic · 2026-07-16"
-  detail: "The pipeline is a metronome with no conductor. Seven consecutive clean runs, 81–82 bars added eac..."
+- thing: "Nightly skeptic · 2026-07-17"
+  detail: "Your pipeline is a metronome with no one steering. Seven consecutive successful runs, all identic..."
   when: open
   kind: ops
