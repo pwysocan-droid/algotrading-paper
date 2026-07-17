@@ -103,6 +103,44 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-17 — First net-positive cell; cost lever validated; holdout NOT burned
+
+**What happened:** The 24-cell exit-grid sweep of
+drawdown_regime_contrarian_gate (tp/sl/horizon × taker/maker, selection
+window 2024-01-01 → 2026-01-01 only) produced the project's first
+net-positive configuration: maker · 72h · tp8%/sl4% = **+$0.031/slot**
+($4.47 over 146 trades in 2 years). Full grid in
+reports/exit-grid-drawdown_regime_contrarian_gate-2026-07-17.json.
+
+**Two findings, held apart deliberately:**
+
+1. **The cost lever WORKS — mechanically.** Maker fills beat taker in
+   12/12 matched pairs, mean +$0.14/slot, ~$0.21–0.24 fees saved per
+   trade, and fill loss was 0–4 trades per ~150. The near-zero fill
+   loss is itself mechanistic: this strategy buys drawdowns, so price
+   is falling INTO the resting limit. Cost engineering is now a
+   validated, reusable lever — every future gauntlet should test both
+   fill models.
+2. **The strategy's edge is statistically ZERO.** +$0.03/trade on 146
+   trades is far inside noise (per-trade std is dollars, not cents),
+   and it's the best of 24 cells — multiple-comparisons bias means the
+   true expectation of this cell is likely negative.
+
+**Decision:** Do NOT run this config against the 2026 holdout. The
+holdout answers one question per candidate, ever; spending it on an
+edge indistinguishable from zero wastes the only unbiased test we
+have. The holdout is reserved for a candidate whose selection-window
+edge is large enough that generalization is a real question.
+
+**Consequences:** (a) fill_model='maker' becomes a standard gauntlet
+axis; (b) the gross-edge problem remains the frontier — costs are now
+~solved in sim, so the search needs mechanisms with more raw signal,
+which is what the Layer-2 context lever and the foundry's
+gate_engine_pairing lens are for; (c) live maker execution (limit
+orders in execute.py) stays queued until a strategy earns it.
+
+---
+
 ## 2026-07-17 — The levers are the strategy; retest the dead under new exits
 
 **Decision:** The structural levers — multi-day horizons, cost
