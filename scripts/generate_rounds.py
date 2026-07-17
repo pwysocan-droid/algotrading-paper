@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -57,6 +57,39 @@ def build_rounds(repo_root: Path = REPO_ROOT) -> dict:
     }
 
 
+def pipeline_health(repo_root: Path = REPO_ROOT,
+                    now: datetime | None = None) -> list[str]:
+    """Foundry stall/alert detection — the seam's failure mode is SILENT
+    (a synthesis crash on 2026-07-17 only logged an ALERT to a VPS file
+    nobody reads). This surfaces it in the one channel read daily: the
+    emailed digest. Returns warning lines, empty when healthy."""
+    ts = now or datetime.now(timezone.utc)
+    warnings: list[str] = []
+
+    rounds = sorted((repo_root / "reviews" / "foundry").glob("round-*.json"))
+    if rounds:
+        age_days = (ts.timestamp() - rounds[-1].stat().st_mtime) / 86400.0
+        if age_days > 3.0:
+            warnings.append(
+                f"⚠ FOUNDRY STALLED: newest round ({rounds[-1].stem}) is "
+                f"{age_days:.1f} days old — no new round in >3 days. Check "
+                "vps/logs/foundry-*.log and the cloud implementer's runs."
+            )
+
+    log_dir = repo_root / "vps" / "logs"
+    if log_dir.exists():
+        for offset in (0, 1):
+            day = date.fromtimestamp(ts.timestamp() - offset * 86400).isoformat()
+            log = log_dir / f"foundry-{day}.log"
+            if log.exists() and "ALERT" in log.read_text():
+                warnings.append(
+                    f"⚠ FOUNDRY ALERT in {log.name} — the autopilot failed; "
+                    "read the log tail for the traceback."
+                )
+                break
+    return warnings
+
+
 def build_digest(repo_root: Path = REPO_ROOT, db_path: Path | None = None,
                  now: datetime | None = None) -> str:
     ts = now or datetime.now(timezone.utc)
@@ -64,6 +97,11 @@ def build_digest(repo_root: Path = REPO_ROOT, db_path: Path | None = None,
         f"# algotrading-paper · digest · {ts.date().isoformat()}",
         "",
     ]
+    health = pipeline_health(repo_root, now=ts)
+    if health:
+        lines += ["## ⚠ Pipeline health", ""]
+        lines += [f"- {w}" for w in health]
+        lines += [""]
 
     # live scoreboard
     with db.connect(db_path) as conn:

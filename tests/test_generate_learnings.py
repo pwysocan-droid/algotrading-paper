@@ -191,7 +191,7 @@ def test_foundry_round_writes_artifacts(tmp_path, monkeypatch):
                 expected_fire_rate="0.1/day", fee_survival="moves >1%",
                 kill_criterion="edge/slot < 0",
             )
-            for k, (lens_key, _) in enumerate(f.LENSES)
+            for k, (lens_key, _) in enumerate(f.lenses_for_round(1))
         ],
     )
 
@@ -210,3 +210,76 @@ def test_foundry_round_writes_artifacts(tmp_path, monkeypatch):
     md = out.read_text()
     assert "Explore the unexplored." in md
     assert "idea_0" in md and "Kill criterion" in md
+
+
+def test_pipeline_health_flags_stall_and_alert(tmp_path):
+    from datetime import datetime, timezone
+    from scripts.generate_rounds import pipeline_health
+
+    now = datetime(2026, 7, 17, 12, 0, tzinfo=timezone.utc)
+    foundry = tmp_path / "reviews" / "foundry"
+    foundry.mkdir(parents=True)
+    logs = tmp_path / "vps" / "logs"
+    logs.mkdir(parents=True)
+
+    # fresh round, clean logs -> healthy
+    rnd = foundry / "round-001.json"
+    rnd.write_text("{}")
+    assert pipeline_health(tmp_path, now=now) == []
+
+    # ALERT in today's foundry log -> flagged
+    (logs / "foundry-2026-07-17.log").write_text("ALERT: autopilot FAILED")
+    health = pipeline_health(tmp_path, now=now)
+    assert any("ALERT" in w for w in health)
+
+    # stale round (>3 days) -> flagged
+    import os
+    old = now.timestamp() - 4 * 86400
+    os.utime(rnd, (old, old))
+    health = pipeline_health(tmp_path, now=now)
+    assert any("STALLED" in w for w in health)
+
+
+def test_foundry_rejects_bad_rounds(monkeypatch, tmp_path):
+    """Semantic guards: wrong count, duplicate names, collisions with the
+    registry or existing variants must raise at generation time."""
+    import json as _json
+    from scripts import idea_foundry as f
+
+    idea = {
+        "name": "fresh_idea", "lens": "x", "mechanism": "m",
+        "lineage_check": "lc", "entry_rule": "er", "params": {},
+        "expected_fire_rate": "e", "fee_survival": "fs", "kill_criterion": "k",
+    }
+
+    class FakeResult:
+        model = "fake"
+
+        def __init__(self, ideas):
+            self.parsed = f.FoundryRound(
+                ideas=[f.FoundryIdea(**i) for i in ideas], round_thesis="t")
+
+    class FakeClient:
+        def __init__(self, ideas):
+            self._ideas = ideas
+
+        def complete_structured(self, **kwargs):
+            return FakeResult(self._ideas)
+
+    monkeypatch.setattr(f, "FOUNDRY_DIR", tmp_path)
+    reg = tmp_path / "dead-ideas.json"
+    reg.write_text(_json.dumps({"failure_lessons": [], "ideas": [
+        {"name": "dead_old", "lineage": "x", "verdict": "dead"}]}))
+    monkeypatch.setattr(f, "REGISTRY_PATH", reg)
+
+    import pytest as _pytest
+    with _pytest.raises(RuntimeError, match="expected 5 ideas"):
+        f.run_round(client=FakeClient([idea]))
+
+    five_dupes = [dict(idea, name="same")] * 5
+    with _pytest.raises(RuntimeError, match="duplicate"):
+        f.run_round(client=FakeClient(five_dupes))
+
+    five = [dict(idea, name=f"n{i}") for i in range(4)] + [dict(idea, name="dead_old")]
+    with _pytest.raises(RuntimeError, match="collide"):
+        f.run_round(client=FakeClient(five))

@@ -182,6 +182,28 @@ def run_round(client=None, now: datetime | None = None) -> Path:
     )
     round_data: FoundryRound = result.parsed
 
+    # Semantic validation — Pydantic checks shape, not sense. A round with
+    # duplicate or already-registered names would corrupt the autopilot's
+    # implemented/gauntleted/epitaphed state machine without ever crashing;
+    # fail HERE, loudly, where the autopilot logs an ALERT.
+    names = [i.name for i in round_data.ideas]
+    if len(round_data.ideas) != ROUND_LENS_COUNT:
+        raise RuntimeError(
+            f"round {round_n}: expected {ROUND_LENS_COUNT} ideas, got {len(names)}"
+        )
+    if len(set(names)) != len(names):
+        raise RuntimeError(f"round {round_n}: duplicate idea names: {names}")
+    from config import STRATEGY_VARIANTS
+
+    collisions = [n for n in names if n in STRATEGY_VARIANTS]
+    dead = json.loads(REGISTRY_PATH.read_text())
+    reused = [n for n in names if n in {i["name"] for i in dead.get("ideas", [])}]
+    if collisions or reused:
+        raise RuntimeError(
+            f"round {round_n}: idea names collide with existing variants "
+            f"{collisions} or dead registry entries {reused}"
+        )
+
     json_path = FOUNDRY_DIR / f"round-{round_n:03d}.json"
     json_path.write_text(json.dumps(
         {"round": round_n, "generated_at": ts.isoformat(),
