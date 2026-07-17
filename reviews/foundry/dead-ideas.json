@@ -11,7 +11,9 @@
     "CALIBRATE FIRE RATES (r001): predictions missed by 3x-8x in both directions. State the base-rate arithmetic (how many qualifying events per 288-bar day) rather than intuiting rarity.",
     "HORIZON IS A LEVER (2026-07-17): per-variant tp/sl/time_exit_hours are now honored in both replay and live. The fee floor is fixed per trade, so theses resolving over days targeting 8-20% moves face ~10x better cost ratios than 24h theses targeting 1-2%.",
     "COST IS A DESIGN INPUT (2026-07-17): prefer entries where price comes to the level (limit-friendly) and single-fire selectivity \u2014 the denominator of edge-per-slot includes what execution costs, not just what the signal knows.",
-    "CONJUNCTIONS MULTIPLY TO ZERO (r002): base-rate arithmetic that multiplies per-condition probabilities as if independent produces fire-rate misses of 4x to infinity when the conjuncts are anti-correlated (high volume x small body is nearly mutually exclusive in crypto candles; entropy jumps of +0.35 bits are impossible when H already sits at 0.95/1.0). Every spec must state WHY its conditions are independent, and any idea whose premise can be checked against the data distribution BEFORE a full gauntlet (entropy ceiling, conjunct correlation) should be \u2014 a 5-minute histogram would have killed two of five r002 ideas."
+    "CONJUNCTIONS MULTIPLY TO ZERO (r002): base-rate arithmetic that multiplies per-condition probabilities as if independent produces fire-rate misses of 4x to infinity when the conjuncts are anti-correlated (high volume x small body is nearly mutually exclusive in crypto candles; entropy jumps of +0.35 bits are impossible when H already sits at 0.95/1.0). Every spec must state WHY its conditions are independent, and any idea whose premise can be checked against the data distribution BEFORE a full gauntlet (entropy ceiling, conjunct correlation) should be \u2014 a 5-minute histogram would have killed two of five r002 ideas.",
+    "NAMED-TIME COILS DIE (r001-r003, 4 deaths): dead_zone (overnight), options_expiry_pin (08:00 UTC), weekend thinness, asian_london handoff (07:00-09:00). A range break carries no extra directional energy for happening at a named clock time \u2014 the calendar lens is 0-for-4 on release-shaped ideas and needs a fundamentally different mechanism to earn another slot.",
+    "THE GATE KEEPS WINNING, THE ENGINES KEEP STARVING (r001-r003): the self-referential system-state gate is best-of-round three rounds running on three different engines, and r003's version is the first idea ever to pass its own kill criterion (+1.75%/trade, but n=7). The binding constraint is now ENGINE FIRE RATE: a gated idea needs an ungated engine firing >=1/sym/day for the armed sample to reach statistical decidability inside 930d."
   ],
   "ideas": [
     {
@@ -211,7 +213,72 @@
         "actual": 0.024,
         "net_expectancy_pct": -0.75
       }
+    },
+    {
+      "name": "gap_fill_exhaustion_continuation",
+      "lineage": "foundry r003 \u00b7 microstructure_from_ohlcv",
+      "tested": "2026-07-17 \u00b7 930d constrained replay (taker)",
+      "result": "n=14, -$4.46, edge/slot -$0.32, win 42.9%, net -0.16%/trade",
+      "verdict": "dead",
+      "epitaph": "5-min crypto barely gaps: the full conjunction (>0.4% gap + held close + body>median + vol>median) fired 14 times in 2.5 YEARS across 5 symbols \u2014 spec predicted 8-15/sym/DAY (~2000x miss), and even the pre-implementation premise check (0.1/day for the raw gap alone) overestimated the conjunction 25x. The nearest-to-flat idea ever tested, so the mechanism is starved rather than refuted \u2014 but an engine firing 5x/year cannot feed a 5-slot book regardless of sign. If gaps return, lower the threshold and re-derive the base rate from the data first.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 10.0,
+        "actual": 0.004,
+        "net_expectancy_pct": -0.16
+      }
+    },
+    {
+      "name": "asian_to_london_handoff_thrust",
+      "lineage": "foundry r003 \u00b7 behavioral_calendar",
+      "tested": "2026-07-17 \u00b7 930d constrained replay (taker)",
+      "result": "n=49, -$104.65, edge/slot -$2.14, win 30.6%, Sharpe -2.34, net -1.07%/trade",
+      "verdict": "dead",
+      "epitaph": "Crypto has no London open at 5-min scale: the Asian-range break during 07:00-09:00 UTC resolved like any other coil break \u2014 mostly failed. Fourth named-time coil death (dead_zone overnight, options_expiry 08:00, weekend, this): the clock does not lend a range break directional energy. Fire rate also missed ~50x (one qualifying break per 2.5 weeks, not 0.4/day).",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.4,
+        "actual": 0.011,
+        "net_expectancy_pct": -1.07
+      }
+    },
+    {
+      "name": "post_shock_multiday_drift",
+      "lineage": "foundry r003 \u00b7 multi_day_horizon",
+      "tested": "2026-07-17 \u00b7 930d constrained replay (taker), tp12/sl5/120h",
+      "result": "n=35, -$72.49, edge/slot -$2.07, win 28.6%, net -1.04%/trade (kill bar was +0.5%)",
+      "verdict": "dead",
+      "epitaph": "There is no multi-day drift after a 3% shock bar here: 71% of shocks hit the -5% stop before the +12% target across 120h \u2014 shock direction carries no 5-day signal. Confirms the r002 R0 lesson at a longer horizon: entering ON the visible impulse is chasing, and the horizon lever cannot rescue an entry with no directional edge \u2014 HORIZON IS A LEVER only multiplies an edge that exists.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.5,
+        "actual": 0.011,
+        "net_expectancy_pct": -1.04
+      }
+    },
+    {
+      "name": "pullback_to_breakout_level_limit",
+      "lineage": "foundry r003 \u00b7 cost_engineering",
+      "tested": "2026-07-17 \u00b7 930d constrained replay (taker)",
+      "result": "n=178, -$419.04, edge/slot -$2.35, win 30.9%, Sharpe -4.37, net -1.18%/trade \u2014 best-powered sample of the round",
+      "verdict": "dead",
+      "epitaph": "The retest is not a discount \u2014 it is the failure signal. Breakouts that return to the broken level within 2h are disproportionately the ones that are FAILING; the runners you wanted never look back, so waiting at the level systematically selects the losers (win 30.9%, the worst Sharpe ever recorded here). Cost engineering cannot fix adverse selection in the entry: maker fills would recover ~0.2%/trade against a -1.18% expectancy. COST IS A DESIGN INPUT does not mean price-comes-to-you entries are free edge.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 1.0,
+        "actual": 0.042,
+        "net_expectancy_pct": -1.18
+      }
+    },
+    {
+      "name": "slot_scarcity_conviction_gate",
+      "lineage": "foundry r003 \u00b7 meta_self_referential (gate family, 3rd round)",
+      "tested": "2026-07-17 \u00b7 930d constrained replay (taker)",
+      "result": "n=7, +$24.45, edge/slot +$3.49, win 71.4%, net +1.75%/trade \u2014 PASSED its kill bar (+0.3%) and beat the ungated engine (-0.16%)",
+      "verdict": "inconclusive_starved",
+      "epitaph": "The first idea ever to pass its own kill criterion over the full window \u2014 and n=7 forbids believing it (the small-sample trap rule: n<30 means no claim regardless of sign). The gate opened rarely AND its gap engine fires 5x/year, so 2.5 years produced 7 armed trades. The gate family is now 3-for-3 best-of-round on three different engines (r001 regime gate 43% wins, r002 rejection gate stage-1 positive, r003 this) \u2014 the self-referential gate concentrates whatever edge exists, and every round the engine under it starves. PRESCRIPTION for the next gate idea: pair the gate with an engine firing >=1/sym/day so the armed sample reaches n>=100 per 930d and the gate's value becomes decidable.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.4,
+        "actual": 0.0024,
+        "net_expectancy_pct": 1.75
+      }
     }
   ],
-  "total_ideas_tested": 18
+  "total_ideas_tested": 23
 }
