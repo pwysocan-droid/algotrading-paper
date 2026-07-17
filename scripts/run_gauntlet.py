@@ -34,48 +34,89 @@ CANDIDATES = [
 ]
 
 
-def run_gauntlet(days: int = 180, db_path: Path | None = None) -> list[dict]:
+def _score_candidate(args: tuple) -> dict:
+    """One candidate, one window — importable top-level so multiprocessing
+    (spawn, macOS default) can pickle it. Each worker opens its own
+    read-only-use sqlite connection."""
+    name, days, db_path_str = args
+    db_path = Path(db_path_str) if db_path_str else None
     end = datetime.now(timezone.utc)
     start = end - timedelta(days=days)
     window_days = float(days)
 
-    results = []
-    for name in CANDIDATES:
-        variant = dict(STRATEGY_VARIANTS[name])
-        variant["enabled"] = True  # local copy only — config stays disabled
+    variant = dict(STRATEGY_VARIANTS[name])
+    variant["enabled"] = True  # local copy only — config stays disabled
+    with db.connect(db_path) as conn:
+        trades = replay.replay_variant(
+            conn, name, variant, WATCHED_SYMBOLS, start, end,
+            fee_pct=TAKER_FEE_PCT, slippage_pct=SLIPPAGE_PCT,
+        )
+    candidates_n = len(trades)
+    trades = replay.apply_portfolio_constraints(trades)
+    placed = [t for t in trades if t.accepted]
+    pnls = [t.pnl_usd for t in placed if t.pnl_usd is not None]
+    pcts = [t.pnl_pct for t in placed if t.pnl_pct is not None]
+    total = sum(pnls)
+    n = len(placed)
+    wins = sum(1 for p in pnls if p > 0)
+    return {
+        "name": name,
+        "candidates": candidates_n,
+        "placed": n,
+        "total_pnl": total,
+        "edge_per_slot": total / n if n else None,
+        "win_rate": wins / n if n else None,
+        "sharpe": replay.sharpe_ratio(pcts, window_days),
+        "max_dd": replay.max_drawdown_pct(pnls),
+        "days": days,
+    }
 
-        with db.connect(db_path) as conn:
-            trades = replay.replay_variant(
-                conn, name, variant, WATCHED_SYMBOLS, start, end,
-                fee_pct=TAKER_FEE_PCT, slippage_pct=SLIPPAGE_PCT,
-            )
-        candidates_n = len(trades)
-        trades = replay.apply_portfolio_constraints(trades)
-        placed = [t for t in trades if t.accepted]
-        pnls = [t.pnl_usd for t in placed if t.pnl_usd is not None]
-        pcts = [t.pnl_pct for t in placed if t.pnl_pct is not None]
-        total = sum(pnls)
-        n = len(placed)
-        wins = sum(1 for p in pnls if p > 0)
-        sharpe = replay.sharpe_ratio(pcts, window_days)
-        dd = replay.max_drawdown_pct(pnls)
 
-        results.append({
-            "name": name,
-            "candidates": candidates_n,
-            "placed": n,
-            "total_pnl": total,
-            "edge_per_slot": total / n if n else None,
-            "win_rate": wins / n if n else None,
-            "sharpe": sharpe,
-            "max_dd": dd,
-        })
-        print(f"{name}: candidates={candidates_n} placed={n} "
-              f"pnl=${total:,.2f} edge/slot="
-              f"{'—' if n == 0 else f'${total / n:,.3f}'}")
+def run_gauntlet(days: int = 180, db_path: Path | None = None,
+                 names: list[str] | None = None) -> list[dict]:
+    """All candidates in parallel — one process each (they're independent
+    and CPU-bound; observed ~4x wall-clock on this hardware)."""
+    from multiprocessing import Pool, cpu_count
 
-    # rank: edge per slot, requiring a usable sample; zero-fire candidates sink
-    results.sort(key=lambda r: (r["edge_per_slot"] is not None, r["edge_per_slot"] or 0), reverse=True)
+    todo = names if names is not None else CANDIDATES
+    args = [(n, days, str(db_path) if db_path else None) for n in todo]
+    with Pool(min(len(args), max(1, cpu_count() - 1))) as pool:
+        results = pool.map(_score_candidate, args)
+    for r in results:
+        eps = "—" if r["placed"] == 0 else f"${r['total_pnl'] / r['placed']:,.3f}"
+        print(f"{r['name']} ({days}d): candidates={r['candidates']} "
+              f"placed={r['placed']} pnl=${r['total_pnl']:,.2f} edge/slot={eps}")
+
+    results.sort(key=lambda r: (r["edge_per_slot"] is not None, r["edge_per_slot"] or 0),
+                 reverse=True)
+    return results
+
+
+def run_staged(filter_days: int = 180, full_days: int = 930,
+               db_path: Path | None = None,
+               names: list[str] | None = None) -> list[dict]:
+    """Curriculum-cascade: a cheap short-window filter kills the obvious
+    deaths (>=30 placed and net-negative); only survivors earn the full
+    multi-year window. Small samples pass the filter — they haven't
+    earned a verdict either way."""
+    todo = names if names is not None else CANDIDATES
+    stage1 = run_gauntlet(days=filter_days, db_path=db_path, names=todo)
+    survivors, killed = [], []
+    for r in stage1:
+        if r["placed"] >= 30 and r["total_pnl"] < 0:
+            r["stage"] = f"killed@{filter_days}d"
+            killed.append(r)
+        else:
+            survivors.append(r["name"])
+    print(f"\nstage 1: {len(killed)} killed, {len(survivors)} advance to {full_days}d\n")
+    stage2 = []
+    if survivors:
+        stage2 = run_gauntlet(days=full_days, db_path=db_path, names=survivors)
+        for r in stage2:
+            r["stage"] = f"full@{full_days}d"
+    results = stage2 + killed
+    results.sort(key=lambda r: (r["edge_per_slot"] is not None, r["edge_per_slot"] or 0),
+                 reverse=True)
     return results
 
 
@@ -124,26 +165,35 @@ def main() -> int:
                         help="alternate bars database (e.g. research_bars.db)")
     parser.add_argument("--names", default=None,
                         help="comma-separated variant names (default: the synthesis candidates)")
+    parser.add_argument("--staged", action="store_true",
+                        help="cheap short-window filter first; only survivors run the full window")
+    parser.add_argument("--filter-days", type=int, default=180,
+                        help="stage-1 window for --staged (default 180)")
     args = parser.parse_args()
 
-    if args.names:
-        global CANDIDATES
-        CANDIDATES = [n.strip() for n in args.names.split(",") if n.strip()]
+    names = [n.strip() for n in args.names.split(",") if n.strip()] if args.names else None
 
     if args.db is None:
         db.migrate()
-    results = run_gauntlet(days=args.days, db_path=args.db)
+    if args.staged:
+        results = run_staged(filter_days=args.filter_days, full_days=args.days,
+                             db_path=args.db, names=names)
+    else:
+        results = run_gauntlet(days=args.days, db_path=args.db, names=names)
     report = render_report(results, args.days)
     stamp = datetime.now(timezone.utc)
     base = Path(__file__).resolve().parent.parent / "reports"
-    out = base / f"gauntlet-{stamp.date().isoformat()}.md"
+    # timestamped (not just dated) so same-day runs never clobber each other
+    tag = stamp.strftime("%Y-%m-%dT%H%M")
+    out = base / f"gauntlet-{tag}.md"
     out.write_text(report)
     # machine-readable twin for the dashboard's results-by-date page
     import json as _json
-    (base / f"gauntlet-{stamp.date().isoformat()}.json").write_text(_json.dumps({
+    (base / f"gauntlet-{tag}.json").write_text(_json.dumps({
         "date": stamp.date().isoformat(),
         "generated_at": stamp.isoformat(),
         "days": args.days,
+        "staged": args.staged,
         "database": str(args.db) if args.db else "trader.db",
         "results": results,
     }, indent=2) + "\n")
