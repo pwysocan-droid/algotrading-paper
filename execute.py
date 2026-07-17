@@ -336,8 +336,14 @@ def manage_exits(
     """
     ts = now or datetime.now(timezone.utc)
     closed = 0
+    from config import STRATEGY_VARIANTS  # per-variant exit overrides
+
     with db.connect(db_path) as conn:
         for trade in open_positions(conn):
+            vparams = (STRATEGY_VARIANTS.get(trade["variant_name"]) or {}).get("params", {})
+            v_tp = float(vparams.get("tp", take_profit_pct))
+            v_sl = float(vparams.get("sl", stop_loss_pct))
+            v_hours = int(vparams.get("time_exit_hours", time_exit_hours))
             # Only bars that BEGIN at/after entry may close a trade — the
             # signal bar's range predates the fill and once closed trades
             # same-cycle on pre-entry price action (audit 2026-07-17).
@@ -355,13 +361,13 @@ def manage_exits(
 
             entry_price = trade["entry_price"]
             if trade["side"] == "buy":
-                tp = entry_price * (1.0 + take_profit_pct)
-                sl = entry_price * (1.0 - stop_loss_pct)
+                tp = entry_price * (1.0 + v_tp)
+                sl = entry_price * (1.0 - v_sl)
                 sl_hit = bar["low"] <= sl
                 tp_hit = bar["high"] >= tp
             else:
-                tp = entry_price * (1.0 - take_profit_pct)
-                sl = entry_price * (1.0 + stop_loss_pct)
+                tp = entry_price * (1.0 - v_tp)
+                sl = entry_price * (1.0 + v_sl)
                 sl_hit = bar["high"] >= sl
                 tp_hit = bar["low"] <= tp
 
@@ -373,7 +379,7 @@ def manage_exits(
                 _close_trade(conn, trade, sl, ts.isoformat(), "stop_loss")
             elif tp_hit:
                 _close_trade(conn, trade, tp, ts.isoformat(), "take_profit")
-            elif ts - entry_time >= timedelta(hours=time_exit_hours):
+            elif ts - entry_time >= timedelta(hours=v_hours):
                 _close_trade(conn, trade, bar["close"], ts.isoformat(), "time_exit")
             else:
                 continue

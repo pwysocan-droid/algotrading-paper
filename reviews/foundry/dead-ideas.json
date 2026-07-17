@@ -1,5 +1,5 @@
 {
-  "description": "The dead-ideas registry — every strategy idea this project has tested, with its epitaph. The foundry reads this before every round: new ideas must not descend from dead lineages, and must engage the failure lessons. Deaths are data (philosophy.md: a losing strategy that produces clear answers beats a winning one that doesn't).",
+  "description": "The dead-ideas registry \u2014 every strategy idea this project has tested, with its epitaph. The foundry reads this before every round: new ideas must not descend from dead lineages, and must engage the failure lessons. Deaths are data (philosophy.md: a losing strategy that produces clear answers beats a winning one that doesn't).",
   "failure_lessons": [
     "FEE FLOOR: ~0.6% round-trip on $200 positions. Edges under ~1%/trade are structurally dead regardless of hit rate. Confirmed twice: textbook sweep (gross +0.03%/trade, net -0.18%) and weekend_illiquidity_momentum (gross-positive, 49.4% win rate, fee-negative).",
     "CONSTRAINT DOMINANCE: 5 slots, $1k ceiling, 1h/symbol cooldown kill 99.6% of frequent signals. Fitness = edge per constraint slot. Frequency is worthless; amplitude per fire is everything.",
@@ -7,15 +7,17 @@
     "CANON LINEAGES DIE: both indicator mean-reversion AND the surviving retail structural plays (documented lineages: capitulation reversal, lead-lag, ORB, volume footprint, weekend effect) tested negative net of fees. The arbitraged-away frontier is past the documented-retail-edge line.",
     "GROSS-POSITIVE IS THE TRAP SHAPE: several ideas found real but too-small structure. The question for a new idea is not 'is there signal' but 'why would the remaining signal exceed 1% per event'.",
     "FADE-SHAPED ENTRIES DIE (r001): every entry that fades a move (wick rejection, overshoot snap, band reversion) has lost against the +5%/-3%/24h exit, which structurally rewards follow-through. Propose continuation/initiation shapes, or argue explicitly why a fade survives an asymmetric exit.",
-    "THE GATE SURVIVED, THE ENGINE DIED (r001 exploit direction): drawdown_regime_contrarian_gate scored the best numbers ever tested (43.3% win, gross Sharpe 0.98, -0.33% net) — the self-referential regime gate (null-arm win rate + stop-out cluster via context_keys=['system_state']) carries real information, but the 24-bar breakout engine behind it is too weak. Strong prior: pair BETTER ENGINES with the same meta-gate.",
-    "CALIBRATE FIRE RATES (r001): predictions missed by 3x-8x in both directions. State the base-rate arithmetic (how many qualifying events per 288-bar day) rather than intuiting rarity."
+    "THE GATE SURVIVED, THE ENGINE DIED (r001 exploit direction): drawdown_regime_contrarian_gate scored the best numbers ever tested (43.3% win, gross Sharpe 0.98, -0.33% net) \u2014 the self-referential regime gate (null-arm win rate + stop-out cluster via context_keys=['system_state']) carries real information, but the 24-bar breakout engine behind it is too weak. Strong prior: pair BETTER ENGINES with the same meta-gate.",
+    "CALIBRATE FIRE RATES (r001): predictions missed by 3x-8x in both directions. State the base-rate arithmetic (how many qualifying events per 288-bar day) rather than intuiting rarity.",
+    "HORIZON IS A LEVER (2026-07-17): per-variant tp/sl/time_exit_hours are now honored in both replay and live. The fee floor is fixed per trade, so theses resolving over days targeting 8-20% moves face ~10x better cost ratios than 24h theses targeting 1-2%.",
+    "COST IS A DESIGN INPUT (2026-07-17): prefer entries where price comes to the level (limit-friendly) and single-fire selectivity \u2014 the denominator of edge-per-slot includes what execution costs, not just what the signal knows."
   ],
   "ideas": [
     {
       "name": "bollinger_family",
       "lineage": "indicator mean-reversion (Bollinger bands, 1980s)",
       "variants_tested": 6,
-      "tested": "2026-07-02 · 180d constrained replay",
+      "tested": "2026-07-02 \u00b7 180d constrained replay",
       "result": "all negative net; best n>100 variant -$0.03/trade gross before fees ate it",
       "verdict": "dead",
       "epitaph": "Mean reversion at 5-min crypto scale exists but is smaller than fees. Also structurally mismatched to asymmetric +5/-3 exits, which want follow-through, not fades."
@@ -24,7 +26,7 @@
       "name": "macross_family",
       "lineage": "indicator trend-following (MA crossover, 1950s Donchian)",
       "variants_tested": 6,
-      "tested": "2026-07-02 · 180d constrained replay",
+      "tested": "2026-07-02 \u00b7 180d constrained replay",
       "result": "all negative or zero-fire; slow variants fired 0-4 times in 6 months",
       "verdict": "dead",
       "epitaph": "Crossovers either fire constantly into chop (fee bleed) or so rarely there is no sample. No parameterization escaped the dilemma."
@@ -32,7 +34,7 @@
     {
       "name": "liquidation_cascade_reclaim",
       "lineage": "retail capitulation-reversal / buy-the-wick",
-      "tested": "2026-07-16 · 180d constrained replay (gauntlet)",
+      "tested": "2026-07-16 \u00b7 180d constrained replay (gauntlet)",
       "result": "n=4, -$10.23, edge/slot -$2.56, win 25%",
       "verdict": "dead",
       "epitaph": "4-sigma cascades with confirmed reclaims are so rare the filters starve the sample; what fired lost. The reclaim confirmation may arrive after the snap-back is spent."
@@ -40,7 +42,7 @@
     {
       "name": "btc_leads_alt_lag_capture",
       "lineage": "retail lead-lag / BTC dominance",
-      "tested": "2026-07-16 · 180d constrained replay (gauntlet)",
+      "tested": "2026-07-16 \u00b7 180d constrained replay (gauntlet)",
       "result": "n=3, -$5.29, edge/slot -$1.76",
       "verdict": "dead",
       "epitaph": "The residual 5-min lead-lag is either gone or the freshness filters are stricter than the phenomenon. n=3 in 6 months is an idea that no longer occurs."
@@ -48,7 +50,7 @@
     {
       "name": "dead_zone_range_break",
       "lineage": "retail opening-range breakout / volatility compression (Crabel)",
-      "tested": "2026-07-16 · 180d constrained replay (gauntlet)",
+      "tested": "2026-07-16 \u00b7 180d constrained replay (gauntlet)",
       "result": "n=13, -$11.45, edge/slot -$0.88, win 46%",
       "verdict": "dead",
       "epitaph": "Overnight coils exist and break, but breaks resolve under the fee floor as often as over it. The compression-release ratio didn't clear costs."
@@ -56,7 +58,7 @@
     {
       "name": "volume_thrust_regime_shift",
       "lineage": "retail volume-spike / smart-money footprint",
-      "tested": "2026-07-16 · 180d constrained replay (gauntlet) · LIVE A/B arm since 2026-07-16",
+      "tested": "2026-07-16 \u00b7 180d constrained replay (gauntlet) \u00b7 LIVE A/B arm since 2026-07-16",
       "result": "backtest n=38, -$24.10, edge/slot -$0.63, win 36.8%",
       "verdict": "live_arm",
       "epitaph": null,
@@ -65,7 +67,7 @@
     {
       "name": "weekend_illiquidity_momentum",
       "lineage": "retail weekend-thinness momentum",
-      "tested": "2026-07-16 · 180d constrained replay (gauntlet) · LIVE A/B arm since 2026-07-16",
+      "tested": "2026-07-16 \u00b7 180d constrained replay (gauntlet) \u00b7 LIVE A/B arm since 2026-07-16",
       "result": "backtest n=79, -$16.22, edge/slot -$0.21, win 49.4%, GROSS-POSITIVE",
       "verdict": "live_arm",
       "epitaph": null,
@@ -81,48 +83,68 @@
     },
     {
       "name": "entropy_collapse_impulse",
-      "lineage": "foundry r001 · information_theory",
-      "tested": "2026-07-17 · 930d constrained replay",
+      "lineage": "foundry r001 \u00b7 information_theory",
+      "tested": "2026-07-17 \u00b7 930d constrained replay",
       "result": "n=2636, -$3,039, edge/slot -$1.15, win 38.0%",
       "verdict": "dead",
-      "epitaph": "Killed by own criterion (stop-rate >> target-rate). CALIBRATION: fired ~3x the predicted rate (3,283 candidates vs ~1,160 predicted) — the 15th-percentile coil is far more common than theorized, meaning low-entropy states are the norm, not a rare coiled spring. Entropy breaks are noise breaks at this bar scale.",
-      "gradient": {"predicted_fires_per_sym_day": 0.25, "actual": 0.78, "net_expectancy_pct": -0.58}
+      "epitaph": "Killed by own criterion (stop-rate >> target-rate). CALIBRATION: fired ~3x the predicted rate (3,283 candidates vs ~1,160 predicted) \u2014 the 15th-percentile coil is far more common than theorized, meaning low-entropy states are the norm, not a rare coiled spring. Entropy breaks are noise breaks at this bar scale.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.25,
+        "actual": 0.78,
+        "net_expectancy_pct": -0.58
+      }
     },
     {
       "name": "omori_aftershock_ladder",
-      "lineage": "foundry r001 · cross_domain_import (seismology)",
-      "tested": "2026-07-17 · 930d constrained replay",
+      "lineage": "foundry r001 \u00b7 cross_domain_import (seismology)",
+      "tested": "2026-07-17 \u00b7 930d constrained replay",
       "result": "n=535, -$506, edge/slot -$0.95, win 39.6%",
       "verdict": "dead",
-      "epitaph": "Killed by own criterion (net expectancy -0.47% < +0.3%). CALIBRATION: over-fired 2.6x predicted — 4-sigma 'mainshocks' are commoner than seismic intuition suggests (fat tails). The aftershock direction-persistence exists weakly (39.6% vs the asymmetric exit needing ~40%+) but is smaller than fees. Nearest-miss of the shock-family ideas.",
-      "gradient": {"predicted_fires_per_sym_day": 0.2, "actual": 0.52, "net_expectancy_pct": -0.47}
+      "epitaph": "Killed by own criterion (net expectancy -0.47% < +0.3%). CALIBRATION: over-fired 2.6x predicted \u2014 4-sigma 'mainshocks' are commoner than seismic intuition suggests (fat tails). The aftershock direction-persistence exists weakly (39.6% vs the asymmetric exit needing ~40%+) but is smaller than fees. Nearest-miss of the shock-family ideas.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.2,
+        "actual": 0.52,
+        "net_expectancy_pct": -0.47
+      }
     },
     {
       "name": "failed_auction_rejection_wick",
-      "lineage": "foundry r001 · microstructure_from_ohlcv",
-      "tested": "2026-07-17 · 930d constrained replay",
+      "lineage": "foundry r001 \u00b7 microstructure_from_ohlcv",
+      "tested": "2026-07-17 \u00b7 930d constrained replay",
       "result": "n=1302, -$1,509, edge/slot -$1.16, win 36.8%",
       "verdict": "dead",
-      "epitaph": "Killed by own criterion (net expectancy -0.58% < +0.4%). Wick geometry at fresh extremes does not identify trapped flow — rejections were followed by continuation of the original push as often as reversal, exactly the failure the spec pre-named. Fade-shaped entries keep dying against the +5/-3 asymmetric exit; this is now a LESSON, not just an epitaph.",
-      "gradient": {"predicted_fires_per_sym_day": 0.45, "actual": 0.34, "net_expectancy_pct": -0.58}
+      "epitaph": "Killed by own criterion (net expectancy -0.58% < +0.4%). Wick geometry at fresh extremes does not identify trapped flow \u2014 rejections were followed by continuation of the original push as often as reversal, exactly the failure the spec pre-named. Fade-shaped entries keep dying against the +5/-3 asymmetric exit; this is now a LESSON, not just an epitaph.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.45,
+        "actual": 0.34,
+        "net_expectancy_pct": -0.58
+      }
     },
     {
       "name": "round_number_overshoot_snap",
-      "lineage": "foundry r001 · behavioral_calendar",
-      "tested": "2026-07-17 · 930d constrained replay",
+      "lineage": "foundry r001 \u00b7 behavioral_calendar",
+      "tested": "2026-07-17 \u00b7 930d constrained replay",
       "result": "n=192, -$206, edge/slot -$1.07, win 38.0%",
       "verdict": "dead",
-      "epitaph": "Killed by own criterion. CALIBRATION: under-fired 5-8x predicted (202 candidates vs ~1,600) — clean overshoot-and-reject at FRESH round levels is rare, and what fired reverted less than fees. Another fade-shaped death.",
-      "gradient": {"predicted_fires_per_sym_day": 0.4, "actual": 0.043, "net_expectancy_pct": -0.54}
+      "epitaph": "Killed by own criterion. CALIBRATION: under-fired 5-8x predicted (202 candidates vs ~1,600) \u2014 clean overshoot-and-reject at FRESH round levels is rare, and what fired reverted less than fees. Another fade-shaped death.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.4,
+        "actual": 0.043,
+        "net_expectancy_pct": -0.54
+      }
     },
     {
       "name": "drawdown_regime_contrarian_gate",
-      "lineage": "foundry r001 · meta_self_referential",
-      "tested": "2026-07-17 · 930d constrained replay",
+      "lineage": "foundry r001 \u00b7 meta_self_referential",
+      "tested": "2026-07-17 \u00b7 930d constrained replay",
       "result": "n=460, -$301, edge/slot -$0.65, win 43.3%, gross Sharpe 0.98",
       "verdict": "dead",
-      "epitaph": "Killed by own criterion (armed expectancy -0.33% < +0.3%) — but the BEST of round 001 and the best win rate of any non-placebo idea ever tested. The self-referential gate carries real information (gross-positive shape, 43.3% wins against an asymmetric exit); the base breakout signal underneath it is too weak. LESSON for r002: the gate survived, the engine died — try better engines behind the same meta-gate.",
-      "gradient": {"predicted_fires_per_sym_day": 0.3, "actual": 0.1, "net_expectancy_pct": -0.33}
+      "epitaph": "Killed by own criterion (armed expectancy -0.33% < +0.3%) \u2014 but the BEST of round 001 and the best win rate of any non-placebo idea ever tested. The self-referential gate carries real information (gross-positive shape, 43.3% wins against an asymmetric exit); the base breakout signal underneath it is too weak. LESSON for r002: the gate survived, the engine died \u2014 try better engines behind the same meta-gate.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.3,
+        "actual": 0.1,
+        "net_expectancy_pct": -0.33
+      }
     }
   ]
 }

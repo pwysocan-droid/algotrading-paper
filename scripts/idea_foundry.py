@@ -58,6 +58,27 @@ LENSES = [
      "recent outcomes, on the constraint layer's rejection rate, on the "
      "portfolio's own drawdown state, on cross-arm divergence. The system "
      "observing itself as a signal source."),
+    ("multi_day_horizon",
+     "Escape the fee floor by outrunning it: theses that resolve over 2-7 "
+     "DAYS targeting 8-20% moves, where 0.6% costs are a rounding error. "
+     "Per-variant exits are now supported — declare tp/sl/time_exit_hours "
+     "in params (e.g. tp 0.12, sl 0.05, time_exit_hours 120). Fewer, "
+     "bigger, slower: regime persistence, multi-day accumulation "
+     "structures, post-shock drift over days not bars."),
+    ("cost_engineering",
+     "Attack the denominator: ideas whose ENTRY MECHANICS inherently "
+     "reduce cost or improve fills — entries at levels where price comes "
+     "to you (limit-friendly: pullback-to-level entries rather than "
+     "chasing), ultra-selective single-fire theses (one great fill beats "
+     "five mediocre ones per slot), entries during spread-tight high-"
+     "liquidity windows only."),
+    ("gate_engine_pairing",
+     "The proven gradient: the self-referential regime gate (null-arm "
+     "win rate + stop-out cluster, context_keys=['system_state']) scored "
+     "the best numbers ever tested — the GATE works, its old engine "
+     "didn't. Propose a strong standalone engine explicitly designed to "
+     "be gated by it: what entry signal is most amplified by 'random "
+     "entries are currently failing = the regime is directional'?"),
 ]
 
 
@@ -74,7 +95,7 @@ class FoundryIdea(BaseModel):
 
 
 class FoundryRound(BaseModel):
-    ideas: list[FoundryIdea] = Field(description="Exactly 5 ideas, one per assigned lens")
+    ideas: list[FoundryIdea] = Field(description="One idea per assigned lens, in lens order")
     round_thesis: str = Field(description="One paragraph: what this round explores that no prior round did")
 
 
@@ -110,9 +131,9 @@ def build_prompt(registry: dict) -> str:
         f"{n + 1}. lens `{key}`: {desc}" for n, (key, desc) in enumerate(LENSES)
     )
     return (
-        "Produce this round of the foundry: exactly 5 strategy ideas for "
-        "5-minute OHLCV crypto bars (BTC, ETH, SOL, LINK, AVAX vs USD), one "
-        "idea per assigned lens below, in order.\n\n"
+        f"Produce this round of the foundry: exactly {len(LENSES)} strategy "
+        "ideas for 5-minute OHLCV crypto bars (BTC, ETH, SOL, LINK, AVAX vs "
+        "USD), one idea per assigned lens below, in order.\n\n"
         "THE FAILURE LESSONS (every idea must engage these):\n"
         f"{lessons}\n\n"
         "THE DEAD-IDEAS REGISTRY (no idea may descend from a dead lineage; "
@@ -120,8 +141,9 @@ def build_prompt(registry: dict) -> str:
         f"{epitaphs}\n\n"
         "THE FIVE LENSES FOR THIS ROUND:\n"
         f"{lens_block}\n\n"
-        "Platform constraints (unchanged): $200/trade, $1,000 ceiling, 5 "
-        "slots, 1h/symbol cooldown, fixed exits +5%/-3%/24h, bars only "
+        "Platform constraints: $200/trade, $1,000 ceiling, 5 slots, "
+        "1h/symbol cooldown, bars only; exits DEFAULT to +5%/-3%/24h but "
+        "are now per-variant tunable via params tp/sl/time_exit_hours "
         "(plus a BTC-bars context feed if an idea declares it). Fitness is "
         "edge per constraint slot. Each idea needs a kill_criterion — the "
         "gauntlet number that would falsify it decisively."

@@ -80,3 +80,13 @@ Each item:
   detail: "runs.bars_added counts upserts not inserts (17x inflated, feeds skeptic); parity_check must exclude the mutable trailing 90min of bars; replay entry-bar exit skip (bars[i+2:] vs live) + time-exit anchor one bar late; gate-1 uptime should filter kind='cron'; trade_cycle needs its own runs audit rows; entropy params half-plumbed (entropy_window/n_bins ignored in _entropy_at calls) + coil-persistence rule dropped; omori volume baseline includes signal bar; same-bar tie-break ordering live (id ASC) vs replay (alphabetical); system_state stop-out scope live-portfolio vs null-only in replay; pages.yml negative-staleness guard; log rotation on vps/logs"
   when: open
   kind: build
+
+- thing: Maker/limit fill modeling
+  detail: "halve the fee floor — model resting-limit entries (fill only when price trades through) in replay + live paper; maker fee tier vs taker 0.25%"
+  when: open
+  kind: build
+
+- thing: Context layer (Layer 2) revival
+  detail: "funding rates / F&G / on-chain via context_keys — data mined less exhaustively than OHLCV; needs decision-log entry per roadmap"
+  when: open
+  kind: build

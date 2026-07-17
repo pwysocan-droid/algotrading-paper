@@ -284,7 +284,10 @@ def replay_variant(
             qty = position_usd / entry_price
             forward = bars[i + 2 :]
             exit_ts, raw_exit_price, exit_reason = simulate_exit(
-                forward, entry_price=entry_price, side=sig.side
+                forward, entry_price=entry_price, side=sig.side,
+                take_profit_pct=float(params.get("tp", TAKE_PROFIT_PCT)),
+                stop_loss_pct=float(params.get("sl", STOP_LOSS_PCT)),
+                time_exit_hours=int(params.get("time_exit_hours", TIME_EXIT_HOURS)),
             )
             exit_price = (
                 _apply_slippage(raw_exit_price, sig.side, "exit", slippage_pct)
