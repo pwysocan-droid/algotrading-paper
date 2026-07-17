@@ -376,13 +376,38 @@ def complete_agentic(
     total_tokens = 0
     tokens_known = True
 
+    # Prompt caching: tools render before system, so one breakpoint on the
+    # system block caches the whole static prefix (tools + system) across
+    # turns; a second, moving breakpoint rides the latest tool_result so
+    # each turn re-reads the prior history at ~10% price instead of full.
+    cached_system = [{
+        "type": "text",
+        "text": _build_system(system),
+        "cache_control": {"type": "ephemeral"},
+    }]
+
+    def _move_message_breakpoint() -> None:
+        latest_marked = False
+        for m in reversed(messages):
+            if m["role"] != "user" or not isinstance(m["content"], list):
+                continue
+            for block in m["content"]:
+                if isinstance(block, dict):
+                    block.pop("cache_control", None)
+            if not latest_marked and m["content"]:
+                last = m["content"][-1]
+                if isinstance(last, dict) and last.get("type") == "tool_result":
+                    last["cache_control"] = {"type": "ephemeral"}
+                latest_marked = True
+
     while True:
         turns += 1
         final_turn = turns >= max_turns
+        _move_message_breakpoint()
         kwargs: dict[str, Any] = {
             "model": client.model,
             "max_tokens": max_tokens,
-            "system": _build_system(system),
+            "system": cached_system,
             "tools": tools,
             "messages": messages,
         }

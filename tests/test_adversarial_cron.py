@@ -415,3 +415,34 @@ def test_complete_agentic_tool_error_becomes_result(tmp_db: Path, repo: Path) ->
     tool_result_msg = second_call_messages[-1]["content"][0]
     assert tool_result_msg["is_error"] is True
     assert "boom" in tool_result_msg["content"]
+
+
+def test_complete_agentic_prompt_caching(tmp_db: Path, repo: Path) -> None:
+    """System block carries the static-prefix breakpoint; the message-level
+    breakpoint rides only the newest tool_result."""
+    from claude_client import ClaudeClient, complete_agentic
+
+    client = ClaudeClient(api_key="sk-ant-test", db_path=tmp_db)
+    fake = _FakeAgenticAnthropicClient()
+    client._client = fake
+
+    complete_agentic(
+        client, "Investigate.", called_from="test_cache",
+        tools=adversarial_cron.INVESTIGATOR_TOOLS,
+        tool_handlers={
+            "run_sql": adversarial_cron.make_sql_tool(tmp_db),
+            "read_file": adversarial_cron.make_file_tool(repo),
+        },
+    )
+
+    sent_system = fake.last_kwargs["system"]
+    assert isinstance(sent_system, list)
+    assert sent_system[0]["cache_control"] == {"type": "ephemeral"}
+
+    # second API call carried one tool_result message; its last block is marked
+    tool_msgs = [
+        m for m in fake.last_kwargs["messages"]
+        if m["role"] == "user" and isinstance(m["content"], list)
+    ]
+    assert tool_msgs, "expected a tool_result message in the second call"
+    assert tool_msgs[-1]["content"][-1].get("cache_control") == {"type": "ephemeral"}
