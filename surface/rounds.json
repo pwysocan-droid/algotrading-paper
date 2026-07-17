@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-07-17T00:14:27.628452+00:00",
+  "rounds": [
+    {
+      "round": 1,
+      "date": "2026-07-16",
+      "thesis": "Prior rounds decoded charts as price patterns; this round decodes the bar stream as an information channel and imports resolution dynamics from outside finance. The unifying bet: the surviving edge above the fee floor lives not in mean price behavior but in second-order structure \u2014 the entropy collapse before a directional impulse, the aftershock clustering after a shock, the geometry of a single failed auction printed in one bar's wick, the magnetic snap through a psychological level, and the system's own regime state as a conditioning prior. Each idea targets amplitude-per-fire over 1% by isolating conditions that PRECEDE follow-through rather than fading exhausted moves, deliberately avoiding both indicator families and all five documented retail lineages.",
+      "ideas": [
+        {
+          "name": "entropy_collapse_impulse",
+          "lens": "information_theory",
+          "kill_criterion": "Dies if median absolute price excursion in the 24h after entry is under 1.2%, or if the +5% target is hit on fewer than 22% of fires while the -3% stop hits more than 40% \u2014 meaning the entropy-break offers no directional follow-through edge over a coin flip net of fees."
+        },
+        {
+          "name": "omori_aftershock_ladder",
+          "lens": "cross_domain_import",
+          "kill_criterion": "Dies if, conditional on entry, forward returns show no directional persistence \u2014 specifically if the sign-correlation between the mainshock direction and the 12-bar forward return is under +0.1, or if net-of-fee expectancy per fire is below +0.3%, proving aftershocks are noise not clustered continuation."
+        },
+        {
+          "name": "failed_auction_rejection_wick",
+          "lens": "microstructure_from_ohlcv",
+          "kill_criterion": "Dies if the +5% target is hit less than 25% of the time while stops hit more than the target, OR if net expectancy per fire is under +0.4% \u2014 indicating the wick geometry does not identify genuine trapped flow and rejections are followed by continuation of the original push as often as reversal."
+        },
+        {
+          "name": "round_number_overshoot_snap",
+          "lens": "behavioral_calendar",
+          "kill_criterion": "Dies if reversion moves after qualifying overshoots average under 1% before reversing, or if net-of-fee expectancy is under +0.3%/fire, or if false-break continuation (price runs further past the level after our entry) triggers the -3% stop more often than the +5% target by a factor over 1.3."
+        },
+        {
+          "name": "drawdown_regime_contrarian_gate",
+          "lens": "meta_self_referential",
+          "kill_criterion": "Dies if gated breakouts show no better net expectancy than un-gated ones \u2014 specifically if the difference in per-fire net expectancy between gate-open and gate-closed conditions is under +0.5%, proving the null-arm regime signal carries no exploitable information; or if armed-fire expectancy is itself below +0.3%/fire net of fees."
+        }
+      ]
+    }
+  ],
+  "gauntlets": [],
+  "verdicts": {
+    "bollinger_family": "dead",
+    "macross_family": "dead",
+    "liquidation_cascade_reclaim": "dead",
+    "btc_leads_alt_lag_capture": "dead",
+    "dead_zone_range_break": "dead",
+    "volume_thrust_regime_shift": "live_arm",
+    "weekend_illiquidity_momentum": "live_arm",
+    "null_baseline": "permanent_control"
+  }
+}

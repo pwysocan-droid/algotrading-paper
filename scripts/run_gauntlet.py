@@ -134,10 +134,19 @@ def main() -> int:
         db.migrate()
     results = run_gauntlet(days=args.days, db_path=args.db)
     report = render_report(results, args.days)
-    out = Path(__file__).resolve().parent.parent / "reports" / (
-        f"gauntlet-{datetime.now(timezone.utc).date().isoformat()}.md"
-    )
+    stamp = datetime.now(timezone.utc)
+    base = Path(__file__).resolve().parent.parent / "reports"
+    out = base / f"gauntlet-{stamp.date().isoformat()}.md"
     out.write_text(report)
+    # machine-readable twin for the dashboard's results-by-date page
+    import json as _json
+    (base / f"gauntlet-{stamp.date().isoformat()}.json").write_text(_json.dumps({
+        "date": stamp.date().isoformat(),
+        "generated_at": stamp.isoformat(),
+        "days": args.days,
+        "database": str(args.db) if args.db else "trader.db",
+        "results": results,
+    }, indent=2) + "\n")
     print(f"\nwrote {out}")
     return 0
 

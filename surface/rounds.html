@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>algotrading-paper · rounds</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --hairline: #1c1c1c; --hairline-bright: #2a2a2a;
+    --fg: #e8e8e8; --fg-dim: #888; --fg-faint: #555; --fg-ghost: #333;
+    --red: #EB0000; --teal: #6ee7b7; --teal-dim: #4ab895;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg); color: var(--fg);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 400; -webkit-font-smoothing: antialiased; line-height: 1.4;
+  }
+  body { max-width: 420px; margin: 0 auto; padding: 18px 22px 40px; min-height: 100vh; }
+
+  .masthead { margin-bottom: 20px; }
+  .masthead .title { font-size: 12px; font-weight: 500; }
+  .masthead .title .slash { color: var(--fg-faint); margin: 0 5px; font-weight: 400; }
+  .masthead .title .sub { color: var(--fg-dim); font-weight: 400; }
+  .masthead .timestamp { margin-top: 5px; font-size: 10px; color: var(--fg-faint); }
+  .masthead .back { margin-top: 4px; font-size: 10px; }
+  .masthead .back a {
+    color: var(--fg-dim); text-decoration: none;
+    border-bottom: 1px solid var(--hairline-bright);
+  }
+  .masthead .back a:hover { color: var(--fg); }
+
+  .section { margin-bottom: 30px; }
+  .section-label { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .section-label .idx { font-size: 10px; color: var(--fg-faint); }
+  .section-label .name {
+    font-size: 10px; text-transform: uppercase; font-weight: 500;
+    color: var(--fg-dim); letter-spacing: 0.12em;
+  }
+  .section-label .qualifier {
+    font-style: italic; font-size: 10px; color: var(--fg-faint); margin-left: auto;
+  }
+
+  .round { border-top: 1px solid var(--hairline); padding: 12px 0; }
+  .round-head { display: flex; align-items: baseline; gap: 12px; }
+  .round-head .rn { font-size: 16px; font-weight: 500; }
+  .round-head .date { font-size: 10px; color: var(--fg-faint); margin-left: auto; }
+  .round .thesis {
+    margin: 7px 0 9px; font-size: 10px; font-style: italic;
+    color: var(--fg-faint); line-height: 1.5;
+  }
+  .idea-row {
+    display: grid; grid-template-columns: 14px 1fr 92px;
+    gap: 10px; align-items: baseline; padding: 4px 0;
+  }
+  .idea-row .glyph { font-size: 11px; }
+  .idea-row .glyph.dead { color: var(--red); }
+  .idea-row .glyph.live_arm { color: var(--teal); }
+  .idea-row .glyph.untested { color: var(--fg-ghost); }
+  .idea-row .nm { font-size: 10px; color: var(--fg-dim); }
+  .idea-row .nm .lens {
+    display: block; font-size: 9px; font-style: italic;
+    color: var(--fg-ghost); margin-top: 1px;
+  }
+  .idea-row .verdict {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em;
+    text-align: right; color: var(--fg-faint);
+  }
+  .idea-row .verdict.dead { color: var(--red); }
+  .idea-row .verdict.live_arm { color: var(--teal-dim); }
+
+  .g-block { border-top: 1px solid var(--hairline); padding: 12px 0; }
+  .g-head { display: flex; align-items: baseline; gap: 12px; }
+  .g-head .date { font-size: 13px; font-weight: 500; }
+  .g-head .meta { font-size: 10px; font-style: italic; color: var(--fg-faint); margin-left: auto; }
+  .g-table { margin-top: 8px; }
+  .g-row {
+    display: grid; grid-template-columns: 1fr 40px 66px 62px;
+    gap: 8px 12px; align-items: baseline; padding: 4px 0;
+  }
+  .g-row .nm { font-size: 10px; color: var(--fg-dim); }
+  .g-row .n { font-size: 12px; font-weight: 500; text-align: right; }
+  .g-row .pnl, .g-row .eps { font-size: 11px; text-align: right; }
+  .g-row .pnl.pos, .g-row .eps.pos { color: var(--teal); }
+  .g-row .pnl.neg, .g-row .eps.neg { color: var(--red); }
+  .g-cols {
+    display: grid; grid-template-columns: 1fr 40px 66px 62px;
+    gap: 8px 12px; padding: 0 0 4px;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-ghost);
+  }
+  .g-cols > div { text-align: right; }
+  .g-cols > div:first-child { text-align: left; }
+
+  .empty { padding: 12px 0; font-size: 10px; font-style: italic; color: var(--fg-ghost); text-align: center; }
+
+  .footer {
+    margin-top: 48px; padding-top: 24px;
+    border-top: 1px solid var(--hairline); text-align: center;
+  }
+  .footer .phrase {
+    font-style: italic; font-size: 11px; color: var(--fg-dim);
+    line-height: 1.5; max-width: 300px; margin: 0 auto;
+  }
+  .footer .provenance { margin-top: 16px; font-size: 9px; color: var(--fg-faint); }
+</style>
+</head>
+<body>
+
+  <div class="masthead">
+    <div class="title">
+      algotrading-paper<span class="slash">/</span><span class="sub">rounds</span>
+    </div>
+    <div class="timestamp" id="timestamp">—</div>
+    <div class="back">
+      <a href="./index.html">← live</a> ·
+      <a href="./learnings.html">learnings</a>
+    </div>
+  </div>
+
+  <!-- i. FOUNDRY ROUNDS -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">i.</span>
+      <span class="name">foundry rounds</span>
+      <span class="qualifier" id="rounds-qualifier">by date · newest first</span>
+    </div>
+    <div id="round-blocks"></div>
+  </div>
+
+  <!-- ii. GAUNTLET RESULTS -->
+  <div class="section">
+    <div class="section-label">
+      <span class="idx">ii.</span>
+      <span class="name">gauntlet results</span>
+      <span class="qualifier">constrained replay · fees applied</span>
+    </div>
+    <div id="gauntlet-blocks"></div>
+  </div>
+
+  <div class="footer">
+    <div class="phrase">deaths get epitaphs · the registry constrains the next round</div>
+    <div class="provenance">github.com/pwysocan-droid/algotrading-paper</div>
+  </div>
+
+<script>
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+const GLYPH = { dead: '○', live_arm: '●', permanent_control: '●', untested: '◌' };
+
+async function boot() {
+  let data;
+  try {
+    const resp = await fetch(`./rounds.json?t=${Date.now()}`, { cache: 'no-store' });
+    data = await resp.json();
+  } catch (e) {
+    document.getElementById('round-blocks').appendChild(
+      el('div', 'empty', 'rounds.json not published yet'));
+    return;
+  }
+  document.getElementById('timestamp').textContent =
+    `aggregated ${data.generated_at.slice(0, 16).replace('T', ' ')}Z`;
+
+  const verdicts = data.verdicts || {};
+
+  const rb = document.getElementById('round-blocks');
+  const rounds = (data.rounds || []).slice().reverse();
+  document.getElementById('rounds-qualifier').textContent =
+    `${rounds.length} rounds · newest first`;
+  if (!rounds.length) rb.appendChild(el('div', 'empty', 'no rounds yet'));
+  for (const r of rounds) {
+    const block = el('div', 'round');
+    const head = el('div', 'round-head');
+    head.appendChild(el('div', 'rn', `round ${String(r.round).padStart(3, '0')}`));
+    head.appendChild(el('div', 'date', r.date));
+    block.appendChild(head);
+    if (r.thesis) block.appendChild(el('div', 'thesis', r.thesis));
+    for (const idea of r.ideas) {
+      const v = verdicts[idea.name] || 'untested';
+      const row = el('div', 'idea-row');
+      row.appendChild(el('div', `glyph ${v}`, GLYPH[v] || '◌'));
+      const nm = el('div', 'nm', idea.name);
+      nm.appendChild(el('span', 'lens', idea.lens));
+      row.appendChild(nm);
+      row.appendChild(el('div', `verdict ${v}`, v.replace('_', ' ')));
+      block.appendChild(row);
+    }
+    rb.appendChild(block);
+  }
+
+  const gb = document.getElementById('gauntlet-blocks');
+  const gauntlets = (data.gauntlets || []).slice().reverse();
+  if (!gauntlets.length) gb.appendChild(el('div', 'empty', 'no gauntlet results yet'));
+  for (const g of gauntlets) {
+    const block = el('div', 'g-block');
+    const head = el('div', 'g-head');
+    head.appendChild(el('div', 'date', g.date));
+    head.appendChild(el('div', 'meta', `${g.days}d · ${g.database}`));
+    block.appendChild(head);
+    const table = el('div', 'g-table');
+    const cols = el('div', 'g-cols');
+    for (const h of ['candidate', 'n', 'P&L', 'edge/slot']) cols.appendChild(el('div', null, h));
+    table.appendChild(cols);
+    for (const r of g.results) {
+      const row = el('div', 'g-row');
+      row.appendChild(el('div', 'nm', r.name));
+      row.appendChild(el('div', 'n', String(r.placed)));
+      const pnl = r.total_pnl;
+      row.appendChild(el('div', `pnl ${pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : ''}`,
+        `${pnl < 0 ? '-' : '+'}$${Math.abs(pnl).toFixed(2)}`));
+      const eps = r.edge_per_slot;
+      row.appendChild(el('div', `eps ${eps > 0 ? 'pos' : eps < 0 ? 'neg' : ''}`,
+        eps != null ? `$${eps.toFixed(3)}` : '—'));
+      table.appendChild(row);
+    }
+    block.appendChild(table);
+    gb.appendChild(block);
+  }
+}
+
+boot();
+</script>
+</body>
+</html>

@@ -42,7 +42,14 @@ else
   log "WARN: generate_learnings.py failed"
 fi
 
-git add reviews/nightly pending.md surface/learnings.json
+# Rounds/digest aggregation — pure file aggregation, no LLM.
+if python scripts/generate_rounds.py >>"${LOG}" 2>&1; then
+  log "generate_rounds.py ok"
+else
+  log "WARN: generate_rounds.py failed"
+fi
+
+git add reviews/nightly pending.md surface/learnings.json surface/rounds.json reports
 if git diff --staged --quiet; then
   log "nothing to commit"
 else
