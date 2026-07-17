@@ -1,0 +1,58 @@
+{
+  "date": "2026-07-17",
+  "generated_at": "2026-07-17T00:32:07+00:00",
+  "days": 930,
+  "database": "research_bars.db",
+  "results": [
+    {
+      "name": "drawdown_regime_contrarian_gate",
+      "candidates": 1231,
+      "placed": 460,
+      "total_pnl": -300.55,
+      "edge_per_slot": -0.653,
+      "win_rate": 0.433,
+      "sharpe": 0.98,
+      "max_dd": 37.6
+    },
+    {
+      "name": "omori_aftershock_ladder",
+      "candidates": 2440,
+      "placed": 535,
+      "total_pnl": -505.86,
+      "edge_per_slot": -0.946,
+      "win_rate": 0.396,
+      "sharpe": 0.16,
+      "max_dd": 52.4
+    },
+    {
+      "name": "round_number_overshoot_snap",
+      "candidates": 202,
+      "placed": 192,
+      "total_pnl": -205.85,
+      "edge_per_slot": -1.072,
+      "win_rate": 0.38,
+      "sharpe": -0.09,
+      "max_dd": 27.7
+    },
+    {
+      "name": "entropy_collapse_impulse",
+      "candidates": 3283,
+      "placed": 2636,
+      "total_pnl": -3039.41,
+      "edge_per_slot": -1.153,
+      "win_rate": 0.38,
+      "sharpe": -0.82,
+      "max_dd": 300.6
+    },
+    {
+      "name": "failed_auction_rejection_wick",
+      "candidates": 1580,
+      "placed": 1302,
+      "total_pnl": -1509.12,
+      "edge_per_slot": -1.159,
+      "win_rate": 0.368,
+      "sharpe": -0.69,
+      "max_dd": 150.9
+    }
+  ]
+}

@@ -75,6 +75,51 @@
       "result": "permanent control arm",
       "verdict": "permanent_control",
       "epitaph": null
+    },
+    {
+      "name": "entropy_collapse_impulse",
+      "lineage": "foundry r001 · information_theory",
+      "tested": "2026-07-17 · 930d constrained replay",
+      "result": "n=2636, -$3,039, edge/slot -$1.15, win 38.0%",
+      "verdict": "dead",
+      "epitaph": "Killed by own criterion (stop-rate >> target-rate). CALIBRATION: fired ~3x the predicted rate (3,283 candidates vs ~1,160 predicted) — the 15th-percentile coil is far more common than theorized, meaning low-entropy states are the norm, not a rare coiled spring. Entropy breaks are noise breaks at this bar scale.",
+      "gradient": {"predicted_fires_per_sym_day": 0.25, "actual": 0.78, "net_expectancy_pct": -0.58}
+    },
+    {
+      "name": "omori_aftershock_ladder",
+      "lineage": "foundry r001 · cross_domain_import (seismology)",
+      "tested": "2026-07-17 · 930d constrained replay",
+      "result": "n=535, -$506, edge/slot -$0.95, win 39.6%",
+      "verdict": "dead",
+      "epitaph": "Killed by own criterion (net expectancy -0.47% < +0.3%). CALIBRATION: over-fired 2.6x predicted — 4-sigma 'mainshocks' are commoner than seismic intuition suggests (fat tails). The aftershock direction-persistence exists weakly (39.6% vs the asymmetric exit needing ~40%+) but is smaller than fees. Nearest-miss of the shock-family ideas.",
+      "gradient": {"predicted_fires_per_sym_day": 0.2, "actual": 0.52, "net_expectancy_pct": -0.47}
+    },
+    {
+      "name": "failed_auction_rejection_wick",
+      "lineage": "foundry r001 · microstructure_from_ohlcv",
+      "tested": "2026-07-17 · 930d constrained replay",
+      "result": "n=1302, -$1,509, edge/slot -$1.16, win 36.8%",
+      "verdict": "dead",
+      "epitaph": "Killed by own criterion (net expectancy -0.58% < +0.4%). Wick geometry at fresh extremes does not identify trapped flow — rejections were followed by continuation of the original push as often as reversal, exactly the failure the spec pre-named. Fade-shaped entries keep dying against the +5/-3 asymmetric exit; this is now a LESSON, not just an epitaph.",
+      "gradient": {"predicted_fires_per_sym_day": 0.45, "actual": 0.34, "net_expectancy_pct": -0.58}
+    },
+    {
+      "name": "round_number_overshoot_snap",
+      "lineage": "foundry r001 · behavioral_calendar",
+      "tested": "2026-07-17 · 930d constrained replay",
+      "result": "n=192, -$206, edge/slot -$1.07, win 38.0%",
+      "verdict": "dead",
+      "epitaph": "Killed by own criterion. CALIBRATION: under-fired 5-8x predicted (202 candidates vs ~1,600) — clean overshoot-and-reject at FRESH round levels is rare, and what fired reverted less than fees. Another fade-shaped death.",
+      "gradient": {"predicted_fires_per_sym_day": 0.4, "actual": 0.043, "net_expectancy_pct": -0.54}
+    },
+    {
+      "name": "drawdown_regime_contrarian_gate",
+      "lineage": "foundry r001 · meta_self_referential",
+      "tested": "2026-07-17 · 930d constrained replay",
+      "result": "n=460, -$301, edge/slot -$0.65, win 43.3%, gross Sharpe 0.98",
+      "verdict": "dead",
+      "epitaph": "Killed by own criterion (armed expectancy -0.33% < +0.3%) — but the BEST of round 001 and the best win rate of any non-placebo idea ever tested. The self-referential gate carries real information (gross-positive shape, 43.3% wins against an asymmetric exit); the base breakout signal underneath it is too weak. LESSON for r002: the gate survived, the engine died — try better engines behind the same meta-gate.",
+      "gradient": {"predicted_fires_per_sym_day": 0.3, "actual": 0.1, "net_expectancy_pct": -0.33}
     }
   ]
 }
