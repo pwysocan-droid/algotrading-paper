@@ -2,7 +2,7 @@
   "summary": {
     "due_7d": 3,
     "due_14d": 4,
-    "open": 8,
+    "open": 10,
     "done_this_week": 0
   },
   "gates": [
@@ -144,6 +144,24 @@
       "when_class": "urgent",
       "thing": "Wire the digest email",
       "detail": "Gmail connector authorized · read reports/digest-*.md, send · trivial once tools load in a fresh session",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Nightly shadow-replay parity check",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Nightly shadow-replay parity check",
+      "detail": "replay last 24h over the live bars with the same variants; deterministic strategies must reproduce live signals 1:1 — any divergence = engine bug caught same-day",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Weekly sim-to-live calibration report",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Weekly sim-to-live calibration report",
+      "detail": "per live arm: fire rate / win rate / expectancy / exit-mix, live vs backtest-predicted · feeds Friday review + dashboard · validates the factory",
       "kind": "build",
       "promoted": false
     }
