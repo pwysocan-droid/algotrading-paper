@@ -120,7 +120,21 @@ def _next_round_number() -> int:
     return int(last) + 1
 
 
-def build_prompt(registry: dict) -> str:
+ROUND_LENS_COUNT = 5
+
+
+def lenses_for_round(round_n: int) -> list[tuple[str, str]]:
+    """Deterministic 5-of-8 rotation. Demanding one idea per lens for all
+    8 lenses blew the synthesis output through max_tokens (round-003
+    attempt, 2026-07-17: truncated tool input validated as {} — autopilot
+    ALERT). Five ideas per round keeps output inside budget; the rotation
+    guarantees every lens recurs across consecutive rounds."""
+    start = (round_n - 1) * ROUND_LENS_COUNT
+    return [LENSES[(start + i) % len(LENSES)] for i in range(ROUND_LENS_COUNT)]
+
+
+def build_prompt(registry: dict, lenses: list[tuple[str, str]] | None = None) -> str:
+    lenses = lenses if lenses is not None else LENSES[:ROUND_LENS_COUNT]
     lessons = "\n".join(f"- {l}" for l in registry["failure_lessons"])
     epitaphs = "\n".join(
         f"- {i['name']} ({i['lineage']}): {i['verdict']}"
@@ -128,10 +142,10 @@ def build_prompt(registry: dict) -> str:
         for i in registry["ideas"]
     )
     lens_block = "\n".join(
-        f"{n + 1}. lens `{key}`: {desc}" for n, (key, desc) in enumerate(LENSES)
+        f"{n + 1}. lens `{key}`: {desc}" for n, (key, desc) in enumerate(lenses)
     )
     return (
-        f"Produce this round of the foundry: exactly {len(LENSES)} strategy "
+        f"Produce this round of the foundry: exactly {len(lenses)} strategy "
         "ideas for 5-minute OHLCV crypto bars (BTC, ETH, SOL, LINK, AVAX vs "
         "USD), one idea per assigned lens below, in order.\n\n"
         "THE FAILURE LESSONS (every idea must engage these):\n"
@@ -160,11 +174,11 @@ def run_round(client=None, now: datetime | None = None) -> Path:
 
         client = ClaudeClient(model=model_for_role("synthesis"))
     result = client.complete_structured(
-        prompt=build_prompt(registry),
+        prompt=build_prompt(registry, lenses_for_round(round_n)),
         schema_cls=FoundryRound,
         called_from="idea_foundry",
         system=FOUNDRY_SYSTEM,
-        max_tokens=8192,
+        max_tokens=16384,  # 5 ideas ran ~5k tokens (r002); 3x headroom
     )
     round_data: FoundryRound = result.parsed
 

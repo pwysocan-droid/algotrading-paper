@@ -137,12 +137,28 @@ def test_foundry_prompt_embeds_registry_and_lenses(tmp_path, monkeypatch):
              "epitaph": "it died because Y"},
         ],
     }
-    prompt = f.build_prompt(registry)
+    prompt = f.build_prompt(registry, f.LENSES)
     assert "FEE FLOOR: lesson text" in prompt
     assert "old_idea" in prompt and "it died because Y" in prompt
     for key, _ in f.LENSES:
         assert key in prompt
     assert "kill_criterion" in prompt
+
+
+def test_foundry_lens_rotation_covers_all_lenses(monkeypatch):
+    """5-of-8 per round (all 8 at once truncated the synthesis call);
+    the rotation must cycle every lens through consecutive rounds."""
+    from scripts import idea_foundry as f
+
+    per_round = [f.lenses_for_round(n) for n in range(1, 9)]
+    assert all(len(l) == f.ROUND_LENS_COUNT for l in per_round)
+    seen = {key for l in per_round[:2] for key, _ in l}
+    assert seen == {key for key, _ in f.LENSES}, (
+        "two consecutive rounds must already cover all lenses"
+    )
+    # default build_prompt (no lens arg) stays inside the round budget
+    reg = {"failure_lessons": ["x"], "ideas": []}
+    assert f"exactly {f.ROUND_LENS_COUNT} strategy" in f.build_prompt(reg)
 
 
 def test_foundry_round_numbering(tmp_path, monkeypatch):

@@ -289,6 +289,16 @@ class ClaudeClient:
         msg = self._client.messages.create(**kwargs)
         latency_ms = int((time.perf_counter() - start) * 1000)
 
+        if getattr(msg, "stop_reason", None) == "max_tokens":
+            # A truncated tool_use input parses as a partial/empty dict and
+            # fails schema validation with a misleading "field missing"
+            # error (foundry round-003 attempt, 2026-07-17). Fail loudly
+            # at the real cause instead.
+            raise RuntimeError(
+                f"structured response truncated at max_tokens={max_tokens} "
+                f"({called_from}) — raise the ceiling or shrink the ask"
+            )
+
         tool_blocks = [b for b in msg.content if b.type == "tool_use" and b.name == tool_name]
         if not tool_blocks:
             raise RuntimeError(
