@@ -145,3 +145,8 @@ Each item:
   detail: "do the 28 write-ups compress to <8 family-level exclusions? if yes the generator is resampling known-dead regions; one family-level exclusion is worth ~50 candidate tests"
   when: open
   kind: build
+
+- thing: "Literature-prior candidate: slow momentum (survey harvest)"
+  detail: "12-week BTC/ETH momentum, multi-week holds, maker-friendly entries — the 1-8 week persistence band is published, amortizes the fee floor, and sits OUTSIDE our archive's measurable range; register disabled, evaluate primarily via the live/shadow channel where our instrument still works"
+  when: open
+  kind: build
