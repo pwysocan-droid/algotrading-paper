@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-07-18T04:00:06Z",
+  "generated_at": "2026-07-18T04:05:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
     "now_line": "cycle 0m 02s ago · 5 open · $1,000 exposure",
-    "pipeline_line": "round 003 · complete · next round at next autopilot tick",
+    "pipeline_line": "round 004 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "⚠ FOUNDRY ALERT in foundry-2026-07-17.log — read the log tail for the traceback.",
     "health_warn": true,
     "tile_pnl": "-$21.98",
     "tile_pnl_sub": "5 closed · 20% win",
     "tile_best": "null_baseline $-21.98",
     "tile_ab": "5/100 null closes",
-    "tile_research": "23 ideas · 3 rounds",
+    "tile_research": "23 ideas · 4 rounds",
     "tile_days": "day 62"
   },
   "kahneman": {
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-18T04:00:03.991039+00:00",
+    "last_run_iso": "2026-07-18T04:05:04.027889+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-18 · 04:00 UTC",
+    "last_run_human_date": "2026-07-18 · 04:05 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "15971 of 15990 ok · 99.9%",
+    "uptime_recent": "15972 of 15991 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,53 +92,53 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "276,197",
+      "count": "276,202",
       "delta": "+1456",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "276197"
+      "value": "276202"
     },
     {
       "name": "bar coverage",
       "count": "95%",
       "delta": "-65",
       "delta_class": "note",
-      "spark": "█▇▅██▆▂▁",
+      "spark": "█▇▅██▅▂▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "95"
     },
     {
       "name": "cron runs",
-      "count": "15,990",
+      "count": "15,991",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15990"
+      "value": "15991"
     },
     {
       "name": "llm calls",
-      "count": "26",
-      "delta": "+4",
+      "count": "27",
+      "delta": "+5",
       "delta_class": null,
-      "spark": "▁▁▁█▁▁▁█",
+      "spark": "▁▁▁▆▁▁▁█",
       "spark_class": null,
       "key": "llm_calls",
-      "value": "26"
+      "value": "27"
     },
     {
       "name": "decisions",
-      "count": "166",
-      "delta": "+132",
+      "count": "167",
+      "delta": "+133",
       "delta_class": null,
-      "spark": "█▁█▆▂▇█▁",
+      "spark": "█▁▇▇▁▅█▁",
       "spark_class": null,
       "key": "decisions",
-      "value": "166"
+      "value": "167"
     },
     {
       "name": "letters",
@@ -213,15 +213,15 @@
     }
   ],
   "llm": {
-    "total_calls": 26,
-    "total_cost_usd": 2.0883,
+    "total_calls": 27,
+    "total_cost_usd": 2.3178,
     "by_caller": [
       {
         "called_from": "idea_foundry",
         "model": "claude-opus-4-8",
-        "calls": 4,
-        "tokens": 48298,
-        "cost_usd": 0.7934
+        "calls": 5,
+        "tokens": 63587,
+        "cost_usd": 1.0229
       },
       {
         "called_from": "learnings_ledger",
