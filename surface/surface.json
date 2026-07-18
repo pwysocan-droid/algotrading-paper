@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T17:00:06Z",
+  "generated_at": "2026-07-18T17:05:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-18T17:00:04.288576+00:00",
+    "last_run_iso": "2026-07-18T17:05:04.387898+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-18 · 17:00 UTC",
+    "last_run_human_date": "2026-07-18 · 17:05 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "16127 of 16146 ok · 99.9%",
+    "uptime_recent": "16128 of 16147 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "276,878",
-      "delta": "+1374",
+      "count": "276,882",
+      "delta": "+1373",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "276878"
+      "value": "276882"
     },
     {
       "name": "bar coverage",
-      "count": "90%",
-      "delta": "-151",
+      "count": "89%",
+      "delta": "-152",
       "delta_class": "note",
-      "spark": "█▄▅▃▄▁▃▃",
+      "spark": "█▄▅▃▃▁▃▃",
       "spark_class": null,
       "key": "bar_coverage",
-      "value": "90"
+      "value": "89"
     },
     {
       "name": "cron runs",
-      "count": "16,146",
+      "count": "16,147",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16146"
+      "value": "16147"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "229",
-      "delta": "+124",
+      "count": "230",
+      "delta": "+125",
       "delta_class": null,
-      "spark": "▆▆█▂▁▂█▃",
+      "spark": "█▇█▂▁▅▇▅",
       "spark_class": null,
       "key": "decisions",
-      "value": "229"
+      "value": "230"
     },
     {
       "name": "letters",
