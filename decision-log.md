@@ -103,6 +103,40 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-18 — Power calibration: the instrument measured itself
+
+**What happened:** first-ever measurement of the gauntlet's detection
+power (scripts/power_calibration.py; reports/power-calibration-
+2026-07-18.json). Bootstrap of the null arm's real 930d constrained
+net returns (n=7,068, mean −0.633%/trade = the measured cost drag,
+std 3.05%) with planted edges of known size.
+
+**Findings:**
+1. False-positive rate of the +0.3% kill bar at n=7 is 21% — a
+   small-sample "pass" like r003's slot_scarcity is roughly what pure
+   noise produces one round in five, before best-of-5 selection.
+   The n<30 quarantine rule is quantitatively vindicated.
+2. Power is near zero exactly where interesting edges live: a true
+   +0.17%-net edge passes 32% at n=100 and LESS with more data (the
+   bar exceeds its true mean). Reliable detection starts ~+0.6% net
+   (+1.2% over null). Verdicts with observed expectancy ≤ −0.5% at
+   n≥100 remain solid; near-flat small-n verdicts (e.g. gap at
+   −0.16%, n=14) are hereby reclassified as UNINFORMATIVE, not deaths.
+3. Sub-bar real edges are unrecoverable one-at-a-time by
+   construction — the strongest argument yet for the queued
+   combination stage (fee floor binds per deployed rule, not per
+   signal).
+
+**Decisions:** (a) gauntlet verdicts must henceforth be read against
+this table; the report gains a power footnote when regenerated;
+(b) re-run the calibration whenever costs, constraints, or the kill
+bar change; (c) the meta-conclusion "5-min OHLCV has no edge" is
+DOWNGRADED to "no edge ≥ ~0.6% net detectable by this instrument" —
+smaller edges remain an open question that only the combination
+stage or the live channel can answer.
+
+---
+
 ## 2026-07-17 — Seam closed for real; first fully autonomous cycle ran
 
 **What happened:** Both halves of the closed seam went live today and a
