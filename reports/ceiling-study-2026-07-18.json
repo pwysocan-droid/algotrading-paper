@@ -1,0 +1,88 @@
+{
+  "date": "2026-07-18",
+  "selection_end": "2026-01-01T00:00:00+00:00",
+  "round_trip_cost_pct": 0.6,
+  "note": "instrument-exemption measurement (decision-log 2026-07-18 ruling 2); nothing here is deployable",
+  "results": {
+    "1h": {
+      "ridge": {
+        "oos_ic": 0.030450266715428796,
+        "n_trades": 6657,
+        "gross_mean_pct": 0.022139409967116514,
+        "net_mean_pct": -0.5778605900328835,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": 0.015941013648664185,
+        "n_trades": 6657,
+        "gross_mean_pct": -0.005074790133002721,
+        "net_mean_pct": -0.6050747901330029,
+        "net_positive": false
+      }
+    },
+    "3h": {
+      "ridge": {
+        "oos_ic": 0.02138624354299408,
+        "n_trades": 2219,
+        "gross_mean_pct": 0.055164239183515054,
+        "net_mean_pct": -0.5448357608164849,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": 0.02171978282078858,
+        "n_trades": 2219,
+        "gross_mean_pct": 0.06947060710599365,
+        "net_mean_pct": -0.5305293928940064,
+        "net_positive": false
+      }
+    },
+    "6h": {
+      "ridge": {
+        "oos_ic": 0.02525517820193976,
+        "n_trades": 1110,
+        "gross_mean_pct": 0.03545531071884684,
+        "net_mean_pct": -0.5645446892811532,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": 0.00933189101418376,
+        "n_trades": 1110,
+        "gross_mean_pct": 0.042332438859447936,
+        "net_mean_pct": -0.5576675611405522,
+        "net_positive": false
+      }
+    },
+    "12h": {
+      "ridge": {
+        "oos_ic": 0.027287670446487312,
+        "n_trades": 555,
+        "gross_mean_pct": 0.1561855649487911,
+        "net_mean_pct": -0.44381443505120904,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": 0.02591868041680165,
+        "n_trades": 555,
+        "gross_mean_pct": 0.2033544318481845,
+        "net_mean_pct": -0.3966455681518156,
+        "net_positive": false
+      }
+    },
+    "24h": {
+      "ridge": {
+        "oos_ic": 0.006272159454999598,
+        "n_trades": 277,
+        "gross_mean_pct": 0.06593174461318436,
+        "net_mean_pct": -0.5340682553868157,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": 0.04587117997569998,
+        "n_trades": 277,
+        "gross_mean_pct": 0.6327431142953474,
+        "net_mean_pct": 0.03274311429534713,
+        "net_positive": true
+      }
+    }
+  }
+}
