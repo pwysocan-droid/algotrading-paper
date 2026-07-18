@@ -31,14 +31,20 @@ just say it again — every step is idempotent or checkpointed in git.
   emails a STALE warning instead — that email is the heartbeat; an
   inbox with neither means the VPS is down.
 
-Cloud routines (manage at https://claude.ai/code/routines):
-- `foundry-implementer` (trig_01CB7gU6mXGFXSRj4kvDd74N, 08:00+20:00
-  UTC): the keyless half of the closed seam — implements new round
-  specs and writes epitaphs, pushing to the repo. Pairs with the VPS
-  autopilot (gauntlets + next-round generation).
-- `digest-mailer` (trig_01NjtGaNPuFbLWzikmt5iuQw): DISABLED — the
-  claude.ai Gmail connector proved draft-only; delivery moved to the
-  VPS (above). Kept for reference.
+Implementer: vps/cron-implementer.sh (09:02/21:02 UTC) — Claude Code
+runs headless ON the VPS to implement new round specs and write
+epitaphs whenever the newest round has work pending. This is the
+PRIMARY implementer; its maiden run shipped round-004 (2026-07-18).
+Failures write ALERT lines that pipeline_health carries into the
+digest email.
+
+Cloud routines (manage at https://claude.ai/code/routines) — BOTH
+DISABLED, kept for reference:
+- `foundry-implementer` (trig_01CB7gU6mXGFXSRj4kvDd74N): 0-for-5,
+  every session died silently; superseded by the VPS implementer.
+  Its session logs at claude.ai/code hold the only diagnosis.
+- `digest-mailer` (trig_01NjtGaNPuFbLWzikmt5iuQw): the claude.ai
+  Gmail connector proved draft-only; delivery moved to the VPS.
 
 ## 3. Decisions only you can make
 
