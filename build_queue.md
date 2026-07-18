@@ -95,3 +95,28 @@ Each item:
   detail: "weekly aggregation of shadow signals (all disabled variants, live-recorded) vs their gauntlet-predicted fire rates + hypothetical outcomes from bars — the forward-test scoreboard"
   when: open
   kind: build
+
+- thing: "Combination stage — ensemble of sub-threshold signals (Tier-0 harvest)"
+  detail: "the fee floor binds per DEPLOYED RULE, not per signal: combine decorrelated real-but-small structures from the graveyard (weekend, regime gate, gap) into one portfolio-level rule that clears the floor jointly · Grinold-Kahn breadth · REQUIRES a human decision-log call on whether this crosses the no-ML lock"
+  when: open
+  kind: build
+
+- thing: "Sequential e-value inference for the live A/B (Tier-0 harvest)"
+  detail: "replace fixed-n gate (p<0.05 @ 100 closes) with always-valid sequential testing (e-processes/mSPRT) in compare.py — valid at every peek, no evidence wasted on the slowest channel we have"
+  when: open
+  kind: build
+
+- thing: "Snooping ledger + multiplicity control (Tier-0 harvest)"
+  detail: "count effective comparisons against the archive (ideas x params x ablations x registry feedback), apply deflated-Sharpe / Reality-Check style correction to every gauntlet verdict; today best-of-N selection is acknowledged only in prose"
+  when: open
+  kind: build
+
+- thing: "Surrogate-archive false-positive rate (Tier-0 harvest)"
+  detail: "re-run a sample of dead strategies on phase-randomized/shuffled bars — the pipeline's empirical false-positive rate; complements power calibration (planted edges) which shipped 2026-07-18"
+  when: open
+  kind: build
+
+- thing: "Lessons as falsifiable claims (Tier-0 harvest)"
+  detail: "restate each failure_lesson as a prediction, score it against each new round's outcomes, retire losers — the registry currently accretes prose that is never tested"
+  when: open
+  kind: build
