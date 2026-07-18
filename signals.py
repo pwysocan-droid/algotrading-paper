@@ -1266,6 +1266,373 @@ def pullback_to_breakout_level_limit(
     return None
 
 
+# ── Foundry round 004 (reviews/foundry/round-004.md) ────────────────────
+# Round thesis: invert-and-time-earlier — round-number breach not snap,
+# one-sided expansion not absorption, Hawkes loading-phase not the
+# visible impulse, magnitude-compressibility not sign-entropy, and the
+# proven regime gate remounted on a genuine momentum-persistence engine.
+#
+# Premise-checked 2026-07-18 against research_bars (BTC, 50k bars, raw
+# engines, gate conditions excluded since they read the live trades
+# table): idea1 (fresh-extreme+vol-expansion, gate unchecked) fires
+# 5.17/sym/day vs spec's 0.5-1.0 (~5x over); idea2 (magnitude surprise)
+# fires 0.74/sym/day vs spec's 0.05-0.15 (~5-10x over) and the required
+# pre-check passes — p99 surprise is 4.6, comfortably above the 3.0
+# threshold, so magnitude headroom exists unlike sign-entropy; idea3
+# (Hawkes intensity crossing 1.5 with low cum-displacement) fires
+# 29.7/sym/day vs spec's 0.05-0.15 (~200-600x over) — the 1.5x-median
+# event definition is met by ~35% of bars, so the "loading phase" is
+# common, not rare; idea4 (one-sided range expansion) fires 1.37/sym/day
+# vs spec's 0.5-1.5 (matches); idea5 (round-number coil-then-breach,
+# BTC $1000 grid) fires 4.46/sym/day vs spec's 0.06-0.15 (~30-70x over).
+# None starved — every idea exists in the data, all far MORE common than
+# predicted (the inverse of round-003's under-firing miss). Implemented
+# as specified; the gauntlet will show whether the excess fire rate
+# dilutes armed/loading-phase selectivity into noise.
+
+
+def _closed_trade_win_rate(rows: list[Any]) -> float | None:
+    closed = [r for r in rows if r["pnl_usd"] is not None]
+    if not closed:
+        return None
+    wins = sum(1 for r in closed if r["pnl_usd"] > 0)
+    return wins / len(closed)
+
+
+def _stopout_cluster_index(
+    rows: list[Any], bar_minutes: int = 5, cluster_bars: int = 3
+) -> float | None:
+    """Fraction of the given (most-recent-first) closed exits that are
+    stop-losses landing within `cluster_bars` bars of another stop-loss
+    exit in the same set — round-004 idea 1's regime-arming signal."""
+    if not rows:
+        return None
+    times = [datetime.fromisoformat(r["exit_time"]) for r in rows]
+    stop_times = [t for r, t in zip(rows, times) if r["exit_reason"] == "stop_loss"]
+    window = timedelta(minutes=bar_minutes * cluster_bars)
+    clustered = sum(
+        1 for t in stop_times
+        if any(t != other and abs((t - other).total_seconds()) <= window.total_seconds()
+               for other in stop_times)
+    )
+    return clustered / len(rows)
+
+
+def trend_persistence_regime_gated_engine(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-004 idea 1 — the proven self-referential gate (null-arm
+    win rate over its trailing 100 closed trades + stop-out clustering)
+    remounted on a momentum-persistence engine (fresh Donchian extreme
+    with volatility expansion and a strong close) instead of a bare
+    breakout. Returns None without the context feed rather than guess."""
+    donchian_w = int(params.get("donchian_lookback", 24))
+    vol_w = int(params.get("vol_window", 12))
+    vol_base_w = int(params.get("vol_baseline_window", 96))
+    vol_mult = float(params.get("vol_expansion_mult", 1.3))
+    close_pos_pct = float(params.get("close_position_pct", 0.2))
+    wr_thresh = float(params.get("null_winrate_thresh", 0.38))
+    cluster_thresh = float(params.get("stopcluster_thresh", 0.5))
+
+    state = context.get("system_state")
+    if not state:
+        return None
+    wr = state.get("null_win_rate_100")
+    cluster = state.get("stopout_cluster_index")
+    if wr is None or cluster is None or wr >= wr_thresh or cluster <= cluster_thresh:
+        return None
+
+    need = vol_base_w + vol_w + donchian_w + 2
+    if len(bars) < need:
+        return None
+    last = bars[-1]
+    prior = bars[-1 - donchian_w: -1]
+
+    def realized_vol(end: int) -> float | None:
+        window = bars[end - vol_w: end]
+        if len(window) < vol_w:
+            return None
+        rets = [
+            math.log(window[i].close / window[i - 1].close)
+            for i in range(1, len(window))
+            if window[i - 1].close > 0 and window[i].close > 0
+        ]
+        return statistics.pstdev(rets) if len(rets) >= 2 else None
+
+    last_i = len(bars) - 1
+    cur_vol = realized_vol(last_i + 1)
+    baseline = [
+        v for j in range(last_i - vol_base_w, last_i - vol_w + 1)
+        for v in [realized_vol(j)] if v is not None
+    ]
+    if cur_vol is None or not baseline:
+        return None
+    base_med = statistics.median(baseline)
+    if base_med <= 0 or cur_vol <= vol_mult * base_med:
+        return None
+
+    rng = last.high - last.low
+    if rng <= 0:
+        return None
+    close_pos_val = (last.close - last.low) / rng
+    if last.close > max(b.high for b in prior) and close_pos_val >= 1.0 - close_pos_pct:
+        side = "buy"
+    elif last.close < min(b.low for b in prior) and close_pos_val <= close_pos_pct:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="trend_persistence_gated",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"null_win_rate_100": wr, "stopout_cluster_index": cluster,
+                   "cur_vol": cur_vol, "baseline_vol": base_med},
+    )
+
+
+def return_magnitude_compressibility_break(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-004 idea 2 — a magnitude-sequence novelty detector: fire
+    when the current bar's |return| is a 3-sigma surprise against the
+    trailing 48-bar magnitude distribution, but the prior 24 bars stayed
+    quiet (max surprise < 1.5) — the birth of a volatility cluster, not
+    its confirmed middle. Direction is the sign of the surprising bar."""
+    mag_w = int(params.get("mag_window", 48))
+    surprise_th = float(params.get("surprise_thresh", 3.0))
+    quiet_w = int(params.get("prior_quiet_window", 24))
+    quiet_max = float(params.get("prior_quiet_max", 1.5))
+    close_pos_pct = float(params.get("close_position_pct", 0.25))
+
+    need = mag_w + quiet_w + 2
+    if len(bars) < need:
+        return None
+
+    def surprise_at(i: int) -> float | None:
+        window = bars[i - mag_w: i]
+        if len(window) < mag_w or bars[i - 1].close <= 0 or bars[i].close <= 0:
+            return None
+        mags = [abs(math.log(window[k].close / window[k - 1].close))
+                for k in range(1, len(window)) if window[k - 1].close > 0 and window[k].close > 0]
+        if len(mags) < mag_w - 1:
+            return None
+        mu = sum(mags) / len(mags)
+        sigma = statistics.pstdev(mags)
+        if sigma <= 0:
+            return None
+        cur = abs(math.log(bars[i].close / bars[i - 1].close))
+        return (cur - mu) / sigma
+
+    last_i = len(bars) - 1
+    surprise_now = surprise_at(last_i)
+    if surprise_now is None or surprise_now <= surprise_th:
+        return None
+    prior_surprises = [
+        s for k in range(last_i - quiet_w, last_i) for s in [surprise_at(k)] if s is not None
+    ]
+    if not prior_surprises or max(prior_surprises) >= quiet_max:
+        return None
+
+    last, prev = bars[last_i], bars[last_i - 1]
+    if prev.close <= 0:
+        return None
+    ret = math.log(last.close / prev.close)
+    rng = last.high - last.low
+    if rng <= 0:
+        return None
+    close_pos_val = (last.close - last.low) / rng
+    if ret > 0 and close_pos_val >= 1.0 - close_pos_pct:
+        side = "buy"
+    elif ret < 0 and close_pos_val <= close_pos_pct:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="magnitude_surprise_break",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"surprise": surprise_now, "prior_max_surprise": max(prior_surprises)},
+    )
+
+
+def hawkes_self_excitation_intensity_entry(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-004 idea 3 — a Hawkes-style event intensity (large bars,
+    time-decay kernel) crossing its excitation threshold WHILE cumulative
+    displacement is still small: the branching birth, timed before the
+    move Omori and R0-ignition chased on the visible impulse."""
+    event_mult = float(params.get("event_mult", 1.5))
+    median_w = int(params.get("median_window", 96))
+    decay = float(params.get("kernel_decay", 0.3))
+    intensity_w = int(params.get("intensity_window", 12))
+    intensity_th = float(params.get("intensity_thresh", 1.5))
+    cum_disp_max = float(params.get("cum_disp_max_pct", 1.0)) / 100.0
+
+    need = median_w + intensity_w + 2
+    if len(bars) < need:
+        return None
+
+    def log_ret(i: int) -> float | None:
+        if bars[i - 1].close <= 0 or bars[i].close <= 0:
+            return None
+        return math.log(bars[i].close / bars[i - 1].close)
+
+    def intensity_at(i: int) -> tuple[float, float] | None:
+        """(lambda, median_magnitude) at index i, or None if underfilled."""
+        mags = [abs(r) for k in range(i - median_w, i) for r in [log_ret(k)] if r is not None]
+        if len(mags) < median_w - 1:
+            return None
+        med_mag = statistics.median(mags)
+        if med_mag <= 0:
+            return None
+        lam = 0.0
+        for k in range(intensity_w):
+            r = log_ret(i - k)
+            if r is not None and abs(r) > event_mult * med_mag:
+                lam += math.exp(-decay * k)
+        return lam, med_mag
+
+    last_i = len(bars) - 1
+    now = intensity_at(last_i)
+    prev = intensity_at(last_i - 1)
+    if now is None or prev is None:
+        return None
+    lam_now, med_mag = now
+    lam_prev, _ = prev
+    if not (lam_prev < intensity_th <= lam_now):
+        return None
+
+    disp = sum(
+        r for k in range(intensity_w) for r in [log_ret(last_i - k)] if r is not None
+    )
+    if abs(disp) >= cum_disp_max:
+        return None
+
+    net_flow = sum(
+        (1 if r > 0 else -1)
+        for k in range(intensity_w)
+        for r in [log_ret(last_i - k)]
+        if r is not None and abs(r) > event_mult * med_mag
+    )
+    if net_flow == 0:
+        return None
+    last = bars[last_i]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="hawkes_intensity_entry",
+        side="buy" if net_flow > 0 else "sell",
+        bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"intensity": lam_now, "cum_displacement": disp, "net_flow": net_flow},
+    )
+
+
+def one_sided_range_expansion_thrust(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-004 idea 4 — the inversion of dead absorption: high volume
+    AND a large body (positively correlated, unlike absorption's empty
+    set) with the close pinned at the extreme and minimal opposing wick —
+    a cleared-book continuation thrust, not a fade."""
+    body_mult = float(params.get("body_mult", 2.0))
+    vol_mult = float(params.get("vol_mult", 1.5))
+    med_w = int(params.get("median_window", 96))
+    same_wick_max = float(params.get("same_dir_wick_max", 0.15))
+    opp_wick_max = float(params.get("opp_wick_max", 0.4))
+    extreme_w = int(params.get("extreme_lookback", 12))
+
+    need = med_w + extreme_w + 2
+    if len(bars) < need:
+        return None
+    last = bars[-1]
+    window = bars[-1 - med_w: -1]
+    med_body = statistics.median(abs(b.close - b.open) for b in window)
+    med_vol = statistics.median(b.volume for b in window)
+    if med_body <= 0 or med_vol <= 0:
+        return None
+    body = last.close - last.open
+    if abs(body) <= body_mult * med_body or last.volume <= vol_mult * med_vol:
+        return None
+
+    prior_extreme = bars[-1 - extreme_w: -1]
+    if body > 0:
+        same_wick = last.high - last.close
+        opp_wick = last.open - last.low
+        if same_wick >= same_wick_max * abs(body) or opp_wick >= opp_wick_max * abs(body):
+            return None
+        if last.close <= max(b.high for b in prior_extreme):
+            return None
+        side = "buy"
+    else:
+        same_wick = last.open - last.low
+        opp_wick = last.high - last.close
+        if same_wick >= same_wick_max * abs(body) or opp_wick >= opp_wick_max * abs(body):
+            return None
+        if last.close >= min(b.low for b in prior_extreme):
+            return None
+        side = "sell"
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="one_sided_expansion_thrust",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"body": body, "med_body": med_body, "vol_ratio": last.volume / med_vol},
+    )
+
+
+_ROUND_NUMBER_GRID: dict[str, float] = {
+    "BTC/USD": 1000.0, "ETH/USD": 100.0, "SOL/USD": 10.0,
+    "LINK/USD": 1.0, "AVAX/USD": 1.0,
+}
+
+
+def round_number_breach_continuation(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-004 idea 5 — the continuation inverse of dead
+    round_number_overshoot_snap: price coils near a round level, then
+    decisively breaches it on volume — a stop cascade on the far side
+    fuels the move rather than snapping back. Not a clock-time coil (the
+    4-for-4 named-time deaths), a price-level order-flow reservoir."""
+    proximity = float(params.get("proximity_pct", 0.3)) / 100.0
+    coil_required = int(params.get("coil_bars_required", 6))
+    coil_w = int(params.get("coil_window", 12))
+    breach = float(params.get("breach_pct", 0.4)) / 100.0
+    vol_mult = float(params.get("vol_mult", 1.3))
+    close_pos_pct = float(params.get("close_position_pct", 0.25))
+    vol_w = 96
+
+    need = coil_w + vol_w + 2
+    if len(bars) < need:
+        return None
+    last = bars[-1]
+    grid = _ROUND_NUMBER_GRID.get(last.symbol)
+    if not grid:
+        return None
+
+    coil = bars[-1 - coil_w: -1]
+    level = round(coil[-1].close / grid) * grid
+    if level <= 0:
+        return None
+    near = sum(1 for b in coil if abs(b.close - level) / level <= proximity)
+    if near < coil_required:
+        return None
+
+    med_vol = statistics.median(b.volume for b in bars[-1 - vol_w: -1])
+    if med_vol <= 0 or last.volume <= vol_mult * med_vol:
+        return None
+    rng = last.high - last.low
+    if rng <= 0:
+        return None
+    close_pos_val = (last.close - last.low) / rng
+    if last.close > level * (1.0 + breach) and close_pos_val >= 1.0 - close_pos_pct:
+        side = "buy"
+    elif last.close < level * (1.0 - breach) and close_pos_val <= close_pos_pct:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="round_number_breach",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"level": level, "grid": grid, "coil_count": near},
+    )
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
@@ -1290,6 +1657,11 @@ STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "slot_scarcity_gate": slot_scarcity_conviction_gate,
     "post_shock_drift": post_shock_multiday_drift,
     "breakout_retest_limit": pullback_to_breakout_level_limit,
+    "trend_persistence_gated": trend_persistence_regime_gated_engine,
+    "magnitude_surprise_break": return_magnitude_compressibility_break,
+    "hawkes_intensity_entry": hawkes_self_excitation_intensity_entry,
+    "one_sided_expansion_thrust": one_sided_range_expansion_thrust,
+    "round_number_breach": round_number_breach_continuation,
 }
 
 
@@ -1390,12 +1762,29 @@ def load_system_state(
         sum(1 for r in all_recent if r["exit_reason"] == "stop_loss") / len(all_recent)
         if all_recent else None
     )
+    # Round-004 idea 1 gate inputs: count-based (not time-windowed) so the
+    # gate stays informative even across the 24h lookback boundary.
+    null_100 = conn.execute(
+        """
+        SELECT pnl_usd, exit_reason, exit_time FROM trades
+         WHERE variant_name = 'null_baseline' AND status = 'closed'
+         ORDER BY exit_time DESC LIMIT 100
+        """
+    ).fetchall()
+    last_20 = conn.execute(
+        """
+        SELECT exit_reason, exit_time FROM trades
+         WHERE status = 'closed' ORDER BY exit_time DESC LIMIT 20
+        """
+    ).fetchall()
     return {
         "null_win_rate": (wins / closed) if closed else None,
         "recent_stopouts": stopouts,
         "rejection_rate": rejection_rate,
         "placebo_stop_rate": placebo_stop_rate,
         "stop_out_rate": stop_out_rate,  # last 10 closed, ALL arms (r003)
+        "null_win_rate_100": _closed_trade_win_rate(null_100),
+        "stopout_cluster_index": _stopout_cluster_index(last_20),
     }
 
 

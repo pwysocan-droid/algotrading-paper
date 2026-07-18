@@ -70,13 +70,18 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "slot_scarcity_conviction_gate", "post_shock_multiday_drift",
         "pullback_to_breakout_level_limit",
     }
+    foundry_004 = {
+        "trend_persistence_regime_gated_engine", "return_magnitude_compressibility_break",
+        "hawkes_self_excitation_intensity_entry", "one_sided_range_expansion_thrust",
+        "round_number_breach_continuation",
+    }
     assert set(STRATEGY_VARIANTS.keys()) == (
-        retired | candidates | foundry_001 | foundry_002 | foundry_003
+        retired | candidates | foundry_001 | foundry_002 | foundry_003 | foundry_004
         | {"null_baseline"}
     )
     assert all(
         STRATEGY_VARIANTS[n].get("enabled") is False
-        for n in foundry_001 | foundry_002 | foundry_003
+        for n in foundry_001 | foundry_002 | foundry_003 | foundry_004
     ), "foundry rounds stay disabled pending their gauntlets"
 
     # The live roster: null placebo + the gauntlet's top 2 as A/B arms
@@ -930,3 +935,195 @@ class TestFoundryRound003:
         b = bars[129]  # stays high — armed but never touches the level
         bars[129] = _bar(b.symbol, b.timestamp, 101.0, 101.4, 100.9, 101.2, 100.0)
         assert signals.pullback_to_breakout_level_limit(bars, {}, {}) is None
+
+
+class TestFoundryRound004:
+    def test_all_registered(self) -> None:
+        for key in ("trend_persistence_gated", "magnitude_surprise_break",
+                    "hawkes_intensity_entry", "one_sided_expansion_thrust",
+                    "round_number_breach"):
+            assert key in signals.STRATEGY_REGISTRY
+
+    def test_insufficient_bars_all_return_none(self) -> None:
+        bars = _flat_series("BTC/USD", 20)
+        ctx = {"system_state": {"null_win_rate_100": 0.2, "stopout_cluster_index": 0.7}}
+        assert signals.trend_persistence_regime_gated_engine(bars, {}, ctx) is None
+        assert signals.return_magnitude_compressibility_break(bars, {}, {}) is None
+        assert signals.hawkes_self_excitation_intensity_entry(bars, {}, {}) is None
+        assert signals.one_sided_range_expansion_thrust(bars, {}, {}) is None
+        assert signals.round_number_breach_continuation(bars, {}, {}) is None
+
+    def test_flat_series_no_fires(self) -> None:
+        bars = _flat_series("ETH/USD", 250)
+        ctx = {"system_state": {"null_win_rate_100": 0.2, "stopout_cluster_index": 0.7}}
+        assert signals.trend_persistence_regime_gated_engine(bars, {}, ctx) is None
+        assert signals.return_magnitude_compressibility_break(bars, {}, {}) is None
+        assert signals.hawkes_self_excitation_intensity_entry(bars, {}, {}) is None
+        assert signals.one_sided_range_expansion_thrust(bars, {}, {}) is None
+        assert signals.round_number_breach_continuation(bars, {}, {}) is None
+
+    # -- idea 1: gated trend-persistence engine -------------------------------
+
+    def _trend_persistence_bars(self) -> list[BarRow]:
+        start = datetime(2026, 7, 13, tzinfo=timezone.utc)
+        bars: list[BarRow] = []
+        p = 100.0
+
+        def add(o: float, c: float, v: float, pad: float = 0.02) -> None:
+            nonlocal p
+            h, l = max(o, c) + pad, min(o, c) - pad
+            ts = (start + timedelta(minutes=5 * len(bars))).isoformat()
+            bars.append(_bar("BTC/USD", ts, o, h, l, c, v))
+            p = c
+
+        for k in range(160):  # quiet baseline: tiny alternating returns
+            ret = 0.0005 if k % 2 == 0 else -0.0005
+            add(p, p * (1 + ret), 100.0)
+        for k in range(11):  # volatility expansion into the last 12-bar window
+            ret = 0.02 if k % 2 == 0 else -0.018
+            add(p, p * (1 + ret), 150.0)
+        prior_24 = bars[-24:]
+        max_high = max(b.high for b in prior_24)
+        o = p
+        c = max_high * 1.02  # fresh 24-bar high, closes near the bar's own high
+        ts = (start + timedelta(minutes=5 * len(bars))).isoformat()
+        bars.append(_bar("BTC/USD", ts, o, c + 0.01, o - 0.01, c, 300.0))
+        return bars
+
+    def test_gated_engine_fires_buy_when_armed(self) -> None:
+        ctx = {"system_state": {"null_win_rate_100": 0.2, "stopout_cluster_index": 0.7}}
+        sig = signals.trend_persistence_regime_gated_engine(
+            self._trend_persistence_bars(), {}, ctx)
+        assert sig is not None and sig.side == "buy"
+
+    def test_gate_shut_or_missing_suppresses(self) -> None:
+        bars = self._trend_persistence_bars()
+        assert signals.trend_persistence_regime_gated_engine(
+            bars, {}, {"system_state": {"null_win_rate_100": 0.6, "stopout_cluster_index": 0.7}}
+        ) is None  # null-arm not failing
+        assert signals.trend_persistence_regime_gated_engine(
+            bars, {}, {"system_state": {"null_win_rate_100": 0.2, "stopout_cluster_index": 0.2}}
+        ) is None  # no stop-out clustering
+        assert signals.trend_persistence_regime_gated_engine(bars, {}, {}) is None
+
+    # -- idea 2: return-magnitude compressibility break -----------------------
+
+    def _magnitude_break_bars(self) -> list[BarRow]:
+        start = datetime(2026, 7, 13, tzinfo=timezone.utc)
+        bars: list[BarRow] = []
+        p = 100.0
+
+        def add(o: float, c: float, v: float, pad: float = 0.02) -> None:
+            h, l = max(o, c) + pad, min(o, c) - pad
+            ts = (start + timedelta(minutes=5 * len(bars))).isoformat()
+            bars.append(_bar("BTC/USD", ts, o, h, l, c, v))
+
+        for k in range(100):  # quiet magnitude regime: tiny consistent noise
+            ret = 0.001 if k % 2 == 0 else -0.0009
+            add(p, p * (1 + ret), 100.0)
+            p = p * (1 + ret)
+        o = p
+        c = p * 1.05  # a genuinely novel large bar breaking the quiet code
+        add(o, c, 100.0, pad=0.05)
+        return bars
+
+    def test_magnitude_surprise_fires_buy(self) -> None:
+        sig = signals.return_magnitude_compressibility_break(
+            self._magnitude_break_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_no_fire_when_prior_window_not_quiet(self) -> None:
+        bars = self._magnitude_break_bars()
+        b = bars[-25]  # inject a prior surprise inside the required-quiet window
+        bars[-25] = _bar(b.symbol, b.timestamp, 100.0, 104.0, 99.9, 103.8, 100.0)
+        assert signals.return_magnitude_compressibility_break(bars, {}, {}) is None
+
+    # -- idea 3: Hawkes self-excitation intensity ------------------------------
+
+    def _hawkes_bars(self) -> list[BarRow]:
+        start = datetime(2026, 7, 13, tzinfo=timezone.utc)
+        bars: list[BarRow] = []
+        p = 100.0
+
+        def add(o: float, c: float, v: float, pad: float = 0.02) -> None:
+            h, l = max(o, c) + pad, min(o, c) - pad
+            ts = (start + timedelta(minutes=5 * len(bars))).isoformat()
+            bars.append(_bar("BTC/USD", ts, o, h, l, c, v))
+
+        for k in range(110):  # quiet baseline: no events
+            ret = 0.0003 if k % 2 == 0 else -0.00025
+            add(p, p * (1 + ret), 100.0)
+            p = p * (1 + ret)
+        for k in range(4):  # loading-phase events, alternating (small net displacement)
+            ret = 0.004 if k % 2 == 0 else -0.0038
+            add(p, p * (1 + ret), 120.0)
+            p = p * (1 + ret)
+        for k in range(2):  # quiet interlude keeps intensity under threshold
+            ret = 0.0003
+            add(p, p * (1 + ret), 100.0)
+            p = p * (1 + ret)
+        ret = 0.0045  # final event crosses the intensity threshold
+        add(p, p * (1 + ret), 130.0)
+        return bars
+
+    def test_hawkes_fires_buy_on_intensity_crossing(self) -> None:
+        sig = signals.hawkes_self_excitation_intensity_entry(self._hawkes_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_no_fire_without_crossing(self) -> None:
+        bars = self._hawkes_bars()
+        b = bars[-1]  # a quiet bar instead of the crossing event
+        bars[-1] = _bar(b.symbol, b.timestamp, b.open, b.open + 0.02, b.open - 0.02,
+                         b.open * 1.0003, 100.0)
+        assert signals.hawkes_self_excitation_intensity_entry(bars, {}, {}) is None
+
+    # -- idea 4: one-sided range expansion thrust ------------------------------
+
+    def _expansion_thrust_bars(self) -> list[BarRow]:
+        bars = []
+        start = datetime(2026, 7, 13, tzinfo=timezone.utc)
+        for k in range(110):  # body 0.2, range 1.0, vol 100 — never a thrust
+            ts = (start + timedelta(minutes=5 * k)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.2, 100.75, 99.75, 100.4, 100.0))
+        ts = (start + timedelta(minutes=5 * 110)).isoformat()
+        # body 2.1 (>2x median 0.2), vol 300 (>1.5x median 100), close pinned near high
+        bars.append(_bar("BTC/USD", ts, 100.4, 102.55, 100.3, 102.5, 300.0))
+        return bars
+
+    def test_expansion_thrust_fires_buy(self) -> None:
+        sig = signals.one_sided_range_expansion_thrust(self._expansion_thrust_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_no_fire_without_volume(self) -> None:
+        bars = self._expansion_thrust_bars()
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, b.open, b.high, b.low, b.close, 100.0)
+        assert signals.one_sided_range_expansion_thrust(bars, {}, {}) is None
+
+    # -- idea 5: round-number breach continuation ------------------------------
+
+    def _round_breach_bars(self) -> list[BarRow]:
+        bars = []
+        start = datetime(2026, 7, 13, tzinfo=timezone.utc)
+        for k in range(98):  # vol baseline, flat near 50000
+            ts = (start + timedelta(minutes=5 * k)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 50000.0, 50005.0, 49995.0, 50000.0, 100.0))
+        for k in range(11):  # coiling within 0.3% of the 50000 level
+            ts = (start + timedelta(minutes=5 * (98 + k))).isoformat()
+            bars.append(_bar("BTC/USD", ts, 50000.0, 50010.0, 49990.0, 50005.0, 100.0))
+        ts = (start + timedelta(minutes=5 * 109)).isoformat()
+        # decisive breach: closes 0.5% above 50000, vol 2x median, close near high
+        bars.append(_bar("BTC/USD", ts, 50005.0, 50260.0, 49990.0, 50250.0, 200.0))
+        return bars
+
+    def test_round_breach_fires_buy(self) -> None:
+        sig = signals.round_number_breach_continuation(self._round_breach_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["level"] == pytest.approx(50000.0)
+
+    def test_no_fire_without_coil(self) -> None:
+        bars = self._round_breach_bars()
+        for k in range(98, 109):  # scatter the coil bars away from the level
+            b = bars[k]
+            bars[k] = _bar(b.symbol, b.timestamp, 50500.0, 50510.0, 50490.0, 50505.0, 100.0)
+        assert signals.round_number_breach_continuation(bars, {}, {}) is None
