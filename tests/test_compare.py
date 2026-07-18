@@ -127,3 +127,33 @@ def test_report_insufficient_uses_emdash_for_stats(tmp_db: Path) -> None:
     report = compare.render_report(result)
     assert "**Verdict: INSUFFICIENT**" in report
     assert "Welch t = —" in report
+
+
+class TestSequentialGate:
+    """SPRT machinery (decision-log 2026-07-18 ruling 3): the math must
+    be right before the boundary table can replace the fixed-n gate."""
+
+    def test_llr_moves_up_under_true_edge(self) -> None:
+        from scripts.sequential_gate import sprt_llr, UPPER
+        # arm consistently beating null by exactly delta -> LLR climbs
+        traj = sprt_llr([0.9] * 60, delta=0.9, sigma=3.0)
+        assert traj[-1] > 0
+        assert traj[-1] == max(traj)
+        # and eventually crosses efficacy with enough samples
+        long = sprt_llr([0.9] * 400, delta=0.9, sigma=3.0)
+        assert long[-1] >= UPPER
+
+    def test_llr_moves_down_under_no_edge(self) -> None:
+        from scripts.sequential_gate import sprt_llr, LOWER
+        traj = sprt_llr([0.0] * 400, delta=0.9, sigma=3.0)
+        assert traj[-1] <= LOWER
+
+    def test_decisions(self) -> None:
+        from scripts.sequential_gate import decide, UPPER, LOWER
+        assert "EFFICACY" in decide(UPPER + 0.1)
+        assert "FUTILITY" in decide(LOWER - 0.1)
+        assert decide(0.0) == "continue"
+
+    def test_zero_sigma_is_safe(self) -> None:
+        from scripts.sequential_gate import sprt_llr
+        assert sprt_llr([1.0, 2.0], delta=0.9, sigma=0.0) == [0.0, 0.0]

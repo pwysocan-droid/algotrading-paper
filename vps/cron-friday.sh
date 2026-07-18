@@ -32,6 +32,7 @@ git pull --rebase --autostash >>"${LOG}" 2>&1 || { git rebase --abort >>"${LOG}"
 
 # Fresh calibration report first, so the investigator can read it.
 python scripts/calibration_report.py >>"${LOG}" 2>&1 || log "WARN: calibration_report failed"
+python scripts/sequential_gate.py >>"${LOG}" 2>&1 || log "WARN: sequential_gate failed"
 
 if ! python adversarial_cron.py --friday >>"${LOG}" 2>&1; then
   log "adversarial_cron.py --friday FAILED — no commit"
