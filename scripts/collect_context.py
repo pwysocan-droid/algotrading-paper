@@ -60,6 +60,14 @@ def migrate(db_path: Path = DB_PATH) -> None:
             )
             """
         )
+        # v2 (2026-07-18): Alpaca-venue quotes — decomposing the cost
+        # floor. The Binance columns above measure the market; these
+        # measure OUR venue's spread, the component of the 0.6%
+        # assumption that needs no real money to verify.
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(context_snapshots)")}
+        for col in ("alpaca_bid", "alpaca_ask", "alpaca_spread_pct"):
+            if col not in cols:
+                conn.execute(f"ALTER TABLE context_snapshots ADD COLUMN {col} REAL")
 
 
 def depth_imbalance(bids: list, asks: list) -> float | None:
@@ -107,14 +115,46 @@ def snapshot(symbol: str, binance: str) -> dict:
     return row
 
 
+def alpaca_quotes() -> dict[str, dict]:
+    """Latest bid/ask on OUR venue, one batched call. Empty on failure."""
+    import os
+    try:
+        r = requests.get(
+            "https://data.alpaca.markets/v1beta3/crypto/us/latest/quotes",
+            params={"symbols": ",".join(SYMBOLS)},
+            headers={
+                "APCA-API-KEY-ID": os.environ.get("ALPACA_API_KEY", ""),
+                "APCA-API-SECRET-KEY": os.environ.get("ALPACA_SECRET_KEY", ""),
+            },
+            timeout=TIMEOUT,
+        )
+        r.raise_for_status()
+        return r.json().get("quotes", {})
+    except Exception as exc:  # noqa: BLE001
+        print(f"WARN alpaca quotes: {type(exc).__name__}")
+        return {}
+
+
 def main() -> int:
+    from dotenv import load_dotenv
+
+    load_dotenv()
     migrate()
     cols = ["symbol", "ts", "funding_rate", "mark_price", "next_funding_time",
-            "open_interest", "bid", "ask", "spread_pct", "depth_imbalance"]
+            "open_interest", "bid", "ask", "spread_pct", "depth_imbalance",
+            "alpaca_bid", "alpaca_ask", "alpaca_spread_pct"]
     n_ok = 0
+    alp = alpaca_quotes()
     with sqlite3.connect(DB_PATH) as conn:
         for symbol, binance in SYMBOLS.items():
             row = snapshot(symbol, binance)
+            q = alp.get(symbol)
+            if q and q.get("bp") and q.get("ap"):
+                bp, ap = float(q["bp"]), float(q["ap"])
+                row["alpaca_bid"], row["alpaca_ask"] = bp, ap
+                mid = (bp + ap) / 2
+                if mid > 0:
+                    row["alpaca_spread_pct"] = (ap - bp) / mid * 100.0
             conn.execute(
                 f"INSERT OR IGNORE INTO context_snapshots ({','.join(cols)}) "
                 f"VALUES ({','.join('?' * len(cols))})",

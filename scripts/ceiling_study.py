@@ -33,7 +33,8 @@ from config import SLIPPAGE_PCT, TAKER_FEE_PCT, WATCHED_SYMBOLS
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SELECTION_END = "2026-01-01T00:00:00+00:00"
-HORIZONS_BARS = {"1h": 12, "3h": 36, "6h": 72, "12h": 144, "24h": 288}
+HORIZONS_BARS = {"1h": 12, "3h": 36, "6h": 72, "12h": 144, "24h": 288,
+                 "3d": 864, "1w": 2016, "2w": 4032}
 REFIT_EVERY = 288 * 90          # quarterly
 MIN_TRAIN = 288 * 120           # 4 months before first prediction
 ROUND_TRIP_COST = 2 * (TAKER_FEE_PCT + SLIPPAGE_PCT)   # fraction, both legs
@@ -160,11 +161,15 @@ def score_horizon(conn, horizon: str, k: int) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--db", type=Path, default=REPO_ROOT / "research_bars.db")
+    parser.add_argument("--horizons", default=None,
+                        help="comma-separated subset, e.g. '3d,1w,2w'")
     args = parser.parse_args()
 
+    todo = ([h.strip() for h in args.horizons.split(",")]
+            if args.horizons else list(HORIZONS_BARS))
     results = {}
     with db.connect(args.db) as conn:
-        for horizon, k in HORIZONS_BARS.items():
+        for horizon, k in ((h, HORIZONS_BARS[h]) for h in todo):
             print(f"horizon {horizon} (k={k}):")
             results[horizon] = score_horizon(conn, horizon, k)
 
