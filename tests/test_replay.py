@@ -641,3 +641,39 @@ class TestMakerFillModel:
         assert t.fees_usd == pytest.approx(
             (100.0 * 0.0015 + expected_exit * 0.0025) * qty
         )
+
+
+def test_replay_system_state_keys_match_live_feed(tmp_db: Path) -> None:
+    """The live and replay system_state feeds must expose the SAME keys.
+    Round-004's fallback implementer added fields to the live feed only —
+    the gated engine would have fired ZERO times in every gauntlet while
+    working live (the vol_thrust never-fires bug, mirrored). This pins
+    the contract end-to-end so the two sides can never drift again."""
+    base = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    from tests.fixtures.bars import make_bar_series
+    _seed_bars(tmp_db, make_bar_series("BTC/USD", base, n=6))
+
+    captured: dict = {}
+
+    def capture_state(bars_so_far, params, ctx):
+        captured.update(state_keys=set((ctx.get("system_state") or {}).keys()))
+        return None
+
+    signals.STRATEGY_REGISTRY["state_capture"] = capture_state
+    try:
+        variant = {"strategy": "state_capture", "params": {},
+                   "context_keys": ["system_state"], "enabled": True}
+        with db.connect(tmp_db) as conn:
+            replay.replay_variant(
+                conn, "state_capture_v", variant, ["BTC/USD"],
+                base - timedelta(minutes=1), base + timedelta(hours=1),
+            )
+            live_keys = set(signals.load_system_state(conn).keys())
+    finally:
+        del signals.STRATEGY_REGISTRY["state_capture"]
+
+    assert captured.get("state_keys"), "capture strategy never received context"
+    assert captured["state_keys"] == live_keys, (
+        f"replay serves {captured['state_keys']}, live serves {live_keys} — "
+        "extend replay._state_at whenever load_system_state grows"
+    )

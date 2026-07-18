@@ -48,6 +48,7 @@ from render import (
     format_pct,
     render_v1_report,
 )
+import signals as sig_mod
 from signals import BarRow, Signal, get_strategy_fn
 
 
@@ -286,6 +287,8 @@ def replay_variant(
         c_hi = bisect.bisect_right(null_cand_ts, ts_str)
         recent_cand = null_cand_rejected[max(0, c_hi - 50): c_hi]
         last_exits = null_exits[max(0, hi - 10): hi]
+        last_20 = null_exits[max(0, hi - 20): hi]
+        last_100 = null_exits[max(0, hi - 100): hi]
         return {
             "null_win_rate": (wins / closed_n) if closed_n else None,
             "recent_stopouts": stops,
@@ -303,6 +306,18 @@ def replay_variant(
                 sum(1 for _, _w, s in last_exits if s) / len(last_exits)
                 if last_exits else None
             ),
+            # r004 gate inputs (the fallback implementer added these to
+            # the LIVE feed only — without this mirror the gated engine
+            # would fire ZERO times in every gauntlet, the vol_thrust
+            # never-fires bug in reverse; caught in review 2026-07-18).
+            "null_win_rate_100": (
+                sum(1 for _, w, _s in last_100 if w) / len(last_100)
+                if last_100 else None
+            ),
+            "stopout_cluster_index": sig_mod._stopout_cluster_index([
+                {"exit_reason": "stop_loss" if s else "time_exit", "exit_time": ts}
+                for ts, _w, s in last_20
+            ]),
         }
 
     out: list[SimulatedTrade] = []
