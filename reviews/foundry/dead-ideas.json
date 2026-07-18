@@ -13,7 +13,10 @@
     "COST IS A DESIGN INPUT (2026-07-17): prefer entries where price comes to the level (limit-friendly) and single-fire selectivity \u2014 the denominator of edge-per-slot includes what execution costs, not just what the signal knows.",
     "CONJUNCTIONS MULTIPLY TO ZERO (r002): base-rate arithmetic that multiplies per-condition probabilities as if independent produces fire-rate misses of 4x to infinity when the conjuncts are anti-correlated (high volume x small body is nearly mutually exclusive in crypto candles; entropy jumps of +0.35 bits are impossible when H already sits at 0.95/1.0). Every spec must state WHY its conditions are independent, and any idea whose premise can be checked against the data distribution BEFORE a full gauntlet (entropy ceiling, conjunct correlation) should be \u2014 a 5-minute histogram would have killed two of five r002 ideas.",
     "NAMED-TIME COILS DIE (r001-r003, 4 deaths): dead_zone (overnight), options_expiry_pin (08:00 UTC), weekend thinness, asian_london handoff (07:00-09:00). A range break carries no extra directional energy for happening at a named clock time \u2014 the calendar lens is 0-for-4 on release-shaped ideas and needs a fundamentally different mechanism to earn another slot.",
-    "THE GATE KEEPS WINNING, THE ENGINES KEEP STARVING (r001-r003): the self-referential system-state gate is best-of-round three rounds running on three different engines, and r003's version is the first idea ever to pass its own kill criterion (+1.75%/trade, but n=7). The binding constraint is now ENGINE FIRE RATE: a gated idea needs an ungated engine firing >=1/sym/day for the armed sample to reach statistical decidability inside 930d."
+    "THE GATE KEEPS WINNING, THE ENGINES KEEP STARVING (r001-r003): the self-referential system-state gate is best-of-round three rounds running on three different engines, and r003's version is the first idea ever to pass its own kill criterion (+1.75%/trade, but n=7). The binding constraint is now ENGINE FIRE RATE: a gated idea needs an ungated engine firing >=1/sym/day for the armed sample to reach statistical decidability inside 930d.",
+    "THE GATE ITSELF IS THE BOTTLENECK, NOT ENGINE FIRE RATE (r004 refutes the r001-r003 fix): trend_persistence_regime_gated_engine paired the gate with a momentum-persistence engine that comfortably cleared the prescribed >=1/sym/day (5.17/sym/day raw at premise check) — and the armed sample still collapsed to n=39 over 930d (0.008/sym/day, ~27x under prediction), the worst win rate of any gate-family idea yet (25.6%). Four rounds, four engines, and NO gated idea has ever reached n>=100 armed trades (r001 n=460, r002 n=109/35, r003 n=7, r004 n=39). The bottleneck was never the engine's raw frequency — it is the gate's own conjunctive definition (multiple system_state conditions holding simultaneously) being intrinsically rare. A looser or single-condition gate is required before the family can be tested again.",
+    "MICROSTRUCTURE-FROM-OHLCV LENS EXHAUSTED (r001-r004, 4-for-4 dead): wick rejection (r001, fade-shaped), absorption (r002, empty conjunction), gap-fill exhaustion (r003, starved 2000x under prediction), one-sided range expansion (r004, well-sampled n=465 and still net -0.71%/trade, worse than a random large bar). Every candle-geometry shape tried — fade, absorption, gap, one-sided thrust — has failed. The lens needs order-book/footprint data to proceed; OHLCV candle geometry alone is exhausted.",
+    "BEHAVIORAL-CALENDAR LENS EXHAUSTED IN BOTH DIRECTIONS (r001-r004, 4-for-4 dead): the round-number price level was tested as a fade (r001, overshoot-snap) and as its deliberate inversion, a stop-cascade continuation (r004, breach-continuation) — both dead, both under/over-fired their base rate by an order of magnitude. Named clock-time coils were tested twice more (options-expiry r002, Asian-London r003) — also dead. No remaining calendar/price-level permutation is untested; the lens is closed absent a genuinely new data source (real order-book or open-interest, not an OHLCV-derived time or price artifact)."
   ],
   "ideas": [
     {
@@ -278,7 +281,72 @@
         "actual": 0.0024,
         "net_expectancy_pct": 1.75
       }
+    },
+    {
+      "name": "trend_persistence_regime_gated_engine",
+      "lineage": "foundry r004 · gate_engine_pairing",
+      "tested": "2026-07-18 · 930d constrained replay (staged, taker), full@930d",
+      "result": "n=39 armed/placed (74 raw armed-engine candidates), -$96.82, edge/slot -$2.48, win 25.6%, Sharpe -0.73",
+      "verdict": "dead",
+      "epitaph": "The raw momentum-persistence engine comfortably cleared the r001-r003 prescription (>=1/sym/day: premise check measured 5.17/sym/day raw), but the ARMED sample still collapsed to n=39 over 930 days (0.008/sym/day, ~27x under the predicted 0.15-0.30 armed rate) — short of the idea's own n>=100 bar for a decisive family-retirement verdict. What did fire produced the worst win rate of any gate-family idea yet (25.6%, vs r001's 43.3% and r002's 36.7%) and a net expectancy of -1.24%/trade, leaving no realistic path to profitability regardless of the sample shortfall. Four consecutive rounds have now paired the self-referential gate with four different engines (r001 n=460, r002 n=109/35, r003 n=7, r004 n=39) and never once reached a statistically decidable armed sample. The r001-r003 prescription — 'pair the gate with a better engine' — is refuted as a fix: the bottleneck was never engine scarcity, it is the gate's own conjunctive definition (multiple system_state conditions required simultaneously) being intrinsically rare.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.225,
+        "actual": 0.008,
+        "net_expectancy_pct": -1.24
+      }
+    },
+    {
+      "name": "return_magnitude_compressibility_break",
+      "lineage": "foundry r004 · information_theory",
+      "tested": "2026-07-18 · 180d constrained replay (staged, taker), killed@180d",
+      "result": "n=489, -$614.18, edge/slot -$1.26, win 36.4%, Sharpe -1.21",
+      "verdict": "dead",
+      "epitaph": "The required pre-implementation premise check correctly confirmed magnitude headroom exists (p99 surprise 4.6, comfortably above the 3.0 threshold) — vindicating 'if information theory returns, use magnitudes not signs' as far as data existence goes. But headroom existing is not the same as the resulting novel-magnitude bar carrying directional continuation edge: the sign of a bar that breaks the recent quiet-magnitude code predicts the following bars no better than the fee floor allows (36.4% win against an exit needing ~40%+). Fired ~7x the predicted rate (0.73/sym/day vs 0.05-0.15) — quiet-then-surprise transitions are far more common in 5-min crypto than the anti-correlation assumption implied. Compressibility break identifies volatility-regime birth; it does not identify which direction that regime resolves.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.1,
+        "actual": 0.73,
+        "net_expectancy_pct": -0.63
+      }
+    },
+    {
+      "name": "hawkes_self_excitation_intensity_entry",
+      "lineage": "foundry r004 · cross_domain_import",
+      "tested": "2026-07-18 · 180d constrained replay (staged, taker), killed@180d",
+      "result": "n=1122, -$1,396.82, edge/slot -$1.24, win 37.9%, Sharpe -2.02",
+      "verdict": "dead",
+      "epitaph": "The idea's central premise — that 'high intensity AND low cumulative displacement' is a rare, anti-correlated conjunction marking a branching birth before a move — was wrong by two orders of magnitude: the premise check found the raw condition true ~29.7/sym/day (200-600x the predicted 0.05-0.15), and the full gauntlet confirmed the same scale (21.4/sym/day). The 'loading phase' the Hawkes import expected to be a brief, informative window is instead close to the market's default state at 5-min resolution, with no bearing on subsequent displacement (37.9% win, no better than entering on the visible impulse). This closes the shock/point-process import family 3-for-3 dead: Omori's decay-phase entry (r001) chased a spent cluster, R0's growth-phase crossing (r002) marked the midpoint, and Hawkes's pre-displacement loading phase (r004) turns out not to be a distinct, tradable regime at all. Timing the entry earlier in the self-excitation lifecycle does not rescue the family.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.1,
+        "actual": 21.4,
+        "net_expectancy_pct": -0.62
+      }
+    },
+    {
+      "name": "one_sided_range_expansion_thrust",
+      "lineage": "foundry r004 · microstructure_from_ohlcv",
+      "tested": "2026-07-18 · 180d constrained replay (staged, taker), killed@180d",
+      "result": "n=465, -$663.14, edge/slot -$1.43, win 34.4%, Sharpe -2.48",
+      "verdict": "dead",
+      "epitaph": "The engineered inversion worked exactly as designed on the base-rate front — large-body-plus-volume is positively correlated as predicted, the conjunction was populated (not the absorption empty set), and fire rate landed close to the predicted 0.5-1.5/sym/day band (0.68 actual). But populated does not mean informative: a clean one-sided thrust (tiny opposing wick, close pinned at a fresh extreme, elevated volume) continues no better than a random large bar — worse, in fact, than the idea's own named decisive-kill comparison (34.4% win, below the ~38% breakeven reference, and the worst Sharpe of any candidate this round). This is the fourth consecutive microstructure_from_ohlcv death and the best-sampled one yet (wick rejection r001, absorption r002 empty-set, gap-fill r003 starved, this one well-powered and still negative): every OHLCV candle-geometry shape tried — fade, absorption, gap, one-sided expansion — has failed. The lens needs order-book/footprint data to proceed; candle geometry alone is exhausted.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 1.0,
+        "actual": 0.68,
+        "net_expectancy_pct": -0.71
+      }
+    },
+    {
+      "name": "round_number_breach_continuation",
+      "lineage": "foundry r004 · behavioral_calendar",
+      "tested": "2026-07-18 · 180d constrained replay (staged, taker), killed@180d",
+      "result": "n=601, -$447.03, edge/slot -$0.74, win 42.3%, Sharpe 1.67 (gross-positive shape)",
+      "verdict": "dead",
+      "epitaph": "The best win rate (42.3%) and only positive Sharpe of the round — another instance of the GROSS-POSITIVE trap shape, not a live edge. The stop-cascade-fuel thesis (a decisive breach of a coiled round-number level recruits resting orders on the far side) is directionally plausible and shows up in the numbers, but the recruited energy is smaller than the fee floor demands (-0.37%/trade net). Fired ~10x the predicted rate (1.08/sym/day vs 0.06-0.15) — coiling near a round level is common, not the rare magnet event assumed. With this death, the round-number price level has now failed in BOTH directions (r001 fade, r004 continuation), closing out the behavioral_calendar lens 4-for-4 dead.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.105,
+        "actual": 1.08,
+        "net_expectancy_pct": -0.37
+      }
     }
   ],
-  "total_ideas_tested": 23
+  "total_ideas_tested": 28
 }
