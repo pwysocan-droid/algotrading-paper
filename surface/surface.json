@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T04:05:06Z",
+  "generated_at": "2026-07-18T04:10:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-18T04:05:04.027889+00:00",
+    "last_run_iso": "2026-07-18T04:10:03.944777+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-18 · 04:05 UTC",
+    "last_run_human_date": "2026-07-18 · 04:10 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "15972 of 15991 ok · 99.9%",
+    "uptime_recent": "15973 of 15992 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -43,7 +43,7 @@
       "qual": "no strategies registered",
       "figure": "10",
       "unit": "",
-      "spark": "▅▁▁█▁▁█▁",
+      "spark": "█▁██▁██▁",
       "spark_class": null
     },
     {
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "276,202",
-      "delta": "+1456",
+      "count": "276,205",
+      "delta": "+1454",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "276202"
+      "value": "276205"
     },
     {
       "name": "bar coverage",
       "count": "95%",
-      "delta": "-65",
+      "delta": "-67",
       "delta_class": "note",
-      "spark": "█▇▅██▅▂▁",
+      "spark": "█▇▆██▆▃▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "95"
     },
     {
       "name": "cron runs",
-      "count": "15,991",
+      "count": "15,992",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "15991"
+      "value": "15992"
     },
     {
       "name": "llm calls",
@@ -135,7 +135,7 @@
       "count": "167",
       "delta": "+133",
       "delta_class": null,
-      "spark": "█▁▇▇▁▅█▁",
+      "spark": "█▁▇▅▃▅▇▁",
       "spark_class": null,
       "key": "decisions",
       "value": "167"
