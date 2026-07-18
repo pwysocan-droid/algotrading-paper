@@ -2,7 +2,7 @@
   "summary": {
     "due_7d": 1,
     "due_14d": 2,
-    "open": 21,
+    "open": 26,
     "done_this_week": 0
   },
   "gates": [
@@ -243,6 +243,51 @@
       "when_class": "open",
       "thing": "Lessons as falsifiable claims (Tier-0 harvest)",
       "detail": "restate each failure_lesson as a prediction, score it against each new round's outcomes, retire losers — the registry currently accretes prose that is never tested",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Failure-mode taxonomy + repeat-offender rate (imports harvest)",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Failure-mode taxonomy + repeat-offender rate (imports harvest)",
+      "detail": "recode 28 epitaphs into a controlled defect vocabulary, Pareto by mode, coverage matrix; formulation gate: new ideas must clear top-3 modes; repeat-offender rate = the first metric OF the learning loop itself",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Winner's-curse shrinkage on any passer (imports harvest)",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Winner's-curse shrinkage on any passer (imports harvest)",
+      "detail": "shrink a passing idea's effect toward the empirical prior of all prior effects (clustered near zero); the SHRUNKEN number feeds live-confirmation power calcs, not the raw backtest number",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:10k-random-rules null distribution (audit harvest)",
+      "when": "open",
+      "when_class": "open",
+      "thing": "10k-random-rules null distribution (audit harvest)",
+      "detail": "best-of-N benchmark for the daily pipeline: generate thousands of random rules matching our trade-frequency profile, record best-of-batch net effect distribution — deflates every future 'best of round' claim; uncontroversial half of the ceiling study",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Breadth expansion 5 -> 15+ symbols (audit harvest)",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Breadth expansion 5 -> 15+ symbols (audit harvest)",
+      "detail": "5 coins at 0.6-0.8 correlation are ~2 effective series; more coins = direct power gain + unlocks cross-sectional long-short (lower per-trade sigma); bounded by Alpaca's crypto list",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Registry compression audit (audit harvest)",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Registry compression audit (audit harvest)",
+      "detail": "do the 28 write-ups compress to <8 family-level exclusions? if yes the generator is resampling known-dead regions; one family-level exclusion is worth ~50 candidate tests",
       "kind": "build",
       "promoted": false
     }
