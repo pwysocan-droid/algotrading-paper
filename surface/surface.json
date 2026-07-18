@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T16:05:06Z",
+  "generated_at": "2026-07-18T16:10:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-18T16:05:04.346235+00:00",
+    "last_run_iso": "2026-07-18T16:10:04.327002+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-18 · 16:05 UTC",
+    "last_run_human_date": "2026-07-18 · 16:10 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "16116 of 16135 ok · 99.9%",
+    "uptime_recent": "16117 of 16136 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -43,7 +43,7 @@
       "qual": "no strategies registered",
       "figure": "13",
       "unit": "",
-      "spark": "▁▁█▁▅▁▁█",
+      "spark": "▁██▁█▁██",
       "spark_class": null
     },
     {
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "276,828",
-      "delta": "+1379",
+      "count": "276,832",
+      "delta": "+1378",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "276828"
+      "value": "276832"
     },
     {
       "name": "bar coverage",
       "count": "90%",
-      "delta": "-146",
+      "delta": "-147",
       "delta_class": "note",
-      "spark": "█▆▃▃▄▁▁▂",
+      "spark": "█▆▃▂▄▁▁▂",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "90"
     },
     {
       "name": "cron runs",
-      "count": "16,135",
+      "count": "16,136",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16135"
+      "value": "16136"
     },
     {
       "name": "llm calls",
@@ -135,7 +135,7 @@
       "count": "226",
       "delta": "+123",
       "delta_class": null,
-      "spark": "▄▆█▄▁▁█▇",
+      "spark": "▅▆█▃▁▃█▅",
       "spark_class": null,
       "key": "decisions",
       "value": "226"
