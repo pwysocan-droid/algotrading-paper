@@ -79,15 +79,27 @@ def pipeline_health(repo_root: Path = REPO_ROOT,
     log_dir = repo_root / "vps" / "logs"
     if log_dir.exists():
         for prefix in ("foundry", "implementer"):
-            for offset in (0, 1):
+            # Concatenate yesterday+today in order and judge only the LAST
+            # run block: an ALERT followed by a later successful run is a
+            # recovered incident, and an alarm that keeps ringing after
+            # recovery trains the operator to ignore it (first digest,
+            # 2026-07-18, alarmed on a crash fixed 12 hours earlier).
+            text = ""
+            for offset in (1, 0):
                 day = date.fromtimestamp(ts.timestamp() - offset * 86400).isoformat()
                 log = log_dir / f"{prefix}-{day}.log"
-                if log.exists() and "ALERT" in log.read_text():
-                    warnings.append(
-                        f"⚠ {prefix.upper()} ALERT in {log.name} — "
-                        "read the log tail for the traceback."
-                    )
-                    break
+                if log.exists():
+                    text += log.read_text()
+            if not text:
+                continue
+            blocks = text.split("=== ")
+            last_run = next(
+                (b for b in reversed(blocks) if not b.startswith("done")), "")
+            if "ALERT" in last_run:
+                warnings.append(
+                    f"⚠ {prefix.upper()} ALERT: the most recent run failed — "
+                    f"read the tail of vps/logs/{prefix}-*.log for the traceback."
+                )
     return warnings
 
 

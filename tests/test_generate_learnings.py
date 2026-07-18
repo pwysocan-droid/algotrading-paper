@@ -283,3 +283,39 @@ def test_foundry_rejects_bad_rounds(monkeypatch, tmp_path):
     five = [dict(idea, name=f"n{i}") for i in range(4)] + [dict(idea, name="dead_old")]
     with _pytest.raises(RuntimeError, match="collide"):
         f.run_round(client=FakeClient(five))
+
+
+def test_pipeline_health_forgives_recovered_alerts(tmp_path):
+    """An ALERT followed by a later successful run is recovered — the
+    digest must stop alarming (2026-07-18: first digest alarmed on a
+    crash fixed 12 hours earlier)."""
+    from datetime import datetime, timezone
+    from scripts.generate_rounds import pipeline_health
+
+    now = datetime(2026, 7, 18, 12, 0, tzinfo=timezone.utc)
+    (tmp_path / "reviews" / "foundry").mkdir(parents=True)
+    (tmp_path / "reviews" / "foundry" / "round-001.json").write_text("{}")
+    logs = tmp_path / "vps" / "logs"
+    logs.mkdir(parents=True)
+
+    # failed run, then a clean one -> recovered, no warning
+    (logs / "foundry-2026-07-18.log").write_text(
+        "=== autopilot 2026-07-18T04:02:00Z ===\n"
+        "ALERT: foundry_autopilot FAILED\n"
+        "=== done 2026-07-18T04:02:10Z ===\n"
+        "=== autopilot 2026-07-18T16:02:00Z ===\n"
+        "condition B: generating\n"
+        "=== done 2026-07-18T16:04:00Z ===\n"
+    )
+    assert pipeline_health(tmp_path, now=now) == []
+
+    # failure in the MOST RECENT run -> alarm
+    (logs / "foundry-2026-07-18.log").write_text(
+        "=== autopilot 2026-07-18T04:02:00Z ===\n"
+        "ok\n"
+        "=== done 2026-07-18T04:02:10Z ===\n"
+        "=== autopilot 2026-07-18T16:02:00Z ===\n"
+        "ALERT: foundry_autopilot FAILED\n"
+        "=== done 2026-07-18T16:04:00Z ===\n"
+    )
+    assert any("FOUNDRY ALERT" in w for w in pipeline_health(tmp_path, now=now))
