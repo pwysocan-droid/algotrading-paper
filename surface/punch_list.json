@@ -2,7 +2,7 @@
   "summary": {
     "due_7d": 1,
     "due_14d": 2,
-    "open": 26,
+    "open": 27,
     "done_this_week": 0
   },
   "gates": [
@@ -288,6 +288,15 @@
       "when_class": "open",
       "thing": "Registry compression audit (audit harvest)",
       "detail": "do the 28 write-ups compress to <8 family-level exclusions? if yes the generator is resampling known-dead regions; one family-level exclusion is worth ~50 candidate tests",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Literature-prior candidate: slow momentum (survey harvest)",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Literature-prior candidate: slow momentum (survey harvest)",
+      "detail": "12-week BTC/ETH momentum, multi-week holds, maker-friendly entries — the 1-8 week persistence band is published, amortizes the fee floor, and sits OUTSIDE our archive's measurable range; register disabled, evaluate primarily via the live/shadow channel where our instrument still works",
       "kind": "build",
       "promoted": false
     }
