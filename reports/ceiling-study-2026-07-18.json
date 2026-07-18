@@ -2,7 +2,7 @@
   "date": "2026-07-18",
   "selection_end": "2026-01-01T00:00:00+00:00",
   "round_trip_cost_pct": 0.6,
-  "note": "instrument-exemption measurement (decision-log 2026-07-18 ruling 2); nothing here is deployable",
+  "note": "instrument-exemption measurement (decision-log 2026-07-18 ruling 2); nothing here is deployable \u00b7 horizons 3d/1w/2w added same day (critique-driven extension)",
   "results": {
     "1h": {
       "ridge": {
@@ -82,6 +82,54 @@
         "gross_mean_pct": 0.6327431142953474,
         "net_mean_pct": 0.03274311429534713,
         "net_positive": true
+      }
+    },
+    "3d": {
+      "ridge": {
+        "oos_ic": 0.01904912926583095,
+        "n_trades": 92,
+        "gross_mean_pct": 0.2289419016476371,
+        "net_mean_pct": -0.3710580983523632,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": 0.033861589532427995,
+        "n_trades": 92,
+        "gross_mean_pct": 0.23125583103437347,
+        "net_mean_pct": -0.36874416896562684,
+        "net_positive": false
+      }
+    },
+    "1w": {
+      "ridge": {
+        "oos_ic": -0.01162167716591437,
+        "n_trades": 40,
+        "gross_mean_pct": -0.4671277475994273,
+        "net_mean_pct": -1.0671277475994279,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": -0.0061843694784015045,
+        "n_trades": 40,
+        "gross_mean_pct": 0.8230182720878687,
+        "net_mean_pct": 0.22301827208786829,
+        "net_positive": true
+      }
+    },
+    "2w": {
+      "ridge": {
+        "oos_ic": -0.047453279858933654,
+        "n_trades": 20,
+        "gross_mean_pct": 0.0035999934647712446,
+        "net_mean_pct": -0.5964000065352293,
+        "net_positive": false
+      },
+      "gbm": {
+        "oos_ic": -0.03595267482052572,
+        "n_trades": 20,
+        "gross_mean_pct": -3.2943733847632233,
+        "net_mean_pct": -3.894373384763224,
+        "net_positive": false
       }
     }
   }

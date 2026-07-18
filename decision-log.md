@@ -103,6 +103,43 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-18 — Critique-driven reorder: extraction engineering, conditional program
+
+The closing-move critique session reframed the program: with the
+ceiling measured at ≈ the cost floor (24h) and rising in horizon, the
+genre shifted from PROSPECTING (find any edge) to EXTRACTION
+ENGINEERING (the decision is on the cost side). Accepted changes:
+
+1. **Order**: extend the horizon scan past 24h (running) → backfill
+   context data and RE-MEASURE the ceiling on the augmented feature
+   set (funding history backfilled: 2,790 settlements/symbol) →
+   factorial cost-surface measurement (order type × size × time; the
+   50-trade experiment is redesigned factorial, not uniform) → only
+   THEN decide whether the combination stage, scoped snooping ledger,
+   and continued shadow validation exist at all.
+2. **Combination mechanism corrected**: the prize is NETTING (signals
+   that disagree → no trade; offsets → cost never paid), not
+   √breadth diversification — the netting ratio is computable offline
+   from persisted trade records BEFORE any machinery is built.
+3. **Deprioritized**: failure-mode taxonomy (post-hoc while all deaths
+   share one cause), full snooping ledger (scope to wherever adaptive
+   search actually resumes), sub-24h shadow arms (structurally under
+   the ceiling; the shadow tape keeps rolling only because it is
+   nearly free).
+4. **Cost floor is per-symbol and partly a CHOICE**: first venue
+   measurements show Alpaca spreads of 0.07% (BTC) to 0.42% (SOL) vs
+   Binance ≤0.015% — fees + spread are selectable (symbol, order
+   type, venue tier); only slippage requires real trades to measure.
+5. **Program-level kill criterion — DRAFT, operator must ratify:**
+   if (a) the measured cost-surface minimum exceeds 0.5% round-trip
+   on BTC/ETH, AND (b) the augmented-feature ceiling shows gross <
+   measured-cost at every horizon out to 2 weeks, the OHLCV+context
+   research program STOPS and the project archives per the Phase-1b
+   terms. Pre-committed so the null is allowed to win at program
+   level, not just rule level.
+
+---
+
 ## 2026-07-18 — Four rulings from the learning-maximization review (operator-approved)
 
 The operator approved all four decisions surfaced by the blind
