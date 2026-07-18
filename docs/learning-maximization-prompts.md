@@ -5,14 +5,30 @@ and volume from a Claude that hasn't been anchored by our internal
 discussion. Method matters as much as prompts:
 
 **Rules of engagement**
-1. Run each framing in a FRESH chat within the Project (the brief +
-   dead-ideas.json in project knowledge is enough shared context).
-2. Do NOT show it our existing 6-item improvement list until the end —
-   anchoring kills novelty. Blind first, critique second.
-3. Attach data per framing (listed below). More specific data =
-   less generic advice.
-4. Harvest: anything new goes to build_queue.md; anything that
+1. Do NOT show any session our existing improvement list until the
+   end — anchoring kills novelty. Blind first, critique second.
+2. Harvest: anything new goes to build_queue.md; anything that
    duplicates our list is independent confirmation (also useful).
+
+**Context tiers — the seed docs are themselves an anchor.** The
+Project's corpus (philosophy.md etc.) encodes founding doctrine
+(no-ML, capital model, falsification culture); ideas generated inside
+it stay inside it. Run each framing at the LOWEST tier it tolerates:
+
+- **Tier 0 — outside the Project, domain-disguised.** No docs. Abstract
+  restatement only: "a lab runs ~5 expensive experiments/day against a
+  fixed historical dataset plus one slow live stream; most experiments
+  fail; lessons feed the next batch; maximize learning per week." Not
+  even the word 'trading'. → Framings 1 (rival) and 4 (imports).
+- **Tier 1 — fresh chat, facts without doctrine.** Paste mechanics
+  only (capital model, costs, cadence, what's been tried); omit
+  philosophy.md and the locked-architecture list and SAY you've
+  omitted the commitments: "propose freely, we filter." → Framing 5
+  (bits per experiment).
+- **Tier 2 — inside the Project, full corpus.** Needed where the data
+  is the point. Tell the referee that philosophy.md is on trial too:
+  attack the doctrine documents, not just the results. → Framings 2,
+  3, 6.
 
 ---
 
