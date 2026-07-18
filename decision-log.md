@@ -103,6 +103,41 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-18 — Four rulings from the learning-maximization review (operator-approved)
+
+The operator approved all four decisions surfaced by the blind
+elicitation exercise (claude.ai session + two blind Fable agents,
+transcripts summarized in the 2026-07-18 entries):
+
+1. **Real-money micro-execution measurement — APPROVED as
+   instrumentation.** ~50 tiny live trades on Alpaca to measure the
+   TRUE round-trip cost distribution (the assumed 0.6% is unsourced
+   beyond the fee schedule). Bounds to be pre-registered in a
+   dedicated entry before the first order: max $50/order, ~50 round
+   trips, max $100 concurrent exposure, manual invocation only, live
+   keys readable ONLY by scripts/measure_execution.py. This does NOT
+   open live trading; promotion to live remains a separate human
+   decision.
+2. **Predictability-ceiling study — APPROVED; the no-ML lock gains an
+   instrument exemption.** Generic walk-forward ML over OHLCV features
+   may be used to MEASURE the maximum edge available to the rule
+   class. Nothing ML may be deployed, registered as a variant, or fed
+   to live execution — the lock stands for strategies; the exemption
+   is for measurement (same logic as planted-edge calibration).
+3. **Promotion gate rebuild — APPROVED (amends locked Phase-2 gates).**
+   The fixed-n gate (p<0.05 at 100+ closes) has measured power of
+   ~20-25% and is replaced by a group-sequential design: efficacy AND
+   futility boundaries with alpha-spending (or SPRT), live slots
+   treated as scarce confirmation capacity with a queue. Old gate
+   stays until the new machinery ships and its boundary table is
+   reviewed in this log.
+4. **Combination stage — APPROVED as portfolio construction, not ML.**
+   Linear combinations of registered sub-threshold signals with
+   snooping accounting are admissible research objects; anything
+   fitted beyond simple weights falls back under the no-ML lock.
+
+---
+
 ## 2026-07-18 — Power calibration: the instrument measured itself
 
 **What happened:** first-ever measurement of the gauntlet's detection
