@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T23:40:06Z",
+  "generated_at": "2026-07-18T23:45:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-18T23:40:03.637601+00:00",
+    "last_run_iso": "2026-07-18T23:45:04.422087+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-18 · 23:40 UTC",
+    "last_run_human_date": "2026-07-18 · 23:45 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "16207 of 16226 ok · 99.9%",
+    "uptime_recent": "16208 of 16227 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "277,244",
+      "count": "277,248",
       "delta": "+1349",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "277244"
+      "value": "277248"
     },
     {
       "name": "bar coverage",
-      "count": "89%",
-      "delta": "-165",
+      "count": "88%",
+      "delta": "-166",
       "delta_class": "note",
-      "spark": "▇▄▄▁▆▆█▄",
+      "spark": "▆▄▄▁▆▆█▄",
       "spark_class": null,
       "key": "bar_coverage",
-      "value": "89"
+      "value": "88"
     },
     {
       "name": "cron runs",
-      "count": "16,226",
+      "count": "16,227",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16226"
+      "value": "16227"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "341",
-      "delta": "+194",
+      "count": "343",
+      "delta": "+196",
       "delta_class": null,
-      "spark": "▁▁▁▂▂▁▂█",
+      "spark": "▁▁▁▁▂▁▂█",
       "spark_class": null,
       "key": "decisions",
-      "value": "341"
+      "value": "343"
     },
     {
       "name": "letters",
