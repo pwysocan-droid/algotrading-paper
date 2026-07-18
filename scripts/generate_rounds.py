@@ -154,10 +154,15 @@ def build_digest(repo_root: Path = REPO_ROOT, db_path: Path | None = None,
                   "| --- | --- | --- | --- |"]
         for r in g["results"]:
             eps = f"${r['edge_per_slot']:.3f}" if r["edge_per_slot"] is not None else "—"
+            small = " ⚠ n<30 — no claim" if 0 < r["placed"] < 30 else ""
             lines.append(
-                f"| {r['name']} | {r['placed']} | ${r['total_pnl']:,.2f} | {eps} |"
+                f"| {r['name']} | {r['placed']}{small} | ${r['total_pnl']:,.2f} | {eps} |"
             )
-        lines.append("")
+        lines += ["",
+                  "Positive numbers on n<30 are quarantined by the small-sample "
+                  "rule — a mediocre strategy shows 5-of-7 wins ~10% of the time "
+                  "by luck alone. Verdicts live in reviews/foundry/dead-ideas.json.",
+                  ""]
 
     # latest reviews
     fridays = sorted((repo_root / "reviews").glob("*-friday.md"))
