@@ -1,0 +1,75 @@
+{
+  "date": "2026-07-18",
+  "generated_at": "2026-07-18T16:13:41.650737+00:00",
+  "days": 930,
+  "staged": true,
+  "fill_model": "taker",
+  "database": "/home/trader/algotrading-paper/research_bars.db",
+  "results": [
+    {
+      "name": "round_number_breach_continuation",
+      "fill_model": "taker",
+      "candidates": 976,
+      "placed": 601,
+      "total_pnl": -447.0264798122821,
+      "edge_per_slot": -0.7438044589222664,
+      "win_rate": 0.4226289517470882,
+      "sharpe": 1.6679971658143913,
+      "max_dd": 49.42208992551978,
+      "days": 180,
+      "stage": "killed@180d"
+    },
+    {
+      "name": "hawkes_self_excitation_intensity_entry",
+      "fill_model": "taker",
+      "candidates": 19265,
+      "placed": 1122,
+      "total_pnl": -1396.8218326715564,
+      "edge_per_slot": -1.2449392448053087,
+      "win_rate": 0.3787878787878788,
+      "sharpe": -2.018886327538136,
+      "max_dd": 139.68218326715555,
+      "days": 180,
+      "stage": "killed@180d"
+    },
+    {
+      "name": "return_magnitude_compressibility_break",
+      "fill_model": "taker",
+      "candidates": 661,
+      "placed": 489,
+      "total_pnl": -614.18178116224,
+      "edge_per_slot": -1.2559954624994683,
+      "win_rate": 0.36400817995910023,
+      "sharpe": -1.211554578889734,
+      "max_dd": 65.06664398157534,
+      "days": 180,
+      "stage": "killed@180d"
+    },
+    {
+      "name": "one_sided_range_expansion_thrust",
+      "fill_model": "taker",
+      "candidates": 614,
+      "placed": 465,
+      "total_pnl": -663.1367504942377,
+      "edge_per_slot": -1.4261005386972854,
+      "win_rate": 0.34408602150537637,
+      "sharpe": -2.4755524097043624,
+      "max_dd": 69.75382281609862,
+      "days": 180,
+      "stage": "killed@180d"
+    },
+    {
+      "name": "trend_persistence_regime_gated_engine",
+      "fill_model": "taker",
+      "candidates": 74,
+      "placed": 39,
+      "total_pnl": -96.81631749999961,
+      "edge_per_slot": -2.4824696794871697,
+      "win_rate": 0.2564102564102564,
+      "sharpe": -0.7289690786163774,
+      "max_dd": 18.49014391899955,
+      "days": 930,
+      "stage": "full@930d"
+    }
+  ]
+}
