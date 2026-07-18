@@ -103,6 +103,38 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-18 — Outside eyes institutionalized: fresh context is a standing resource
+
+**Decision:** the blind-elicitation exercise produced more validated
+learning in one day than any week of inside work (ceiling study,
+power calibration, netting insight, slow-band prior, cost
+decomposition all trace to it). Fresh, unanchored context is now
+MACHINERY, not a thing the operator remembers to do. Four standing
+stages, all fresh `claude -p` contexts on the VPS:
+
+1. **Blind pre-mortem** (per round, before implementation): a critic
+   with no project history reads only the round spec + registry and
+   verdicts each idea IMPLEMENT/REDESIGN/SKIP. Its verdicts are
+   FORECASTS — the epitaphs score them (premortem_correct in the
+   gradient), so the critic's calibration is itself measured.
+2. **Blind second reading** (per round, after epitaphs): a tool-less
+   context receives only specs + numbers inline — it cannot see the
+   epitaphs — and writes independent diagnoses. Disagreement with the
+   registry marks a fragile lesson (double-blind radiology reading).
+3. **Monthly rival-lab audit** (1st, 12:02 UTC): the domain-disguised
+   "reverse-engineer the 10x rival" question re-asked against current
+   state, numbers regenerated from the registry each time.
+4. **Monthly literature refresh** (same cron, web-enabled): only what
+   is NEW or CONTRADICTS docs/literature-priors.md, cited.
+
+**Why it works (the mechanism, so we don't cargo-cult it):** the
+pipeline's own context accumulates doctrine, and doctrine anchors;
+a fresh context re-derives from evidence alone. Blindness must be
+real — the second reader gets no tools; the disguise hides the
+domain; the premortem sees only two files.
+
+---
+
 ## 2026-07-18 — Critique-driven reorder: extraction engineering, conditional program
 
 The closing-move critique session reframed the program: with the
