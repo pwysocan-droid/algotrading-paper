@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T03:33:01.198834+00:00",
+  "generated_at": "2026-07-18T04:04:08.909570+00:00",
   "rounds": [
     {
       "round": 1,
@@ -94,6 +94,38 @@
           "name": "pullback_to_breakout_level_limit",
           "lens": "cost_engineering",
           "kill_criterion": "Dies if net expectancy < +0.3%/trade, OR if retest-then-continuation win rate is no better than chasing the same breakout at market net of the assumed fill improvement (proving the retest just re-enters failing breakouts and the patience/limit advantage is illusory). Also killed if fill rate <20% within the 2h window (thesis starves)."
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "date": "2026-07-18",
+      "thesis": "This round attacks the recurring failure that every prior engine either starves or enters at the move's midpoint, while the self-referential gate keeps winning with nothing worthy behind it. The unifying move is INVERSION and EARLIER-TIMING: where a lens died on a fade, we propose its continuation inverse (round-number breach not snap; one-sided expansion not absorption); where imports died entering on the visible impulse (Omori, R0), we time the branching-birth loading phase before displacement; where sign-entropy had no headroom, we switch to magnitude-compressibility which volatility-clustering guarantees has headroom; and critically, we honor the standing prescription by pairing the proven regime gate with a genuine momentum-persistence engine firing >=1/sym/day so the armed sample finally reaches decidability. Every fire-rate estimate refuses to multiply anti-correlated conjuncts and instead states the joint/sequential transition rate directly, and two ideas carry explicit pre-gauntlet data checks (magnitude headroom, coil-breach base rate) so a histogram can kill them before a full run.",
+      "ideas": [
+        {
+          "name": "trend_persistence_regime_gated_engine",
+          "lens": "gate_engine_pairing",
+          "kill_criterion": "Armed expectancy < +0.5%/trade over the full 930d window with n>=100 armed trades. If the better engine ALSO cannot lift armed expectancy above the fee floor at n>=100, the gate's information is not convertible by any continuation engine and the gate family should be retired."
+        },
+        {
+          "name": "return_magnitude_compressibility_break",
+          "lens": "information_theory",
+          "kill_criterion": "Either (a) pre-check kills it: the surprise metric shows no headroom (p99 surprise < 3.0 impossible to reach, or quiet-then-surprise transition fires <0.01/sym/day = starved); or (b) full gauntlet expectancy < +0.4%/trade at n>=50. The sign of the breaking bar carrying no continuation edge (like post_shock_multiday_drift) is the decisive kill."
+        },
+        {
+          "name": "hawkes_self_excitation_intensity_entry",
+          "lens": "cross_domain_import",
+          "kill_criterion": "Expectancy < +0.4%/trade at n>=100 armed fires. Specifically, if the win rate is no better than entering ON the impulse (compare to the omori/r0 ~40% figures), then early intensity timing captures nothing the late entry didn't \u2014 the loading phase is not tradable and the Hawkes import joins Omori and R0 in the shock-family graveyard for good."
+        },
+        {
+          "name": "one_sided_range_expansion_thrust",
+          "lens": "microstructure_from_ohlcv",
+          "kill_criterion": "Expectancy < +0.4%/trade at n>=200 (it fires plenty, so n is not the issue). If a clean one-sided thrust continues no better than a random large bar (win rate near the exit's breakeven ~38%), the geometry is decorative and the microstructure-from-OHLCV lens is refuted for continuation as it was for absorption/fades."
+        },
+        {
+          "name": "round_number_breach_continuation",
+          "lens": "behavioral_calendar",
+          "kill_criterion": "Expectancy < +0.4%/trade at n>=100. Decisively: if round-number breaches with volume confirmation perform no better than the dead dead_zone/asian_london coil breaks (which resolved at random vs the fee floor), then round numbers carry no continuation energy either and the behavioral-calendar price-level thesis is refuted alongside its clock-time cousins."
         }
       ]
     }
