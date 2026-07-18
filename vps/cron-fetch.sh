@@ -80,7 +80,7 @@ python render_index.py >>"${DAY_LOG}" 2>&1 || log "WARN: render_index.py failed"
 python scripts/generate_surface.py >>"${DAY_LOG}" 2>&1 || log "WARN: generate_surface.py failed"
 
 # --- Commit + push the artifacts ---
-git add trader.db INDEX.md surface/surface.json surface/punch_list.json surface/index.html
+git add trader.db context.db INDEX.md surface/surface.json surface/punch_list.json surface/index.html
 if git diff --staged --quiet; then
   log "nothing to commit"
 else

@@ -187,3 +187,22 @@ def test_upsert_overwrites_on_collision(tmp_db: Path) -> None:
     with db.connect(tmp_db) as conn:
         rows = conn.execute("SELECT close FROM bars ORDER BY timestamp").fetchall()
     assert [r["close"] for r in rows] == [200.0, 201.0, 202.0]
+
+
+def test_context_depth_imbalance_and_schema(tmp_path):
+    """Layer-2 collector: pure imbalance math + schema creation (the
+    network path runs only on the VPS; this pins the testable core)."""
+    from scripts.collect_context import depth_imbalance, migrate
+    import sqlite3
+
+    assert depth_imbalance([("1", "10")], [("2", "0")]) == 1.0
+    assert depth_imbalance([("1", "0")], [("2", "10")]) == -1.0
+    assert depth_imbalance([("1", "5")], [("2", "5")]) == 0.0
+    assert depth_imbalance([], []) is None
+
+    dbp = tmp_path / "context.db"
+    migrate(dbp)
+    with sqlite3.connect(dbp) as conn:
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(context_snapshots)")]
+    assert {"symbol", "ts", "funding_rate", "open_interest",
+            "spread_pct", "depth_imbalance"} <= set(cols)
