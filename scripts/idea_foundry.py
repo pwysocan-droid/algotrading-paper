@@ -160,7 +160,13 @@ def build_prompt(registry: dict, lenses: list[tuple[str, str]] | None = None) ->
         "are now per-variant tunable via params tp/sl/time_exit_hours "
         "(plus a BTC-bars context feed if an idea declares it). Fitness is "
         "edge per constraint slot. Each idea needs a kill_criterion — the "
-        "gauntlet number that would falsify it decisively."
+        "gauntlet number that would falsify it decisively.\n\n"
+        "DECIDABILITY REQUIREMENT: expected_fire_rate must show the "
+        "arithmetic to an expected PLACED sample of n >= 100 over the "
+        "930-day / 5-symbol test window (after every filter and any gate). "
+        "An idea whose own arithmetic cannot reach n >= 100 is inadmissible "
+        "— redesign it until it can produce a verdict; three prior ideas "
+        "wasted full gauntlets by being undecidable at birth."
     )
 
 

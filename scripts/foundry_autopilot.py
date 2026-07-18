@@ -121,10 +121,14 @@ def main() -> int:
     if _implemented(names) and not _gauntleted(names):
         print(f"condition A: round {n} implemented, not gauntleted — running")
         ensure_research_db()
-        _sh([sys.executable, "scripts/run_gauntlet.py", "--staged",
-             "--days", "930", "--db", str(RESEARCH_DB),
-             "--names", ",".join(names)])
-        _git_push(["reports"], f"Autopilot: staged gauntlet for round {n:03d}")
+        # Both fill models, per decision-log 2026-07-17 ("cost lever
+        # validated 12/12"): rounds 003/004 ran taker-only — doctrine
+        # drift caught in the 2026-07-18 learning-quality audit.
+        for fill_model in ("taker", "maker"):
+            _sh([sys.executable, "scripts/run_gauntlet.py", "--staged",
+                 "--days", "930", "--db", str(RESEARCH_DB),
+                 "--names", ",".join(names), "--fill-model", fill_model])
+        _git_push(["reports"], f"Autopilot: staged gauntlet for round {n:03d} (taker+maker)")
         return 0
 
     if _implemented(names) and _gauntleted(names) and _epitaphed(names):

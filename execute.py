@@ -275,9 +275,25 @@ def process_pending(db_path: Path | None = None, now: datetime | None = None) ->
     For Week 1 with no strategies registered there are no pending signals,
     so this returns 0 cleanly.
     """
+    from config import STRATEGY_VARIANTS
+
     placed = 0
     with db.connect(db_path) as conn:
         for sig in pending_signals(conn):
+            # Shadow-arm guard: disabled variants emit signals for
+            # forward-test evidence only. Recording the rejection as a
+            # decision keeps the signal out of the pending set forever;
+            # the trade must NEVER be placed. This check is the single
+            # wall between shadow research and real (paper) orders.
+            variant = STRATEGY_VARIANTS.get(sig.variant_name)
+            if not (variant and variant.get("enabled", False)):
+                _record_decision(
+                    conn, sig.id, "rejected",
+                    "shadow arm — variant disabled, research signal only",
+                    (now or datetime.now(timezone.utc)).isoformat(),
+                    trade_id=None,
+                )
+                continue
             _, action, _ = execute_signal(
                 conn, sig, entry_price=sig.price_at_signal, entry_time=now
             )

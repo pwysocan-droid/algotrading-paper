@@ -80,3 +80,18 @@ Each item:
   detail: "funding rates / F&G / on-chain via context_keys — data mined less exhaustively than OHLCV; needs decision-log entry per roadmap"
   when: open
   kind: build
+
+- thing: Ablation harness — verify epitaph diagnoses
+  detail: "learning-quality audit 2026-07-18 · foundry specs gain an ablation_spec (params override defining the placebo version); gauntlet runs idea+ablation pairs; retroactively run the ablations the big lessons rest on (r004 engine ungated; asian-london random-hour placebo; entropy term ablated)"
+  when: open
+  kind: build
+
+- thing: Pre-mortem critic before implementation
+  detail: "learning-quality audit 2026-07-18 · adversarial LLM pass over each round spec (registry + premise checks) that tries to kill ideas on paper before any implementation cost; would have stopped 2 of 5 r002 ideas"
+  when: open
+  kind: build
+
+- thing: Shadow-arm forward report
+  detail: "weekly aggregation of shadow signals (all disabled variants, live-recorded) vs their gauntlet-predicted fire rates + hypothetical outcomes from bars — the forward-test scoreboard"
+  when: open
+  kind: build

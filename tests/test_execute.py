@@ -370,3 +370,83 @@ def test_closed_position_frees_slot_for_new_trade(tmp_db: Path) -> None:
             conn, sig2, entry_price=10.0,
             entry_time=datetime(2026, 7, 16, 0, 15, tzinfo=timezone.utc))
     assert action2 == "placed"
+
+
+class TestShadowArms:
+    """Shadow arms (learning-quality audit 2026-07-18): disabled variants
+    emit persisted signals for forward-test evidence; execute must
+    refuse to trade them — this wall is what makes shadow mode safe."""
+
+    def test_shadow_signal_rejected_never_traded(self, tmp_db: Path) -> None:
+        import fetch
+        import signals as sig_mod
+        from tests.fixtures.bars import FakeBarSource, make_bar_series
+
+        start = datetime(2026, 7, 10, 12, 0, tzinfo=timezone.utc)
+        bars6 = make_bar_series("BTC/USD", start, n=6)
+        fetch.fetch_window(FakeBarSource(bars=bars6), ["BTC/USD"], start,
+                           start + timedelta(minutes=30), db_path=tmp_db)
+
+        def always_buy(bars, params, ctx):
+            last = bars[-1]
+            return sig_mod.Signal(
+                symbol=last.symbol, variant_name="", strategy="shadow_test",
+                side="buy", bar_timestamp=last.timestamp,
+                price_at_signal=last.close, reasoning={})
+
+        sig_mod.STRATEGY_REGISTRY["shadow_test"] = always_buy
+        try:
+            variants = {"shadow_only_variant": {
+                "strategy": "shadow_test", "params": {}, "context_keys": [],
+                "enabled": False, "phase_qualified": False}}
+            emitted = sig_mod.run_all_variants(
+                ["BTC/USD"], variants=variants, db_path=tmp_db,
+                include_shadow=True)
+            assert len(emitted) == 1, "shadow signal must be emitted+persisted"
+
+            placed = execute.process_pending(db_path=tmp_db)
+            assert placed == 0
+
+            with db.connect(tmp_db) as conn:
+                d = conn.execute(
+                    "SELECT d.action, d.reason FROM decisions d"
+                    " JOIN signals s ON s.id = d.signal_id"
+                    " WHERE s.variant_name = 'shadow_only_variant'"
+                ).fetchone()
+                assert d is not None and d["action"] == "rejected"
+                assert "shadow" in d["reason"]
+                n_trades = conn.execute(
+                    "SELECT COUNT(*) c FROM trades"
+                    " WHERE variant_name = 'shadow_only_variant'"
+                ).fetchone()["c"]
+                assert n_trades == 0, "a shadow arm must NEVER reach the trades table"
+        finally:
+            del sig_mod.STRATEGY_REGISTRY["shadow_test"]
+
+    def test_disabled_variants_skipped_without_include_shadow(self, tmp_db: Path) -> None:
+        import fetch
+        import signals as sig_mod
+        from tests.fixtures.bars import FakeBarSource, make_bar_series
+
+        start = datetime(2026, 7, 10, 12, 0, tzinfo=timezone.utc)
+        bars6 = make_bar_series("BTC/USD", start, n=6)
+        fetch.fetch_window(FakeBarSource(bars=bars6), ["BTC/USD"], start,
+                           start + timedelta(minutes=30), db_path=tmp_db)
+
+        def always_buy(bars, params, ctx):
+            last = bars[-1]
+            return sig_mod.Signal(
+                symbol=last.symbol, variant_name="", strategy="shadow_test2",
+                side="buy", bar_timestamp=last.timestamp,
+                price_at_signal=last.close, reasoning={})
+
+        sig_mod.STRATEGY_REGISTRY["shadow_test2"] = always_buy
+        try:
+            variants = {"off_variant": {
+                "strategy": "shadow_test2", "params": {}, "context_keys": [],
+                "enabled": False, "phase_qualified": False}}
+            emitted = sig_mod.run_all_variants(
+                ["BTC/USD"], variants=variants, db_path=tmp_db)
+            assert emitted == []
+        finally:
+            del sig_mod.STRATEGY_REGISTRY["shadow_test2"]

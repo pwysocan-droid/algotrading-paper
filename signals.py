@@ -1817,9 +1817,14 @@ def run_variant(
     variant: StrategyVariant,
     symbols: list[str],
     context: dict[str, Any] | None = None,
+    force: bool = False,
 ) -> list[Signal]:
-    """Run a single variant across all symbols, persist any emitted signals."""
-    if not variant.get("enabled", False):
+    """Run a single variant across all symbols, persist any emitted signals.
+
+    force=True runs a DISABLED variant (shadow mode): its signals are
+    persisted for forward-test evidence but execute.process_pending
+    refuses to trade them — see the shadow-arm guard there."""
+    if not variant.get("enabled", False) and not force:
         return []
     strategy_name = variant["strategy"]
     fn = get_strategy_fn(strategy_name)
@@ -1861,19 +1866,29 @@ def run_all_variants(
     variants: dict[str, StrategyVariant] | None = None,
     context: dict[str, Any] | None = None,
     db_path: Path | None = None,
+    include_shadow: bool = False,
 ) -> list[Signal]:
     """Iterate every enabled variant in the registry, emit signals.
 
-    For Week 1 with an empty registry this returns []. The function still
-    runs — that's what "signal layer runs cleanly against zero variants"
-    means in the spec.
+    include_shadow=True (the live cycle) ALSO runs every disabled
+    variant in shadow mode: signals are computed and persisted but
+    never traded (execute refuses disabled variants). Live time is the
+    scarcest resource in the project — shadow arms turn the one live
+    stream into forward-test evidence for the WHOLE research roster:
+    real fire rates, sim-to-live calibration, and out-of-sample
+    outcomes for every idea ever built, at zero capital risk
+    (learning-quality audit 2026-07-18).
     """
     registry = variants if variants is not None else STRATEGY_VARIANTS
     all_signals: list[Signal] = []
     with db.connect(db_path) as conn:
         for name, variant in registry.items():
+            shadow = not variant.get("enabled", False)
+            if shadow and not include_shadow:
+                continue
             try:
-                sigs = run_variant(conn, name, variant, symbols, context=context)
+                sigs = run_variant(conn, name, variant, symbols,
+                                   context=context, force=shadow)
             except KeyError:
                 raise  # unknown strategy is a config error — keep loud
             except Exception as exc:

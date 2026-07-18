@@ -35,7 +35,8 @@ def run_cycle(db_path: Path | None = None, now: datetime | None = None) -> dict[
         counts["errors"] += 1
         print(f"ERROR manage_exits: {type(exc).__name__}: {exc}")
     try:
-        counts["signals"] = len(signals.run_all_variants(WATCHED_SYMBOLS, db_path=db_path))
+        counts["signals"] = len(signals.run_all_variants(
+            WATCHED_SYMBOLS, db_path=db_path, include_shadow=True))
     except Exception as exc:
         counts["errors"] += 1
         print(f"ERROR signals: {type(exc).__name__}: {exc}")

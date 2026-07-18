@@ -72,6 +72,21 @@ def _score_candidate(args: tuple) -> dict:
         "sharpe": replay.sharpe_ratio(pcts, window_days),
         "max_dd": replay.max_drawdown_pct(pnls),
         "days": days,
+        # Trade-level records — learning-quality audit 2026-07-18: the
+        # aggregates above answer "did it die"; pooled per-trade data
+        # across ALL ideas is what lets anyone later ask "under what
+        # conditions did everything win a little" (cross-idea meta-
+        # analysis, regime slicing, ablation re-scoring). Never discard.
+        "trades": [
+            {
+                "symbol": t.symbol, "side": t.side,
+                "entry_ts": t.entry_bar_timestamp, "exit_ts": t.exit_bar_timestamp,
+                "entry_px": t.entry_price, "exit_px": t.exit_price,
+                "exit_reason": t.exit_reason, "pnl_usd": t.pnl_usd,
+                "pnl_pct": t.pnl_pct, "fees_usd": t.fees_usd,
+            }
+            for t in placed
+        ],
     }
 
 
