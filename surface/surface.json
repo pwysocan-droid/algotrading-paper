@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T14:40:06Z",
+  "generated_at": "2026-07-18T14:45:05Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-18T14:40:04.336823+00:00",
+    "last_run_iso": "2026-07-18T14:45:03.709949+00:00",
     "last_run_human": "0m 02s ago",
-    "last_run_human_date": "2026-07-18 · 14:40 UTC",
+    "last_run_human_date": "2026-07-18 · 14:45 UTC",
     "next_run_human": "59m 57s",
-    "uptime_recent": "16099 of 16118 ok · 99.9%",
+    "uptime_recent": "16100 of 16119 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,18 +92,18 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "276,752",
-      "delta": "+1388",
+      "count": "276,756",
+      "delta": "+1387",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "276752"
+      "value": "276756"
     },
     {
       "name": "bar coverage",
       "count": "90%",
-      "delta": "-137",
+      "delta": "-138",
       "delta_class": "note",
       "spark": "█▇▅▅▃▃▁▄",
       "spark_class": null,
@@ -112,33 +112,33 @@
     },
     {
       "name": "cron runs",
-      "count": "16,118",
+      "count": "16,119",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16118"
+      "value": "16119"
     },
     {
       "name": "llm calls",
       "count": "27",
-      "delta": "+4",
+      "delta": "+3",
       "delta_class": null,
-      "spark": "▃▁▁▁█▁▁▁",
+      "spark": "▁▁▁▁█▁▁▁",
       "spark_class": null,
       "key": "llm_calls",
       "value": "27"
     },
     {
       "name": "decisions",
-      "count": "218",
+      "count": "219",
       "delta": "+126",
       "delta_class": null,
-      "spark": "▅██▄▁▄▅▆",
+      "spark": "▃█▇▃▁▃▄▆",
       "spark_class": null,
       "key": "decisions",
-      "value": "218"
+      "value": "219"
     },
     {
       "name": "letters",
