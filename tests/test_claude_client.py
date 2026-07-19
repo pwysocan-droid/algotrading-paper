@@ -190,3 +190,74 @@ def test_complete_smoke(tmp_db: Path) -> None:
     assert row["completion_tokens"] is not None
     assert row["prompt_hash"]
     assert len(row["prompt_hash"]) == 64
+
+
+def test_structured_retries_on_malformed_then_succeeds(monkeypatch, tmp_path):
+    """Round-005 failure class (2026-07-19): a malformed tool input on
+    attempt 1 must trigger a retry, not a 12h pipeline stall."""
+    from pydantic import BaseModel
+    import claude_client as cc
+
+    class Shape(BaseModel):
+        ideas: list[str]
+        thesis: str
+
+    class _Block:
+        type = "tool_use"
+        name = "submit_response"
+        def __init__(self, inp): self.input = inp
+
+    class _Msg:
+        stop_reason = "tool_use"
+        usage = None
+        def __init__(self, inp): self.content = [_Block(inp)]
+
+    calls = {"n": 0}
+
+    class _Messages:
+        def create(self, **kw):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                return _Msg({"thesis": "everything crammed here, no ideas"})
+            return _Msg({"ideas": ["a", "b"], "thesis": "ok"})
+
+    class _Fake:
+        messages = _Messages()
+
+    client = cc.ClaudeClient(api_key="test", db_path=tmp_path / "x.db")
+    client._client = _Fake()
+    result = client.complete_structured(
+        prompt="p", schema_cls=Shape, called_from="test", log=False)
+    assert calls["n"] == 2
+    assert result.parsed.ideas == ["a", "b"]
+
+
+def test_structured_raises_after_exhausted_retries(monkeypatch, tmp_path):
+    from pydantic import BaseModel
+    import claude_client as cc
+    import pytest as _pytest
+
+    class Shape(BaseModel):
+        ideas: list[str]
+
+    class _Block:
+        type = "tool_use"
+        name = "submit_response"
+        input = {"wrong": True}
+
+    class _Msg:
+        stop_reason = "tool_use"
+        usage = None
+        content = [_Block()]
+
+    class _Messages:
+        def create(self, **kw): return _Msg()
+
+    class _Fake:
+        messages = _Messages()
+
+    client = cc.ClaudeClient(api_key="test", db_path=tmp_path / "x.db")
+    client._client = _Fake()
+    with _pytest.raises(RuntimeError, match="after 3 attempts"):
+        client.complete_structured(
+            prompt="p", schema_cls=Shape, called_from="test", log=False)

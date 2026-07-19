@@ -286,26 +286,54 @@ class ClaudeClient:
             "system": _build_system(system),
             "messages": [{"role": "user", "content": prompt}],
         }
-        msg = self._client.messages.create(**kwargs)
-        latency_ms = int((time.perf_counter() - start) * 1000)
+        # One-shot structured calls occasionally return a malformed tool
+        # input — round-005 (2026-07-19) put the whole payload inside one
+        # string field and omitted `ideas`, stalling the foundry for 12h.
+        # Malformed shape and missing-tool-block are sampling accidents:
+        # retry them. Truncation is not — it raises immediately.
+        from pydantic import ValidationError
 
-        if getattr(msg, "stop_reason", None) == "max_tokens":
-            # A truncated tool_use input parses as a partial/empty dict and
-            # fails schema validation with a misleading "field missing"
-            # error (foundry round-003 attempt, 2026-07-17). Fail loudly
-            # at the real cause instead.
-            raise RuntimeError(
-                f"structured response truncated at max_tokens={max_tokens} "
-                f"({called_from}) — raise the ceiling or shrink the ask"
-            )
+        retries = 2
+        last_err: Exception | None = None
+        for attempt in range(1 + retries):
+            msg = self._client.messages.create(**kwargs)
+            latency_ms = int((time.perf_counter() - start) * 1000)
 
-        tool_blocks = [b for b in msg.content if b.type == "tool_use" and b.name == tool_name]
-        if not tool_blocks:
+            if getattr(msg, "stop_reason", None) == "max_tokens":
+                # A truncated tool_use input parses as a partial/empty dict
+                # and fails schema validation with a misleading "field
+                # missing" error (round-003, 2026-07-17). Fail loudly at
+                # the real cause — retrying cannot fix a ceiling.
+                raise RuntimeError(
+                    f"structured response truncated at max_tokens={max_tokens} "
+                    f"({called_from}) — raise the ceiling or shrink the ask"
+                )
+
+            tool_blocks = [b for b in msg.content
+                           if b.type == "tool_use" and b.name == tool_name]
+            if not tool_blocks:
+                last_err = RuntimeError(
+                    f"expected a tool_use block named {tool_name!r}, got none. "
+                    f"stop_reason={getattr(msg, 'stop_reason', '?')}"
+                )
+                print(f"WARN complete_structured ({called_from}) attempt "
+                      f"{attempt + 1}: no tool block — retrying")
+                continue
+            tool_input = tool_blocks[0].input
+
+            try:
+                parsed = schema_cls.model_validate(tool_input)
+                break
+            except ValidationError as exc:
+                last_err = exc
+                print(f"WARN complete_structured ({called_from}) attempt "
+                      f"{attempt + 1}: schema-invalid output — retrying")
+                continue
+        else:
             raise RuntimeError(
-                f"expected a tool_use block named {tool_name!r}, got none. "
-                f"stop_reason={getattr(msg, 'stop_reason', '?')}"
-            )
-        tool_input = tool_blocks[0].input
+                f"structured response invalid after {1 + retries} attempts "
+                f"({called_from})"
+            ) from last_err
 
         usage = getattr(msg, "usage", None)
         prompt_tokens = getattr(usage, "input_tokens", None) if usage else None
@@ -328,8 +356,6 @@ class ClaudeClient:
                 called_from=called_from,
                 db_path=self._db_path,
             )
-
-        parsed = schema_cls.model_validate(tool_input)
         return StructuredResult(
             parsed=parsed,
             model=self._model,
