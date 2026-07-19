@@ -225,19 +225,20 @@ def test_pipeline_health_flags_stall_and_alert(tmp_path):
     # fresh round, clean logs -> healthy
     rnd = foundry / "round-001.json"
     rnd.write_text("{}")
-    assert pipeline_health(tmp_path, now=now) == []
+
+    def _h():  # disk usage is the host's, not the fixture's — ignore it
+        return [w for w in pipeline_health(tmp_path, now=now) if "DISK" not in w]
+    assert _h() == []
 
     # ALERT in today's foundry log -> flagged
     (logs / "foundry-2026-07-17.log").write_text("ALERT: autopilot FAILED")
-    health = pipeline_health(tmp_path, now=now)
-    assert any("ALERT" in w for w in health)
+    assert any("ALERT" in w for w in _h())
 
     # stale round (>3 days) -> flagged
     import os
     old = now.timestamp() - 4 * 86400
     os.utime(rnd, (old, old))
-    health = pipeline_health(tmp_path, now=now)
-    assert any("STALLED" in w for w in health)
+    assert any("STALLED" in w for w in _h())
 
 
 def test_foundry_rejects_bad_rounds(monkeypatch, tmp_path):
@@ -307,7 +308,7 @@ def test_pipeline_health_forgives_recovered_alerts(tmp_path):
         "condition B: generating\n"
         "=== done 2026-07-18T16:04:00Z ===\n"
     )
-    assert pipeline_health(tmp_path, now=now) == []
+    assert [w for w in pipeline_health(tmp_path, now=now) if "DISK" not in w] == []
 
     # failure in the MOST RECENT run -> alarm
     (logs / "foundry-2026-07-18.log").write_text(
