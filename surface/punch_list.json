@@ -2,7 +2,7 @@
   "summary": {
     "due_7d": 1,
     "due_14d": 2,
-    "open": 31,
+    "open": 32,
     "done_this_week": 0
   },
   "gates": [
@@ -333,6 +333,15 @@
       "when_class": "open",
       "thing": "SRE hardening batch (Run-7, top items)",
       "detail": "data contracts on fetch (gap/null/schema asserts, loud fail — the silent-partial-data hole); external watchdog ping (healthchecks.io — needs operator signup); credential weekly self-test; timeout wrappers on all cron jobs; git artifact-store split (trader.db/context.db out of git eventually); provider-side LLM spend cap (operator sets); VPS weekly snapshot + crontab-in-repo",
+      "kind": "build",
+      "promoted": false
+    },
+    {
+      "id": "build:Cross-cron git commit race (provenance bug, found 2026-07-19)",
+      "when": "open",
+      "when_class": "open",
+      "thing": "Cross-cron git commit race (provenance bug, found 2026-07-19)",
+      "detail": "the implementer's round-005 work got swept into a concurrent fetch-run commit — VPS crons stage/commit in the same repo without mutual exclusion; fix: one shared git flock around every add/commit/push sequence in all cron scripts (touches the live fetch path, so change deliberately, not casually)",
       "kind": "build",
       "promoted": false
     }
