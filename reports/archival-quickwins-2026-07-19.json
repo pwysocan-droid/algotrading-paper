@@ -1,0 +1,20 @@
+{
+  "date": "2026-07-19",
+  "fire_rate_regression": {
+    "n": 18,
+    "slope": -0.9987424208757537,
+    "intercept": -1.4525145358598794,
+    "rmse_dex": 0.8890791877559131,
+    "mean_err_dex": -0.5631992795165653
+  },
+  "null_breakeven": {
+    "placed": 7070,
+    "win_rate": 0.3746817538896747,
+    "edge_per_slot": -1.2747595494697785,
+    "exit_mix": {
+      "stop_loss": 2862,
+      "take_profit": 1264,
+      "time_exit": 2943
+    }
+  }
+}

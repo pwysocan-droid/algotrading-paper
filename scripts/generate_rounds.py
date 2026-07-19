@@ -76,6 +76,20 @@ def pipeline_health(repo_root: Path = REPO_ROOT,
                 "vps/logs/foundry-*.log and the cloud implementer's runs."
             )
 
+    # SRE hardening (Run-7, 2026-07-19): liveness is not correctness,
+    # but disk exhaustion breaks everything at once — warn at 80%.
+    try:
+        import shutil
+        du = shutil.disk_usage(str(repo_root))
+        pct = du.used / du.total * 100
+        if pct > 80:
+            warnings.append(
+                f"⚠ DISK at {pct:.0f}% on the VPS — logs/artifacts need "
+                "pruning before writes start failing."
+            )
+    except Exception:  # noqa: BLE001
+        pass
+
     log_dir = repo_root / "vps" / "logs"
     if log_dir.exists():
         for prefix in ("foundry", "implementer"):

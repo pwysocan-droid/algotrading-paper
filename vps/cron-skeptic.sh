@@ -84,4 +84,7 @@ else
   done
 fi
 
+# log retention (SRE Run-7): 30 days of vps logs is plenty
+find "${REPO}/vps/logs" -name "*.log" -mtime +30 -delete 2>/dev/null || true
+
 log "=== done ${NOW_UTC} ==="

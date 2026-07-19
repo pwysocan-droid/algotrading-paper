@@ -169,3 +169,24 @@ def test_transient_edge_is_invisible_to_the_exit_scheme(tmp_path: Path) -> None:
     closed = [t for t in placed if t.pnl_usd is not None]
     mean_pct = sum(t.pnl_usd / (t.qty * t.entry_price) for t in closed) / len(closed) * 100
     assert mean_pct < 0.5, "transient edge unexpectedly captured — exits changed?"
+
+
+def test_golden_values_detect_numeric_drift(planted_db: Path) -> None:
+    """SRE Run-7 item #1: tests stay green through sign flips in cost
+    accounting unless something pins exact numbers. The planted-edge
+    replay is fully deterministic — these rounded goldens change ONLY
+    if entry pricing, fee math, exit logic, or constraint order change,
+    and any such diff demands human sign-off."""
+    placed = _run(planted_db, "pc_oracle", _oracle)
+    closed = [t for t in placed if t.pnl_usd is not None]
+    assert len(closed) == 49
+    total_pnl = round(sum(t.pnl_usd for t in closed), 2)
+    total_fees = round(sum(t.fees_usd for t in closed), 2)
+    first = closed[0]
+    golden = (total_pnl, total_fees, round(first.entry_price, 4),
+              round(first.pnl_usd, 4), first.exit_reason)
+    expected = (230.14, 49.7, 100.1334, 4.6966, "time_exit")
+    assert golden == expected, (
+        f"GOLDEN DRIFT: {golden} != {expected} — the replay engine's "
+        "arithmetic changed; verify intentionality and update the golden."
+    )

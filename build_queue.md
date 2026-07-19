@@ -160,3 +160,13 @@ Each item:
   detail: "maker-fee re-scoring of all corpses (#1 — how many does the 24h+maker band resurrect); MFE/MAE exit autopsy + optimal tp/sl grid (#2); hold-extension census on time-exits (#6); pooled death-regime fingerprint (#8); symbol ablation (#9); live fill audit methodology now, powered in a month (#10); single-condition gate decomposition (#4, joins placebo-gate ablation). Note: trade-level records only exist r004+, so corpus items re-run r001-r003 variants first"
   when: open
   kind: build
+
+- thing: "Cross-engine gate transfer test (Run-6 prescription; can CLOSE the family)"
+  detail: "freeze r003's slot-scarcity gate rule; apply to ALL engines' historical trade streams (needs r001-r003 re-runs with trade capture); sign test on gated-minus-ungated delta per engine + shuffled-outcome placebo; null result closes the gate family permanently under the 2026-07-19 freeze lesson"
+  when: open
+  kind: build
+
+- thing: "SRE hardening batch (Run-7, top items)"
+  detail: "data contracts on fetch (gap/null/schema asserts, loud fail — the silent-partial-data hole); external watchdog ping (healthchecks.io — needs operator signup); credential weekly self-test; timeout wrappers on all cron jobs; git artifact-store split (trader.db/context.db out of git eventually); provider-side LLM spend cap (operator sets); VPS weekly snapshot + crontab-in-repo"
+  when: open
+  kind: build
