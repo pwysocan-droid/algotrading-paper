@@ -18,7 +18,8 @@
     "MICROSTRUCTURE-FROM-OHLCV LENS EXHAUSTED (r001-r004, 4-for-4 dead): wick rejection (r001, fade-shaped), absorption (r002, empty conjunction), gap-fill exhaustion (r003, starved 2000x under prediction), one-sided range expansion (r004, well-sampled n=465 and still net -0.71%/trade, worse than a random large bar). Every candle-geometry shape tried \u2014 fade, absorption, gap, one-sided thrust \u2014 has failed. The lens needs order-book/footprint data to proceed; OHLCV candle geometry alone is exhausted.",
     "BEHAVIORAL-CALENDAR LENS EXHAUSTED IN BOTH DIRECTIONS (r001-r004, 4-for-4 dead): the round-number price level was tested as a fade (r001, overshoot-snap) and as its deliberate inversion, a stop-cascade continuation (r004, breach-continuation) \u2014 both dead, both under/over-fired their base rate by an order of magnitude. Named clock-time coils were tested twice more (options-expiry r002, Asian-London r003) \u2014 also dead. No remaining calendar/price-level permutation is untested; the lens is closed absent a genuinely new data source (real order-book or open-interest, not an OHLCV-derived time or price artifact).",
     "THE CEILING IS MEASURED (2026-07-18, instrument-exemption ML study): walk-forward gradient boosting with full feature-engineering hindsight tops out at gross +0.02% to +0.2%/trade for horizons of 1h-12h \u2014 the sub-12h OHLCV search space is EMPTY below the 0.6% cost floor, and sub-12h theses are inadmissible unless their entire mechanism is cost engineering. At 24h the ceiling reaches gross ~+0.6% (net ~breakeven taker, ~+0.25% maker): the only admissible OHLCV territory is 24h+ horizons with maker-friendly entries \u2014 or leaving OHLCV for the Layer-2 context data now being recorded.",
-    "LITERATURE PRIORS (2026-07-18, external survey): no published crypto effect clears US-retail-spot costs at hours-to-days horizons \u2014 converging with the measured ceiling from outside. Slippage is VOLATILITY-CONDITIONAL (worst when event signals fire; flat slippage assumptions flatter event strategies). Funding signals are crash-risk premia, not free alpha (BIS); directional funding-extreme rules are untested folklore. The open bands: maker execution at 24h, and 1-8 WEEK holds (published persistence; amortizes the floor; unmeasurable in our archive - the live/shadow channel is the instrument there)."
+    "LITERATURE PRIORS (2026-07-18, external survey): no published crypto effect clears US-retail-spot costs at hours-to-days horizons \u2014 converging with the measured ceiling from outside. Slippage is VOLATILITY-CONDITIONAL (worst when event signals fire; flat slippage assumptions flatter event strategies). Funding signals are crash-risk premia, not free alpha (BIS); directional funding-extreme rules are untested folklore. The open bands: maker execution at 24h, and 1-8 WEEK holds (published persistence; amortizes the floor; unmeasurable in our archive - the live/shadow channel is the instrument there).",
+    "SHOCKS MEAN-REVERT AT MULTI-DAY HORIZON (2026-07-19, measured control arm): sign-aligned forward returns after 3%/3x-vol shock bars are -3.0% (24h), -4.3% (72h), -3.3% (120h), n=53 full population \u2014 impulse-chasing entries (r002 R0, r003 post_shock, r004 hawkes lineage) lost not because signals were absent but because the true multi-day signal is CONTRARIAN. A multi-day shock-FADE spec is admissible; it must survive the standard premortem+gauntlet and respect the volatility-conditional slippage prior (costs spike exactly at these events). Retest adverse selection is CONFIRMED both-arms (+0.98% never-retested vs -0.89% retested): maker-band entries must come from populations where waiting is not adverse selection."
   ],
   "ideas": [
     {
@@ -250,13 +251,14 @@
       "lineage": "foundry r003 \u00b7 multi_day_horizon",
       "tested": "2026-07-17 \u00b7 930d constrained replay (taker), tp12/sl5/120h",
       "result": "n=35, -$72.49, edge/slot -$2.07, win 28.6%, net -1.04%/trade (kill bar was +0.5%)",
-      "verdict": "dead",
-      "epitaph": "There is no multi-day drift after a 3% shock bar here: 71% of shocks hit the -5% stop before the +12% target across 120h \u2014 shock direction carries no 5-day signal. Confirms the r002 R0 lesson at a longer horizon: entering ON the visible impulse is chasing, and the horizon lever cannot rescue an entry with no directional edge \u2014 HORIZON IS A LEVER only multiplies an edge that exists.",
+      "verdict": "dead_mechanism_overturned",
+      "epitaph": "There is no multi-day drift after a 3% shock bar here: 71% of shocks hit the -5% stop before the +12% target across 120h \u2014 shock direction carries no 5-day signal. Confirms the r002 R0 lesson at a longer horizon: entering ON the visible impulse is chasing, and the horizon lever cannot rescue an entry with no directional edge \u2014 HORIZON IS A LEVER only multiplies an edge that exists. CORRECTION (2026-07-19): the control arm overturns the mechanism claim \u2014 shock direction DOES carry a multi-day signal, and it is CONTRARIAN (-3 to -4% sign-aligned). The strategy died by trading a real drift backwards, not by the drift's absence. The fade side is the largest gross effect yet measured here and is admissible for a proper spec.",
       "gradient": {
         "predicted_fires_per_sym_day": 0.5,
         "actual": 0.011,
         "net_expectancy_pct": -1.04
-      }
+      },
+      "control_arm": "MEASURED 2026-07-19 (fragility re-analysis #2): sign-aligned forward returns after ALL 3%/3x-vol shocks, no barriers: 24h -2.97%+-1.00, 72h -4.32%+-1.31, 120h -3.33%+-1.50 (n=53, cascade clustering understates SEs)."
     },
     {
       "name": "pullback_to_breakout_level_limit",
@@ -264,12 +266,13 @@
       "tested": "2026-07-17 \u00b7 930d constrained replay (taker)",
       "result": "n=178, -$419.04, edge/slot -$2.35, win 30.9%, Sharpe -4.37, net -1.18%/trade \u2014 best-powered sample of the round",
       "verdict": "dead",
-      "epitaph": "The retest is not a discount \u2014 it is the failure signal. Breakouts that return to the broken level within 2h are disproportionately the ones that are FAILING; the runners you wanted never look back, so waiting at the level systematically selects the losers (win 30.9%, the worst Sharpe ever recorded here). Cost engineering cannot fix adverse selection in the entry: maker fills would recover ~0.2%/trade against a -1.18% expectancy. COST IS A DESIGN INPUT does not mean price-comes-to-you entries are free edge.",
+      "epitaph": "The retest is not a discount \u2014 it is the failure signal. Breakouts that return to the broken level within 2h are disproportionately the ones that are FAILING; the runners you wanted never look back, so waiting at the level systematically selects the losers (win 30.9%, the worst Sharpe ever recorded here). Cost engineering cannot fix adverse selection in the entry: maker fills would recover ~0.2%/trade against a -1.18% expectancy. COST IS A DESIGN INPUT does not mean price-comes-to-you entries are free edge. CONFIRMED (2026-07-19): the control arm was measured and the adverse-selection mechanism holds at ~5 SE.",
       "gradient": {
         "predicted_fires_per_sym_day": 1.0,
         "actual": 0.042,
         "net_expectancy_pct": -1.18
-      }
+      },
+      "control_arm": "MEASURED 2026-07-19 (fragility re-analysis #3): raw 24h forward returns, retested-within-2h breakouts -0.89%+-0.25 (n=197) vs never-retested +0.98%+-0.28 (n=128) \u2014 ~1.9% gap at ~5 SE. Adverse selection CONFIRMED on both arms."
     },
     {
       "name": "slot_scarcity_conviction_gate",
