@@ -103,6 +103,52 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-19 — Execution-cost experiment: pre-registration draft E-1.0
+
+Revised per the runbook Run-2 referee (which restructured the naive
+24-cell factorial). Awaiting Alpaca live-account approval + operator
+sign-off; no order until both.
+
+**Estimand:** expected cost of the BEST controllable execution policy
+on BTC/ETH at $25-$100 notional — the number the kill criterion (v2)
+consumes as RTC. Cost is defined PER LEG as implementation shortfall:
+(fill − decision-mid)/mid signed against the trader, plus fees;
+never round-trip P&L (inter-leg drift contaminates at this size).
+
+**Design:**
+- Symbols BTC, ETH only (SOL cut — the criterion doesn't ask about it).
+- Factors: policy (market vs post-only-limit) × size ($25 vs $100) ×
+  session (US day vs overnight). Volatility is a recorded COVARIATE
+  (quoted spread at decision + realized 1h vol), not a scheduled factor.
+- PAIRED contrasts: each epoch submits one market and one post-only
+  order against the same quote; the policy contrast is a within-pair
+  difference.
+- The limit arm is a full pre-specified POLICY: post at mid − 1 tick,
+  cancel after 120 s, fall back to crossing the spread; its cost
+  includes rejections, non-fills, and fallback executions.
+- Two-stage allocation: stage 1 ≈ 20 paired epochs across cells →
+  eliminate dominated arms; stage 2 ≈ 30 epochs concentrated in the
+  best 2-3 policies. REPORTED number = stage-2 mean of the stage-1
+  winner (unbiased; no winner's curse). Market orders serve mainly as
+  the ~10-observation calibration anchor (near-deterministic cost).
+- Power gate at stage-1 end: if projected SE of the best policy's
+  cost exceeds ~10 bp near the 0.5% threshold, extend n before
+  concluding anything.
+
+**Recorded per leg:** top-of-book (bid/ask/sizes) at decision and at
+fill; markouts at +1 s/+10 s/+60 s/+5 min; fee paid + schedule tier +
+any promotion in effect; full timestamp chain (decision, submit, ack,
+fill) on one clock; rejections, time-to-fill, cancels.
+
+**Guards (hard bounds):** max $100/order, max $200 concurrent
+exposure, ≤120 total legs, total fees ≤ $25, serial execution, manual
+invocation only, live keys readable only by
+scripts/measure_execution.py. First-fill check: if any flat fee
+minimum appears, abort and re-size. Fee context: Alpaca crypto tier 1
+is 0.15% maker / 0.25% taker, percentage-based.
+
+---
+
 ## 2026-07-18 — Outside eyes institutionalized: fresh context is a standing resource
 
 **Decision:** the blind-elicitation exercise produced more validated
