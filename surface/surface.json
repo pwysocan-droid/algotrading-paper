@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-19T02:50:07Z",
+  "generated_at": "2026-07-19T02:55:06Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 03s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 02s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 004 · complete · next round at next autopilot tick",
     "health_line": "all clear",
     "health_warn": false,
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-19T02:50:04.345457+00:00",
-    "last_run_human": "0m 03s ago",
-    "last_run_human_date": "2026-07-19 · 02:50 UTC",
-    "next_run_human": "59m 56s",
-    "uptime_recent": "16245 of 16264 ok · 99.9%",
+    "last_run_iso": "2026-07-19T02:55:04.198596+00:00",
+    "last_run_human": "0m 02s ago",
+    "last_run_human_date": "2026-07-19 · 02:55 UTC",
+    "next_run_human": "59m 57s",
+    "uptime_recent": "16246 of 16265 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,13 +92,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "277,395",
+      "count": "277,400",
       "delta": "+1329",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "277395"
+      "value": "277400"
     },
     {
       "name": "bar coverage",
@@ -112,13 +112,13 @@
     },
     {
       "name": "cron runs",
-      "count": "16,264",
+      "count": "16,265",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16264"
+      "value": "16265"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "679",
-      "delta": "+518",
+      "count": "690",
+      "delta": "+529",
       "delta_class": null,
       "spark": "▁▁▁▁▁▁▃█",
       "spark_class": null,
       "key": "decisions",
-      "value": "679"
+      "value": "690"
     },
     {
       "name": "letters",
