@@ -103,6 +103,31 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-19 — Operator ratification: all pending drafts approved
+
+The operator approved all items awaiting signature ("approve all",
+2026-07-19):
+
+1. **Program-level kill criterion v2** (the adversarially-reviewed
+   rewrite below) is RATIFIED as written: first scheduled ceiling
+   study by 2026-08-31 under a locked analysis plan; turnover-
+   normalized net edge; one-sided 90% upper-CB futility trigger
+   validated against the power table; 60-day execution-scoped
+   remediation; restart only with a materially new data source or
+   ≥50% RTC reduction.
+2. **Execution-cost pre-registration E-1.0** is RATIFIED as the
+   locked protocol. Physical prerequisites remain: Alpaca live
+   account approved + funded, keys delivered via the clipboard
+   channel. No order fires before both.
+3. **Lessons re-labeled as hypotheses** (referee resubmission
+   condition): the registry's failure_lessons are hereby understood
+   as hypotheses-with-evidence, binding on synthesis in proportion to
+   their support; the n-tagging work (queued) will make each lesson's
+   evidentiary weight explicit. Lessons resting on measured control
+   arms or distribution checks (Grade A) remain hard constraints.
+
+---
+
 ## 2026-07-19 — Execution-cost experiment: pre-registration draft E-1.0
 
 Revised per the runbook Run-2 referee (which restructured the naive
