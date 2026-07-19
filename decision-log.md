@@ -162,13 +162,39 @@ ENGINEERING (the decision is on the cost side). Accepted changes:
    measurements show Alpaca spreads of 0.07% (BTC) to 0.42% (SOL) vs
    Binance ≤0.015% — fees + spread are selectable (symbol, order
    type, venue tier); only slippage requires real trades to measure.
-5. **Program-level kill criterion — DRAFT, operator must ratify:**
-   if (a) the measured cost-surface minimum exceeds 0.5% round-trip
-   on BTC/ETH, AND (b) the augmented-feature ceiling shows gross <
-   measured-cost at every horizon out to 2 weeks, the OHLCV+context
-   research program STOPS and the project archives per the Phase-1b
-   terms. Pre-committed so the null is allowed to win at program
-   level, not just rule level.
+5. **Program-level kill criterion — v1 draft SUPERSEDED** (2026-07-19
+   adversarial review found: cost treated as a constant when it is a
+   decision variable; circularity — the rule never consulted our own
+   power study; an AND-conjunction giving the operator a survival
+   dial; a units error comparing per-round-trip cost to per-horizon
+   edge without turnover; no clock, no restart rule). **v2 DRAFT for
+   ratification:**
+
+   By 2026-08-31, and every 6 months thereafter, run the ceiling
+   study per a LOCKED analysis plan (feature-set version by commit
+   hash; fixed model suite and hyperparameter budget; horizon grid
+   H = {24h, 3d, 1w, 2w}; walk-forward protocol as in
+   scripts/ceiling_study.py). For each h in H compute
+   **net_edge(h) = gross_edge(h) − turnover(h) × RTC**, where RTC is
+   round-trip cost measured under the locked execution protocol from
+   the real-money experiment (venue, order type, size, ≥30 fills,
+   effective spread + fees).
+
+   FUTILITY TRIGGER: the one-sided 90% upper confidence bound of
+   net_edge is below zero at EVERY h in H, with the CI method
+   validated against the 2026-07-18 power-calibration table.
+
+   ON TRIGGER: one 60-day remediation window opens, scoped to
+   execution cost only (fee tier, maker conversion, venue). If
+   breakeven RTC for the best horizon is still unachievable, program
+   v1 archives per the Phase-1b terms. RESTART requires a materially
+   new data source or a documented ≥50% RTC reduction — a new
+   program, not a re-litigation of this one.
+
+   Chosen asymmetry, made consciously: this version is more gameable
+   toward death than toward zombie-life — for a solo operator,
+   sunk-cost persistence is the bigger risk than premature
+   abandonment.
 
 ---
 
