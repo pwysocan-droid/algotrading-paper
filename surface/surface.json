@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-19T10:55:07Z",
+  "generated_at": "2026-07-19T11:00:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-19T10:55:04.399839+00:00",
+    "last_run_iso": "2026-07-19T11:00:04.313379+00:00",
     "last_run_human": "0m 03s ago",
-    "last_run_human_date": "2026-07-19 · 10:55 UTC",
+    "last_run_human_date": "2026-07-19 · 11:00 UTC",
     "next_run_human": "59m 56s",
-    "uptime_recent": "16342 of 16361 ok · 99.9%",
+    "uptime_recent": "16343 of 16362 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "277,824",
-      "delta": "+1331",
+      "count": "277,827",
+      "delta": "+1330",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "277824"
+      "value": "277827"
     },
     {
       "name": "bar coverage",
       "count": "88%",
-      "delta": "-173",
+      "delta": "-174",
       "delta_class": "note",
-      "spark": "▅▇█▇▁█▃▅",
+      "spark": "▅▆█▆▁▇▃▄",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "88"
     },
     {
       "name": "cron runs",
-      "count": "16,361",
+      "count": "16,362",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16361"
+      "value": "16362"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "1,386",
-      "delta": "+1190",
+      "count": "1,394",
+      "delta": "+1198",
       "delta_class": null,
-      "spark": "▁▁▁▁▅█▅▇",
+      "spark": "▁▁▁▁▅█▅█",
       "spark_class": null,
       "key": "decisions",
-      "value": "1386"
+      "value": "1394"
     },
     {
       "name": "letters",
