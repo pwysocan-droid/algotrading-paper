@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-19T03:33:09.810121+00:00",
+  "generated_at": "2026-07-19T04:18:45.996538+00:00",
   "rounds": [
     {
       "round": 1,
@@ -126,6 +126,38 @@
           "name": "round_number_breach_continuation",
           "lens": "behavioral_calendar",
           "kill_criterion": "Expectancy < +0.4%/trade at n>=100. Decisively: if round-number breaches with volume confirmation perform no better than the dead dead_zone/asian_london coil breaks (which resolved at random vs the fee floor), then round numbers carry no continuation energy either and the behavioral-calendar price-level thesis is refuted alongside its clock-time cousins."
+        }
+      ]
+    },
+    {
+      "round": 5,
+      "date": "2026-07-19",
+      "thesis": "This round abandons every exhausted entry geometry (candle-shape microstructure, calendar coils, point-process imports, sign-entropy) and every conjunctive gate that starved four consecutive samples. The unifying move is to stop asking candles for direction and instead exploit two structural facts the record has NOT yet tested: (1) the self-referential gate's power came from a SINGLE observable \u2014 random entries failing \u2014 so this round defines every meta-condition as a single scalar threshold, never a conjunction, deliberately over-firing so armed samples clear n>=100; and (2) the only measured-open OHLCV band is 24h+ maker-friendly holds and 2-7 day persistence, so three of five ideas relocate entirely to the multi-day regime where the fee floor is a rounding error and where the question shifts from 'which direction does this bar resolve' to 'is this symbol in a persistent trending state that will still be trending days from now.' No idea here enters ON an impulse; they enter on the PERSISTENCE of a state, which resolves slower than the impulse and outruns the cost floor by amortization rather than amplitude-per-bar.",
+      "ideas": [
+        {
+          "name": "placebo_losing_streak_single_gate_trend",
+          "lens": "meta_self_referential",
+          "kill_criterion": "Killed if armed win rate <= 40% over n>=100 (matching the asymmetric-exit breakeven), OR if net expectancy < +0.2%/trade. If the single-condition gate ALSO fails to lift win rate above the conjunctive gates' 25-43% band, the entire self-referential family is dead not just its conjunctive form."
+        },
+        {
+          "name": "trailing_return_rank_persistence_hold",
+          "lens": "multi_day_horizon",
+          "kill_criterion": "Killed if win rate (tp-before-sl) <= 33% over n>=100 (the +15/-6 breakeven is ~29%, so 33% leaves no margin after fees), OR if net expectancy < +0.5%/trade. If cross-sectional leadership shows NO continuation edge at 7-day horizon, the published-persistence prior is refuted for this basket."
+        },
+        {
+          "name": "weekly_pullback_limit_into_uptrend",
+          "lens": "cost_engineering",
+          "kill_criterion": "Killed if maker limit-fill win rate (tp-before-sl) <= 33% over n>=100, OR net expectancy < +0.5%/trade. If pullbacks-in-weekly-uptrends select failures the way intraday retests did (r003), win rate collapses below 33% and the horizon-fix is refuted."
+        },
+        {
+          "name": "placebo_streak_gated_weekly_trend_engine",
+          "lens": "gate_engine_pairing",
+          "kill_criterion": "Killed if armed win rate <= ungated engine win rate (gate adds nothing) over n>=100, OR if armed net expectancy < +0.5%/trade. Decisively: if this \u2014 the single-gate + multi-day-engine combination, both prior failure modes removed \u2014 still cannot beat its ungated engine at n>=100, the entire gate family is retired permanently."
+        },
+        {
+          "name": "multiday_magnitude_persistence_directional_hold",
+          "lens": "information_theory",
+          "kill_criterion": "Killed if win rate (tp-before-sl) <= 33% over n>=100, OR net expectancy < +0.5%/trade, OR if qualifying-vs-non-qualifying symbols show no win-rate difference (magnitude persistence adds no regime-quality information). The pre-implementation premise check must confirm lag-1 |return| autocorrelation actually reaches 0.25+ on ~40%+ of symbol-days before spending the full gauntlet."
         }
       ]
     }
