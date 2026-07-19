@@ -170,3 +170,8 @@ Each item:
   detail: "data contracts on fetch (gap/null/schema asserts, loud fail — the silent-partial-data hole); external watchdog ping (healthchecks.io — needs operator signup); credential weekly self-test; timeout wrappers on all cron jobs; git artifact-store split (trader.db/context.db out of git eventually); provider-side LLM spend cap (operator sets); VPS weekly snapshot + crontab-in-repo"
   when: open
   kind: build
+
+- thing: "Cross-cron git commit race (provenance bug, found 2026-07-19)"
+  detail: "the implementer's round-005 work got swept into a concurrent fetch-run commit — VPS crons stage/commit in the same repo without mutual exclusion; fix: one shared git flock around every add/commit/push sequence in all cron scripts (touches the live fetch path, so change deliberately, not casually)"
+  when: open
+  kind: build
