@@ -1,0 +1,16 @@
+{
+  "date": "2026-07-19",
+  "window": "selection only (through 2026-01-01)",
+  "candidates": 467,
+  "placed": 287,
+  "closed": 287,
+  "win_rate": 0.4076655052264808,
+  "gross_mean_pct": 0.4566173328192315,
+  "net_mean_pct": -0.044524210512816284,
+  "exit_mix": {
+    "take_profit": 69,
+    "time_exit": 75,
+    "stop_loss": 143
+  },
+  "threshold": -1.0
+}

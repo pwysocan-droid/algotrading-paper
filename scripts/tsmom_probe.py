@@ -37,8 +37,9 @@ def tsmom(bars, params, ctx):
     if past.close <= 0:
         return None
     ret = last.close / past.close - 1.0
-    if ret <= float(params.get("threshold", 0.10)):
-        return None
+    th = float(params.get("threshold", 0.10))
+    if th >= 0 and ret <= th:
+        return None  # negative threshold = unconditional weekly buy (drift null)
     return signals.Signal(
         symbol=last.symbol, variant_name="", strategy="tsmom_probe",
         side="buy", bar_timestamp=last.timestamp,
@@ -46,8 +47,10 @@ def tsmom(bars, params, ctx):
 
 
 signals.STRATEGY_REGISTRY["tsmom_probe"] = tsmom
+import os
+THRESH = float(os.environ.get("TSMOM_THRESHOLD", "0.10"))
 variant = {"strategy": "tsmom_probe",
-           "params": {"threshold": 0.10, "tp": 0.15, "sl": 0.08,
+           "params": {"threshold": THRESH, "tp": 0.15, "sl": 0.08,
                       "time_exit_hours": 336},
            "context_keys": [], "enabled": True}
 end = datetime(2026, 1, 1, tzinfo=timezone.utc)   # selection window only
@@ -75,5 +78,6 @@ res = {
 from collections import Counter
 res["exit_mix"] = dict(Counter(t.exit_reason for t in closed))
 print(json.dumps(res, indent=2))
-(REPO_ROOT / "reports" / f"tsmom-probe-{res['date']}.json").write_text(
+res["threshold"] = THRESH
+(REPO_ROOT / "reports" / f"tsmom-probe-t{THRESH}-{res['date']}.json").write_text(
     json.dumps(res, indent=2) + "\n")
