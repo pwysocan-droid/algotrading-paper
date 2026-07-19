@@ -155,3 +155,8 @@ Each item:
   detail: "exit-grid sensitivity on key corpses INCL SYMMETRIC exits + per-entry exit-type decomposition (attack 2); bootstrap CIs on every registry entry (4); per-idea vs-null two-sample test in gauntlet output (8); unconstrained expectancy alongside constrained (9); drawdown ruin-semantics audit — the 139.7% entry (1c); purged/embargoed CV + ML positive control for ceiling re-run (6); cost-tier sensitivity table over registry verdicts (7); lesson n-tagging with n<3 non-binding + blind-resurrection replication (3); spec-vs-code independent reimplementation spot check (10). Defenses already standing: end-to-end positive control now IN CI (1), 2026 holdout embargoed since inception (5), null distribution measured (8-partial), maker/cost sensitivity machinery (7-partial)"
   when: open
   kind: build
+
+- thing: "Archival re-analyses (Run-5 harvest, need re-runs for trade records)"
+  detail: "maker-fee re-scoring of all corpses (#1 — how many does the 24h+maker band resurrect); MFE/MAE exit autopsy + optimal tp/sl grid (#2); hold-extension census on time-exits (#6); pooled death-regime fingerprint (#8); symbol ablation (#9); live fill audit methodology now, powered in a month (#10); single-condition gate decomposition (#4, joins placebo-gate ablation). Note: trade-level records only exist r004+, so corpus items re-run r001-r003 variants first"
+  when: open
+  kind: build
