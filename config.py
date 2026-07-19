@@ -421,4 +421,54 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "enabled": False,
         "phase_qualified": False,
     },
+    # ── Foundry round 005 (reviews/foundry/round-005.json) ──────────────
+    # Pre-mortem (reviews/foundry/premortem-005.md): idea 1 SKIP, ideas
+    # 2/3/5 IMPLEMENT, idea 4 REDESIGN (placebo_floor 0.30 -> 0.40 here,
+    # widened for the armed-sample cushion the pre-mortem demanded).
+    # Every idea is implemented regardless per the round policy — the
+    # gauntlet is the arbiter, not the paper review.
+    "placebo_losing_streak_single_gate_trend": {
+        "strategy": "placebo_gate_trend_continuation",
+        "params": {"placebo_window": 20, "placebo_floor": 0.3,
+                   "trend_lookback": 12, "tp": 0.05, "sl": 0.03,
+                   "time_exit_hours": 24},
+        "context_keys": ["system_state"],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "trailing_return_rank_persistence_hold": {
+        "strategy": "return_rank_persistence_hold",
+        "params": {"rank_lookback_hours": 168, "min_leader_return": 0.1,
+                   "tp": 0.15, "sl": 0.06, "time_exit_hours": 168},
+        "context_keys": ["basket_bars"],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "weekly_pullback_limit_into_uptrend": {
+        "strategy": "weekly_pullback_limit",
+        "params": {"uptrend_min": 0.08, "pullback_depth": 0.03,
+                   "limit_life_hours": 12, "tp": 0.12, "sl": 0.05,
+                   "time_exit_hours": 120},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "placebo_streak_gated_weekly_trend_engine": {
+        "strategy": "placebo_gated_weekly_trend",
+        "params": {"placebo_window": 20, "placebo_floor": 0.4,
+                   "gate_engine_min": 0.1, "tp": 0.15, "sl": 0.06,
+                   "time_exit_hours": 168},
+        "context_keys": ["system_state", "basket_bars"],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "multiday_magnitude_persistence_directional_hold": {
+        "strategy": "magnitude_persistence_directional_hold",
+        "params": {"mag_window": 21, "persistence_min": 0.25,
+                   "regime_trend_min": 0.06, "tp": 0.14, "sl": 0.05,
+                   "time_exit_hours": 144},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
 }

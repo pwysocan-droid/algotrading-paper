@@ -75,13 +75,18 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "hawkes_self_excitation_intensity_entry", "one_sided_range_expansion_thrust",
         "round_number_breach_continuation",
     }
+    foundry_005 = {
+        "placebo_losing_streak_single_gate_trend", "trailing_return_rank_persistence_hold",
+        "weekly_pullback_limit_into_uptrend", "placebo_streak_gated_weekly_trend_engine",
+        "multiday_magnitude_persistence_directional_hold",
+    }
     assert set(STRATEGY_VARIANTS.keys()) == (
         retired | candidates | foundry_001 | foundry_002 | foundry_003 | foundry_004
-        | {"null_baseline"}
+        | foundry_005 | {"null_baseline"}
     )
     assert all(
         STRATEGY_VARIANTS[n].get("enabled") is False
-        for n in foundry_001 | foundry_002 | foundry_003 | foundry_004
+        for n in foundry_001 | foundry_002 | foundry_003 | foundry_004 | foundry_005
     ), "foundry rounds stay disabled pending their gauntlets"
 
     # The live roster: null placebo + the gauntlet's top 2 as A/B arms
@@ -1127,3 +1132,143 @@ class TestFoundryRound004:
             b = bars[k]
             bars[k] = _bar(b.symbol, b.timestamp, 50500.0, 50510.0, 50490.0, 50505.0, 100.0)
         assert signals.round_number_breach_continuation(bars, {}, {}) is None
+
+
+def _daily_series(
+    symbol: str, closes: list[float], start: datetime | None = None
+) -> list[BarRow]:
+    """One bar per UTC day at 00:00 — round-005's multi-day ideas key
+    their calendar lookback off timestamps, not assumed bar spacing."""
+    start = start or datetime(2026, 7, 1, tzinfo=timezone.utc)
+    return [
+        _bar(symbol, (start + timedelta(days=i)).isoformat(), c, c + 0.01, c - 0.01, c, 100.0)
+        for i, c in enumerate(closes)
+    ]
+
+
+class TestFoundryRound005:
+    def test_all_registered(self) -> None:
+        for key in ("placebo_gate_trend_continuation", "return_rank_persistence_hold",
+                    "weekly_pullback_limit", "placebo_gated_weekly_trend",
+                    "magnitude_persistence_directional_hold"):
+            assert key in signals.STRATEGY_REGISTRY
+
+    # -- idea 1: single-scalar placebo gate + dominant-sign trend --------------
+
+    def _dominant_trend_bars(self, symbol: str = "BTC/USD") -> list[BarRow]:
+        start = datetime(2026, 7, 13, tzinfo=timezone.utc)
+        bars: list[BarRow] = []
+        p = 100.0
+        for i in range(12):  # trend_window: 12 bars of positive body
+            o, c = p, p + 0.5
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar(symbol, ts, o, c + 0.05, o - 0.05, c, 100.0))
+            p = c
+        o, c = p, p + 0.3  # the "prior" bar
+        ts = (start + timedelta(minutes=5 * 12)).isoformat()
+        bars.append(_bar(symbol, ts, o, c + 0.1, o - 0.1, c, 100.0))
+        prior_high = c + 0.1
+        o, c = c, prior_high + 0.5  # closes decisively above the prior bar's high
+        ts = (start + timedelta(minutes=5 * 13)).isoformat()
+        bars.append(_bar(symbol, ts, o, c + 0.05, o - 0.05, c, 100.0))
+        return bars
+
+    def test_placebo_gate_fires_buy_when_armed(self) -> None:
+        ctx = {"system_state": {"null_win_rate_20": 0.2}}
+        sig = signals.placebo_losing_streak_single_gate_trend(
+            self._dominant_trend_bars(), {}, ctx)
+        assert sig is not None and sig.side == "buy"
+
+    def test_placebo_gate_shut_or_missing_suppresses(self) -> None:
+        bars = self._dominant_trend_bars()
+        assert signals.placebo_losing_streak_single_gate_trend(
+            bars, {}, {"system_state": {"null_win_rate_20": 0.5}}
+        ) is None  # placebo not losing enough — gate shut
+        assert signals.placebo_losing_streak_single_gate_trend(bars, {}, {}) is None
+
+    # -- ideas 2 & 4: weekly cross-sectional rank engine, gated and ungated -----
+
+    def _rank_basket(self) -> dict[str, list[BarRow]]:
+        return {
+            "BTC/USD": _daily_series("BTC/USD", [100.0] * 7 + [115.0]),  # +15%: leader
+            "ETH/USD": _daily_series("ETH/USD", [100.0] * 8),  # flat
+            "SOL/USD": _daily_series("SOL/USD", [100.0] * 8),  # flat
+            "LINK/USD": _daily_series("LINK/USD", [100.0] * 7 + [83.0]),  # -17%: trailer
+            "AVAX/USD": _daily_series("AVAX/USD", [100.0] * 8),  # flat
+        }
+
+    def test_rank_persistence_hold_longs_leader_shorts_trailer(self) -> None:
+        basket = self._rank_basket()
+        long_sig = signals.trailing_return_rank_persistence_hold(
+            basket["BTC/USD"], {}, {"basket_bars": basket})
+        short_sig = signals.trailing_return_rank_persistence_hold(
+            basket["LINK/USD"], {}, {"basket_bars": basket})
+        assert long_sig is not None and long_sig.side == "buy"
+        assert short_sig is not None and short_sig.side == "sell"
+
+    def test_rank_persistence_hold_no_fire_for_non_ranked_or_missing_basket(self) -> None:
+        basket = self._rank_basket()
+        assert signals.trailing_return_rank_persistence_hold(
+            basket["ETH/USD"], {}, {"basket_bars": basket}) is None
+        assert signals.trailing_return_rank_persistence_hold(
+            basket["BTC/USD"], {}, {}) is None
+
+    def test_gated_weekly_trend_fires_when_gate_open(self) -> None:
+        basket = self._rank_basket()
+        ctx = {"system_state": {"null_win_rate_20": 0.1}, "basket_bars": basket}
+        sig = signals.placebo_streak_gated_weekly_trend_engine(basket["BTC/USD"], {}, ctx)
+        assert sig is not None and sig.side == "buy"
+
+    def test_gated_weekly_trend_shut_or_missing_suppresses(self) -> None:
+        basket = self._rank_basket()
+        assert signals.placebo_streak_gated_weekly_trend_engine(
+            basket["BTC/USD"], {}, {"system_state": {"null_win_rate_20": 0.5}, "basket_bars": basket}
+        ) is None  # gate shut
+        assert signals.placebo_streak_gated_weekly_trend_engine(
+            basket["BTC/USD"], {}, {"basket_bars": basket}
+        ) is None  # no system_state
+
+    # -- idea 3: weekly pullback into an established uptrend --------------------
+
+    def _pullback_bars(self, symbol: str = "BTC/USD") -> list[BarRow]:
+        t0 = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        bars = [_bar(symbol, t0.isoformat(), 100.0, 100.05, 99.95, 100.0, 100.0)]  # 9d anchor
+        dense_start = t0 + timedelta(days=9)
+        for k in range(288):  # 24h plateau at 110 (the trailing-high window)
+            ts = (dense_start + timedelta(minutes=5 * k)).isoformat()
+            bars.append(_bar(symbol, ts, 110.0, 110.5, 109.5, 110.0, 100.0))
+        ts = (dense_start + timedelta(minutes=5 * 288)).isoformat()
+        # wicks down to touch the 3%-below-high level, closes above the 200-bar MA
+        bars.append(_bar(symbol, ts, 110.0, 111.5, 107.0, 111.0, 100.0))
+        return bars
+
+    def test_pullback_limit_fires_buy_on_touch(self) -> None:
+        sig = signals.weekly_pullback_limit_into_uptrend(self._pullback_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["level"] == pytest.approx(107.185)
+
+    def test_pullback_limit_no_fire_without_touch(self) -> None:
+        bars = self._pullback_bars()
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, b.open, b.high, 109.0, b.close, b.volume)
+        assert signals.weekly_pullback_limit_into_uptrend(bars, {}, {}) is None
+
+    # -- idea 5: magnitude-persistence-gated directional hold -------------------
+
+    def _magnitude_persistence_bars(self, symbol: str = "BTC/USD") -> list[BarRow]:
+        closes = [100.0, 100.0]
+        for r in (0.0, 0.01, 0.01, 0.01, 0.06, 0.06):  # 3 quiet days then 2 volatile
+            closes.append(closes[-1] * (1 + r))
+        return _daily_series(symbol, closes)
+
+    def test_magnitude_persistence_fires_buy(self) -> None:
+        sig = signals.multiday_magnitude_persistence_directional_hold(
+            self._magnitude_persistence_bars(), {"mag_window": 4}, {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_magnitude_persistence_no_fire_when_gates_tightened(self) -> None:
+        bars = self._magnitude_persistence_bars()
+        assert signals.multiday_magnitude_persistence_directional_hold(
+            bars, {"mag_window": 4, "persistence_min": 0.9}, {}) is None
+        assert signals.multiday_magnitude_persistence_directional_hold(
+            bars, {"mag_window": 4, "regime_trend_min": 0.5}, {}) is None

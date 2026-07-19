@@ -240,6 +240,19 @@ def replay_variant(
         btc_bars = load_bars_in_range(conn, "BTC/USD", start, end)
         btc_ts = [b.timestamp for b in btc_bars]
 
+    # Round-005 ideas 2/4 (context_keys=['basket_bars']): the cross-
+    # sectional rank engine needs every symbol's own bars, not just the
+    # one being scored. Preload once per symbol; per step, slice to
+    # timestamps <= the signal bar's timestamp so the look-ahead guard
+    # holds for the basket series too (mirrors btc_bars above).
+    wants_basket = "basket_bars" in variant.get("context_keys", [])
+    basket_bars: dict[str, list[BarRow]] = {}
+    basket_ts: dict[str, list[str]] = {}
+    if wants_basket:
+        for sym in symbols:
+            basket_bars[sym] = load_bars_in_range(conn, sym, start, end)
+            basket_ts[sym] = [b.timestamp for b in basket_bars[sym]]
+
     # Meta context (context_keys=['system_state']): simulate the null
     # arm's constrained trades over the same window once (deterministic,
     # so reproducible), then serve trailing-24h win rate / stop-outs per
@@ -288,6 +301,7 @@ def replay_variant(
         recent_cand = null_cand_rejected[max(0, c_hi - 50): c_hi]
         last_exits = null_exits[max(0, hi - 10): hi]
         last_20 = null_exits[max(0, hi - 20): hi]
+        last_40 = null_exits[max(0, hi - 40): hi]
         last_100 = null_exits[max(0, hi - 100): hi]
         return {
             "null_win_rate": (wins / closed_n) if closed_n else None,
@@ -318,6 +332,17 @@ def replay_variant(
                 {"exit_reason": "stop_loss" if s else "time_exit", "exit_time": ts}
                 for ts, _w, s in last_20
             ]),
+            # r005 ideas 1/4 gate inputs — same mirror discipline as
+            # null_win_rate_100 above (live-only would repeat the
+            # never-fires bug for these two ideas' gates).
+            "null_win_rate_20": (
+                sum(1 for _, w, _s in last_20 if w) / len(last_20)
+                if last_20 else None
+            ),
+            "null_win_rate_40": (
+                sum(1 for _, w, _s in last_40 if w) / len(last_40)
+                if last_40 else None
+            ),
         }
 
     out: list[SimulatedTrade] = []
@@ -332,6 +357,11 @@ def replay_variant(
             if wants_btc:
                 cut = bisect.bisect_right(btc_ts, window[-1].timestamp)
                 ctx["btc_bars"] = btc_bars[:cut]
+            if wants_basket:
+                ctx["basket_bars"] = {
+                    sym: basket_bars[sym][:bisect.bisect_right(basket_ts[sym], window[-1].timestamp)]
+                    for sym in symbols
+                }
             if wants_state:
                 ctx["system_state"] = _state_at(window[-1].timestamp)
             sig: Signal | None = fn(window, params, ctx)

@@ -1633,6 +1633,311 @@ def round_number_breach_continuation(
     )
 
 
+# ── Foundry round 005 (reviews/foundry/round-005.json) ──────────────────
+# Round thesis: two structural moves — every meta-gate is now a SINGLE
+# scalar threshold (never the r001-r004 conjunctions that starved four
+# straight samples), and three of five ideas relocate to the multi-day
+# regime where the fee floor is a rounding error.
+#
+# Pre-mortem (reviews/foundry/premortem-005.md) verdicts: idea 1 SKIP
+# (re-tests r001's already-falsified gate+weak-breakout-engine shape at
+# n=460, and its maker-fee claim doesn't match a chase-style entry),
+# ideas 2/3/5 IMPLEMENT (no fatal flaw found), idea 4 REDESIGN (the
+# family's calibration record has never once landed a comfortable
+# armed sample — every prior gate idea missed its fire-rate estimate by
+# 3x-166x — and idea 4's own arithmetic carries only a 2.5x cushion,
+# thinner than the smallest miss ever recorded for this family). Per
+# the round policy every idea is implemented regardless of verdict so
+# the gauntlet — not paper review alone — is the arbiter; idea 4 carries
+# the one redesign the spec accommodates: placebo_floor widened from
+# the spec's 0.30 to 0.40, loosening the gate open-rate to buy back the
+# cushion the pre-mortem demanded, without touching the core single-
+# scalar-gate + multi-day-engine hypothesis under test.
+#
+# Premise-checked 2026-07-19 against research_bars (all 5 symbols, daily
+# and 5-min bars, live trades-table gate inputs excluded since they read
+# the trading system's own history, not the bars table): idea 5's
+# lag-1 |daily-return| autocorrelation over a rolling 21-day window
+# clears persistence_min=0.25 on only 8-16% of symbol-days (BTC 12.2%,
+# ETH 8.1%, SOL 16.2%, LINK 16.4%, AVAX 10.7%) versus the spec's claimed
+# "~40%+" — a real miss, but the conjunction with the trend condition
+# was never the bottleneck claim, so it stays implemented and the
+# gauntlet gets to measure the true rate directly rather than trust the
+# estimate. Ideas 2/4's weekly cross-sectional rank engine (shared
+# across the basket, 7-day return, top/bottom of 5): leader qualifies
+# (>10%) on 29.3% of symbol-days and trailer qualifies (<-10%) on 23.8%,
+# versus the spec's assumed 55-65%/40% — over-estimated but the combined
+# ~0.53 fires/day still projects to n>=490 over 930 days, comfortably
+# decidable. Idea 3's weekly-uptrend gate (7d return > 8%) is true on
+# 17.7% of symbol-days (spec assumed ~30%) but the pullback-touch rate
+# given an uptrend is 62.5% (spec assumed ~40%, an under-estimate in the
+# other direction) — the two errors partially cancel: ~0.55 fires/day
+# for the basket, matching the spec's own 0.6/day arithmetic almost
+# exactly. Idea 1's ungated engine (dominant-sign trend continuation)
+# fires on 26.9% of BTC bars, matching the spec's ~25% estimate; its
+# gate-open fraction (and idea 4's) cannot be premise-checked against
+# research_bars alone — that gate reads the live trades table's
+# null_baseline history, a data source this database does not carry.
+
+
+def _bar_at_or_before(bars: list[BarRow], cutoff: datetime) -> BarRow | None:
+    """Latest bar with timestamp <= cutoff, scanning newest-first (bars
+    is chronological, oldest-first) — the round-005 multi-day ideas'
+    calendar-time lookback, robust to gaps and to bar-frequency
+    assumptions that hour*bars-per-hour arithmetic would get wrong."""
+    for b in reversed(bars):
+        if _ts(b) <= cutoff:
+            return b
+    return None
+
+
+def _daily_closes(bars: list[BarRow]) -> list[float]:
+    """One close per UTC calendar day (the day's last bar), oldest-first."""
+    by_day: dict[Any, float] = {}
+    for b in bars:
+        by_day[_ts(b).date()] = b.close
+    return [by_day[d] for d in sorted(by_day)]
+
+
+def _lag1_autocorr(xs: list[float]) -> float | None:
+    n = len(xs)
+    if n < 3:
+        return None
+    mu = sum(xs) / n
+    den = sum((x - mu) ** 2 for x in xs)
+    if den <= 0:
+        return None
+    num = sum((xs[i] - mu) * (xs[i + 1] - mu) for i in range(n - 1))
+    return num / den
+
+
+def _weekly_rank_signal(
+    bars: list[BarRow], basket: dict[str, list[BarRow]],
+    rank_hours: int, min_leader_return: float,
+) -> tuple[str, dict[str, float]] | None:
+    """Shared cross-sectional rank engine for round-005 ideas 2 and 4:
+    long the basket's trailing rank_hours return leader, short the
+    laggard, evaluated once per day on the 00:00 UTC bar."""
+    last = bars[-1]
+    if _ts(last).hour != 0:
+        return None
+    returns: dict[str, float] = {}
+    for sym, sym_bars in basket.items():
+        if not sym_bars:
+            continue
+        sym_last = sym_bars[-1]
+        start = _bar_at_or_before(sym_bars[:-1], _ts(sym_last) - timedelta(hours=rank_hours))
+        if start is None or start.close <= 0:
+            continue
+        returns[sym] = sym_last.close / start.close - 1.0
+    if last.symbol not in returns or len(returns) < 2:
+        return None
+    leader = max(returns, key=returns.get)
+    trailer = min(returns, key=returns.get)
+    if last.symbol == leader and returns[leader] > min_leader_return:
+        return "buy", returns
+    if last.symbol == trailer and returns[trailer] < -min_leader_return:
+        return "sell", returns
+    return None
+
+
+def placebo_losing_streak_single_gate_trend(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-005 idea 1 (premortem-005.md: SKIP — re-tests r001's
+    already-falsified gate+weak-breakout-engine shape at n=460, and the
+    fee_survival maker-fee claim doesn't match this chase-style entry.
+    Implemented anyway per the round policy: the gauntlet, not the paper
+    review, is the arbiter). A single scalar gate — the trailing
+    null_baseline hit rate over its last placebo_window trades — arms a
+    plain dominant-sign trend-continuation entry."""
+    window = int(params.get("placebo_window", 20))
+    floor = float(params.get("placebo_floor", 0.3))
+    trend_lookback = int(params.get("trend_lookback", 12))
+
+    state = context.get("system_state")
+    if not state:
+        return None
+    hitrate = state.get(f"null_win_rate_{window}")
+    if hitrate is None or hitrate > floor:
+        return None
+
+    if len(bars) < trend_lookback + 2:
+        return None
+    last, prior = bars[-1], bars[-2]
+    trend_window = bars[-1 - trend_lookback: -1]
+    dominant = sum((b.close - b.open) / b.open for b in trend_window if b.open > 0)
+    if dominant > 0 and last.close > prior.high:
+        side = "buy"
+    elif dominant < 0 and last.close < prior.low:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="placebo_gate_trend_continuation",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"placebo_hitrate": hitrate, "dominant_sign_sum": dominant},
+    )
+
+
+def trailing_return_rank_persistence_hold(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-005 idea 2 — cross-sectional momentum persistence: long the
+    basket's 7-day-return leader, short the laggard, held for days. The
+    edge lives at a horizon (weekly rebalancing flow) 5-min bots cannot
+    hold through. Requires context_keys=['basket_bars']."""
+    rank_hours = int(params.get("rank_lookback_hours", 168))
+    min_leader_return = float(params.get("min_leader_return", 0.10))
+    basket = context.get("basket_bars")
+    if not basket:
+        return None
+    result = _weekly_rank_signal(bars, basket, rank_hours, min_leader_return)
+    if result is None:
+        return None
+    side, returns = result
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="return_rank_persistence_hold",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"rank_return": returns[last.symbol], "basket_returns": returns},
+    )
+
+
+def weekly_pullback_limit_into_uptrend(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-005 idea 3 — the multi-day inversion of dead
+    pullback_to_breakout_level_limit (r003, worst Sharpe ever): a
+    pullback within an established WEEKLY uptrend is trend-breathing,
+    not breakout-failure. Long-only: a resting limit at 3% below the
+    trailing 24h high, filled only within a 7-day (>8%) uptrend and
+    above the 200-bar close-mean."""
+    uptrend_min = float(params.get("uptrend_min", 0.08))
+    pullback_depth = float(params.get("pullback_depth", 0.03))
+    limit_life_hours = int(params.get("limit_life_hours", 12))
+    uptrend_lookback_hours = 168
+    ma_window = 200
+    pullback_high_lookback_hours = 24
+
+    last = bars[-1]
+    if len(bars) < ma_window + 1:
+        return None
+    trend_start = _bar_at_or_before(bars[:-1], _ts(last) - timedelta(hours=uptrend_lookback_hours))
+    if trend_start is None or trend_start.close <= 0:
+        return None
+    weekly_return = last.close / trend_start.close - 1.0
+    if weekly_return <= uptrend_min:
+        return None
+    ma = sum(b.close for b in bars[-ma_window - 1: -1]) / ma_window
+    if last.close <= ma:
+        return None
+
+    cutoff = _ts(last) - timedelta(hours=pullback_high_lookback_hours)
+    window = [b for b in bars[:-1] if _ts(b) >= cutoff]
+    if not window:
+        return None
+    high_24h = max(b.high for b in window)
+    level = high_24h * (1.0 - pullback_depth)
+
+    limit_cutoff = _ts(last) - timedelta(hours=limit_life_hours)
+    recent = [b for b in bars[:-1] if _ts(b) > limit_cutoff]
+    if any(b.low <= level for b in recent):
+        return None  # already touched earlier within its life — no chase
+    if last.low > level:
+        return None  # not touched yet
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="weekly_pullback_limit",
+        side="buy", bar_timestamp=last.timestamp, price_at_signal=level,
+        reasoning={"weekly_return": weekly_return, "level": level, "high_24h": high_24h},
+    )
+
+
+def placebo_streak_gated_weekly_trend_engine(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-005 idea 4 (premortem-005.md: REDESIGN — placebo_floor
+    widened from the spec's 0.30 to 0.40, loosening the gate open-rate
+    for the 5-10x armed-sample cushion the pre-mortem demanded over the
+    family's thinnest-ever prior miss of 2.5x; the core hypothesis is
+    unchanged). The single-scalar self-referential gate from idea 1
+    arms the weekly cross-sectional rank engine from idea 2 — the first
+    gate pairing with both a single-condition gate and a multi-day
+    engine. Requires context_keys=['system_state', 'basket_bars']."""
+    window = int(params.get("placebo_window", 20))
+    floor = float(params.get("placebo_floor", 0.4))
+    rank_hours = 168
+    min_leader_return = float(params.get("gate_engine_min", 0.10))
+
+    state = context.get("system_state")
+    if not state:
+        return None
+    hitrate = state.get(f"null_win_rate_{window}")
+    if hitrate is None or hitrate > floor:
+        return None
+    basket = context.get("basket_bars")
+    if not basket:
+        return None
+    result = _weekly_rank_signal(bars, basket, rank_hours, min_leader_return)
+    if result is None:
+        return None
+    side, returns = result
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="placebo_gated_weekly_trend",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"placebo_hitrate": hitrate, "rank_return": returns[last.symbol]},
+    )
+
+
+def multiday_magnitude_persistence_directional_hold(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-005 idea 5 — the fix for both prior information-theory
+    deaths (r002, r004): the info signal names a REGIME, never a
+    direction. Daily |return| lag-1 autocorrelation qualifies a symbol
+    as a genuine volatility-clustering regime; direction comes from the
+    168h trend, never from entropy/magnitude."""
+    mag_w = int(params.get("mag_window", 21))
+    persistence_min = float(params.get("persistence_min", 0.25))
+    trend_min = float(params.get("regime_trend_min", 0.06))
+    trend_lookback_hours = 168
+
+    last = bars[-1]
+    if _ts(last).hour != 0:
+        return None
+    closes = _daily_closes(bars)
+    if len(closes) < mag_w + 2:
+        return None
+    daily_rets = [
+        math.log(closes[i] / closes[i - 1])
+        for i in range(1, len(closes))
+        if closes[i - 1] > 0 and closes[i] > 0
+    ]
+    if len(daily_rets) < mag_w + 1:
+        return None
+    mags = [abs(r) for r in daily_rets[-(mag_w + 1):]]
+    persistence = _lag1_autocorr(mags)
+    if persistence is None or persistence < persistence_min:
+        return None
+
+    trend_start = _bar_at_or_before(bars[:-1], _ts(last) - timedelta(hours=trend_lookback_hours))
+    if trend_start is None or trend_start.close <= 0:
+        return None
+    trend_ret = last.close / trend_start.close - 1.0
+    if trend_ret > trend_min:
+        side = "buy"
+    elif trend_ret < -trend_min:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="magnitude_persistence_directional_hold",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"mag_persistence": persistence, "trend_return": trend_ret},
+    )
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
@@ -1662,6 +1967,11 @@ STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "hawkes_intensity_entry": hawkes_self_excitation_intensity_entry,
     "one_sided_expansion_thrust": one_sided_range_expansion_thrust,
     "round_number_breach": round_number_breach_continuation,
+    "placebo_gate_trend_continuation": placebo_losing_streak_single_gate_trend,
+    "return_rank_persistence_hold": trailing_return_rank_persistence_hold,
+    "weekly_pullback_limit": weekly_pullback_limit_into_uptrend,
+    "placebo_gated_weekly_trend": placebo_streak_gated_weekly_trend_engine,
+    "magnitude_persistence_directional_hold": multiday_magnitude_persistence_directional_hold,
 }
 
 
@@ -1777,6 +2087,23 @@ def load_system_state(
          WHERE status = 'closed' ORDER BY exit_time DESC LIMIT 20
         """
     ).fetchall()
+    # Round-005 ideas 1/4 gate inputs: the trailing placebo hit rate over
+    # the last N null_baseline closed trades (a single scalar, not the
+    # r001-r004 conjunctive gates) — one query per idea's declared window.
+    null_20 = conn.execute(
+        """
+        SELECT pnl_usd, exit_reason, exit_time FROM trades
+         WHERE variant_name = 'null_baseline' AND status = 'closed'
+         ORDER BY exit_time DESC LIMIT 20
+        """
+    ).fetchall()
+    null_40 = conn.execute(
+        """
+        SELECT pnl_usd, exit_reason, exit_time FROM trades
+         WHERE variant_name = 'null_baseline' AND status = 'closed'
+         ORDER BY exit_time DESC LIMIT 40
+        """
+    ).fetchall()
     return {
         "null_win_rate": (wins / closed) if closed else None,
         "recent_stopouts": stopouts,
@@ -1785,6 +2112,8 @@ def load_system_state(
         "stop_out_rate": stop_out_rate,  # last 10 closed, ALL arms (r003)
         "null_win_rate_100": _closed_trade_win_rate(null_100),
         "stopout_cluster_index": _stopout_cluster_index(last_20),
+        "null_win_rate_20": _closed_trade_win_rate(null_20),
+        "null_win_rate_40": _closed_trade_win_rate(null_40),
     }
 
 
@@ -1837,6 +2166,12 @@ def run_variant(
         ctx["btc_bars"] = load_recent_bars(conn, "BTC/USD", limit=300)
     if "system_state" in variant.get("context_keys", []) and "system_state" not in ctx:
         ctx["system_state"] = load_system_state(conn)
+    # Round-005 ideas 2/4's cross-sectional rank engine needs every
+    # basket symbol's own bars, not just the symbol currently being
+    # evaluated — 2200 bars (~7.6 days of 5-min bars) comfortably covers
+    # the 168h rank lookback plus the prior-bar buffer it needs.
+    if "basket_bars" in variant.get("context_keys", []) and "basket_bars" not in ctx:
+        ctx["basket_bars"] = {s: load_recent_bars(conn, s, limit=2200) for s in symbols}
 
     emitted: list[Signal] = []
     for symbol in symbols:
