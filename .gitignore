@@ -34,6 +34,7 @@ htmlcov/
 # (test temporaries, journals, scratch DBs).
 *.db
 !trader.db
+!context.db
 *.db-journal
 *.sqlite
 *.sqlite3
