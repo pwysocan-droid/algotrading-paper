@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-20T17:25:06Z
+2026-07-20T17:30:07Z
 
 7 surfaces tracked
 
@@ -17,8 +17,8 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
+| [decision-log.md](decision-log.md) | 2026-07-20T17:27:34Z | Phase A signed: K1 adjudicate… |
 | [philosophy.md](philosophy.md) | 2026-07-20T06:33:51Z | Lesson 22 amendments: regime… |
-| [decision-log.md](decision-log.md) | 2026-07-19T17:49:01Z | Operator ratifies all pending… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
 | [playbook.md](playbook.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
