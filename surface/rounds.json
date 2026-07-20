@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-19T04:18:45.996538+00:00",
+  "generated_at": "2026-07-20T03:33:04.912230+00:00",
   "rounds": [
     {
       "round": 1,
@@ -543,7 +543,7 @@
     "rejection_streak_gated_ignition": "dead",
     "gap_fill_exhaustion_continuation": "dead",
     "asian_to_london_handoff_thrust": "dead",
-    "post_shock_multiday_drift": "dead",
+    "post_shock_multiday_drift": "dead_mechanism_overturned",
     "pullback_to_breakout_level_limit": "dead",
     "slot_scarcity_conviction_gate": "inconclusive_starved",
     "trend_persistence_regime_gated_engine": "dead",
