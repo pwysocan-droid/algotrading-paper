@@ -1723,3 +1723,28 @@ cross-regime variance. Recorded as the equity registry's founding
 lesson: mandatory drift-null benchmark, trust direction not magnitude,
 price the crash skew. No celebration of the headline — that is the
 gross-positive/romanticism trap the project exists to refuse.
+
+**AMENDMENTS (referee, same day) — the pass isn't the registered pass:**
+- *Modified-protocol pass.* The pre-registration specified 20+ years
+  of monthly data (where the power table said detection was
+  affordable). Alpaca history reaches only ~2021 (the regime grid
+  already showed 2016-19 empty), so the control ran on **n=59 months
+  (2021-26)** — the long-history constraint was dropped by data
+  availability, NOT by choice, and a t≈1.6 result on 5 years is much
+  weaker than the registered design would give. Recorded so this is
+  read as a modified pass, not the registered-power pass — the quiet
+  substitution Run 3 exists to catch.
+- *Construction confirmed (by code inspection).* Round zero measured
+  the LONG-ONLY TILT — top-decile minus equal-weight-universe
+  benchmark — which is the registered construction, NOT a 6-1
+  long-short spread. So +14.9%/yr is genuinely the tilt (its near-
+  equality with the corrected 6-1 spread reflects a right-skewed
+  2021-26 return distribution, not a spread-vs-tilt units error).
+  Lesson refined: register the CONSTRUCTION alongside the band.
+- *UMD cross-check (running).* Correlate the pipeline's monthly excess
+  against Ken French's UMD factor (1927-present, CRSP with delisting
+  handling — the series the whole literature validates against) over
+  the 59-month overlap: high correlation validates portfolio
+  construction independent of magnitude, and places 2021-26 within the
+  99-year momentum distribution. Converts the modified pass toward the
+  registered control for zero cost.
