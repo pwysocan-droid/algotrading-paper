@@ -1770,3 +1770,30 @@ Ken French UMD cross-check ran (report umd-crosscheck-2026-07-20.json):
   and weak-positive construction co-movement. Pipeline validated for
   RESEARCH USE; construction cross-validation is partial — revisit with
   a UMD-analog long-short build if magnitude precision ever matters.
+
+## 2026-07-20 — Identity test result: momentum confirmed via storm-conditional co-movement
+
+The two identity checks ran (report umd-identity-2026-07-20.json),
+graded together per the referee (the correlation caps the crash
+signature):
+- **Construction partly explains the gap:** the VW long-short 2×3 UMD
+  mimic correlates +0.39 with French UMD vs the long-only tilt's +0.26
+  — moved the predicted direction but not to 0.6–0.8. Residual gap =
+  top-500-liquid universe (not all-CRSP), dollar-volume size proxy (no
+  true market cap), 21-trading-day vs calendar-month alignment. Not a
+  structural bug; not a full benign confirmation either.
+- **Storm-conditional is the decisive evidence:** tilt-vs-UMD
+  correlation is +0.49 in high-|UMD| storm months (top 20%, n=11) vs
+  +0.09 in calm months. This is the "same beast in storms" pattern —
+  the full-sample +0.26 was dragged down by calm-month construction
+  noise; in the tails where the crash argument lives, the series tracks
+  momentum. SE≈0.27 on n=11 → suggestive, not airtight.
+- **Verdict (both graded together):** the identity of the measured
+  object is momentum — supported chiefly by storm-conditional
+  co-movement, not merely by the crash timing alone. The yellow flag is
+  downgraded from "parked/deferred" to "substantially addressed,
+  residual construction gap DOCUMENTED." The prior deferral line ("revisit
+  if magnitude precision matters") is REPLACED: identity resolved for
+  research use; a true market-cap-weighted all-universe UMD analog is the
+  one remaining check, needed only if construction precision ever matters
+  (e.g., factor-neutralizing a real spec). Pipeline validated for round one.

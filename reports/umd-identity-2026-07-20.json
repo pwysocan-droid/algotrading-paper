@@ -1,0 +1,9 @@
+{
+  "date": "2026-07-20",
+  "mimic_vs_french_r": 0.392,
+  "tilt_vs_french_full_r": 0.256,
+  "tilt_vs_umd_storm_r": 0.487,
+  "tilt_vs_umd_calm_r": 0.09,
+  "storm_n": 11,
+  "overlap_n": 58
+}
