@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-20T08:40:08Z",
+  "generated_at": "2026-07-20T08:45:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 04s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 03s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 005 · gauntleted · awaiting epitaphs (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-20T08:40:04.676815+00:00",
-    "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-07-20 · 08:40 UTC",
-    "next_run_human": "59m 55s",
-    "uptime_recent": "16603 of 16622 ok · 99.9%",
+    "last_run_iso": "2026-07-20T08:45:04.357902+00:00",
+    "last_run_human": "0m 03s ago",
+    "last_run_human_date": "2026-07-20 · 08:45 UTC",
+    "next_run_human": "59m 56s",
+    "uptime_recent": "16604 of 16623 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,13 +92,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "279,077",
-      "delta": "+1447",
+      "count": "279,082",
+      "delta": "+1449",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "279077"
+      "value": "279082"
     },
     {
       "name": "bar coverage",
@@ -112,13 +112,13 @@
     },
     {
       "name": "cron runs",
-      "count": "16,622",
+      "count": "16,623",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16622"
+      "value": "16623"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "3,785",
-      "delta": "+2670",
+      "count": "3,797",
+      "delta": "+2673",
       "delta_class": null,
-      "spark": "▄▂▁▂▅▅█▃",
+      "spark": "▄▂▁▂▆▅█▄",
       "spark_class": null,
       "key": "decisions",
-      "value": "3785"
+      "value": "3797"
     },
     {
       "name": "letters",
