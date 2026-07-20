@@ -152,6 +152,38 @@ literature band (~2–4%/yr over benchmark, post-2000, decaying) with
 the sign right, at the significance 20+ years of monthly data affords
 per the power table. A noisy positive is NOT detection.
 
+**B2 corrected-archive registration (2026-07-20, before the re-score
+runs):** survivorship is fixable at zero data cost — Alpaca serves full
+daily bars for delisted names (SIVB→2023-03-09, FRC, SBNY, BBBYQ, MULN
+all returned) — but the fix carries caveats that go on record now:
+- *Liquidity, not membership*: no listing/delisting-date fields exist,
+  so the point-in-time universe is built by trailing dollar volume from
+  bars ≤ each formation date (a liquidity screen). No fundamentals /
+  market cap; pre-window delistings invisible; symbol recycling a
+  minor risk.
+- *Delisting-exit convention* (Shumway 1997 bias): a name that stops
+  printing mid-hold is exited at last close −30% (conservative
+  involuntary assumption). Alpaca status can't distinguish
+  involuntary from voluntary/merger, so −30% is applied uniformly
+  until a delisting-type source is added; refine then. Second-order
+  for a long-only tilt, but it corrects the drift benchmark and any
+  literature comparison.
+- *Screen ↔ band consistency*: momentum is stronger in small illiquid
+  names, so a dollar-volume screen ≈ large-cap proxy and should show
+  the WEAKER end of the pre-registered 2–4%/yr large-cap band. Screen
+  and band are consistent by construction; a middling result is NOT
+  failure against a small-cap-inflated expectation.
+- *Adjustment confirmed*: the E0 fetch uses Alpaca adjustment="all"
+  (split + dividend) → bars are total-return-adjusted; momentum ranks
+  are valid.
+- *Pre-commitment (decided before the corrected numbers exist)*: if
+  the corrected re-score flips the cross-sectional sign or collapses
+  pooled t toward zero, the E2 rationale formally reverts to
+  breadth-and-throughput-only (already agreed to survive that), and
+  round zero proceeds ANYWAY — its job is validating the pipeline
+  against a known-true effect, not confirming the sky check. No result
+  the corrected archive can return requires an improvised decision.
+
 ## 2026-07-19 — Operator ratification: all pending drafts approved
 
 The operator approved all items awaiting signature ("approve all",
