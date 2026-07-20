@@ -1,0 +1,9 @@
+{
+  "date": "2026-07-20",
+  "overlap_months": 58,
+  "corr_pipeline_vs_french_umd": 0.256,
+  "french_umd_full_mean_mo": 0.623,
+  "french_umd_2021_26_mean_mo": 0.471,
+  "recent_z": -0.26,
+  "reading": "corr>~0.5 validates construction vs the CRSP gold standard; |z|<2 means 2021-26 is within the 99-year momentum distribution"
+}

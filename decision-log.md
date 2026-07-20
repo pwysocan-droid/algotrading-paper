@@ -1748,3 +1748,25 @@ gross-positive/romanticism trap the project exists to refuse.
   construction independent of magnitude, and places 2021-26 within the
   99-year momentum distribution. Converts the modified pass toward the
   registered control for zero cost.
+
+## 2026-07-20 — UMD cross-check result: typical window, partial construction match
+
+Ken French UMD cross-check ran (report umd-crosscheck-2026-07-20.json):
+- **Window is typical (reassuring):** French UMD 2021-26 +0.47%/mo vs
+  1927-present +0.62%/mo, z=−0.26 — our 59-month test window sits well
+  inside the 99-year momentum distribution, not a freak regime. Rules
+  out the "lucked into an outlier window" failure mode.
+- **Construction only partially cross-validated (yellow flag):** the
+  pipeline's monthly excess correlates +0.26 with UMD over the 58-month
+  overlap — positive, right-signed, but MODEST (~7% shared variance).
+  Expected, not alarming: our long-only liquidity-screened top-500 tilt
+  is a different portfolio than UMD's long-short size-controlled
+  all-CRSP construction, and our 21-trading-day anchors don't align to
+  calendar month-ends (attenuates correlation). But not spun as a win —
+  it confirms we measure something momentum-ADJACENT that co-moves, NOT
+  that we replicate UMD's portfolio.
+- **Net:** round zero's PRIMARY validation remains the crash signature
+  (harder to fake than returns); UMD adds a clean typical-window check
+  and weak-positive construction co-movement. Pipeline validated for
+  RESEARCH USE; construction cross-validation is partial — revisit with
+  a UMD-analog long-short build if magnitude precision ever matters.

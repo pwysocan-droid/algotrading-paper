@@ -68,7 +68,7 @@ def french_umd() -> dict[str, float]:
     txt = z.read(z.namelist()[0]).decode("latin-1")
     out = {}
     for line in txt.splitlines():
-        m = re.match(r"^\s*(\d{6})\s+(-?\d+\.\d+)\s*$", line)
+        m = re.match(r"^\s*(\d{6}),\s*(-?\d+\.\d+)\s*$", line)
         if m:
             ym = f"{m.group(1)[:4]}-{m.group(1)[4:]}"
             out[ym] = float(m.group(2))
