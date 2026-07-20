@@ -37,18 +37,21 @@ BARS_CONTEXT = 400  # matches load_recent_bars / replay window_cap
 def shadow_signals(conn, variant_name: str, variant: dict, since_iso: str) -> set:
     fn = sig_mod.get_strategy_fn(variant["strategy"])
     params = variant.get("params", {})
+    # honor per-variant lookback (params.window_bars) — same convention
+    # as replay_variant and run_variant (2026-07-20)
+    bars_context = max(BARS_CONTEXT, int(params.get("window_bars", 0)))
     out = set()
     for symbol in WATCHED_SYMBOLS:
         rows = conn.execute(
             "SELECT symbol, timestamp, open, high, low, close, volume FROM bars"
             " WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?",
-            (symbol, BARS_CONTEXT + 288),
+            (symbol, bars_context + 288),
         ).fetchall()
         bars = [sig_mod.BarRow(**dict(r)) for r in rows][::-1]
         for i in range(len(bars)):
             if bars[i].timestamp < since_iso:
                 continue
-            window = bars[max(0, i + 1 - BARS_CONTEXT): i + 1]
+            window = bars[max(0, i + 1 - bars_context): i + 1]
             s = fn(window, params, {})
             if s is not None:
                 out.add((symbol, bars[i].timestamp, s.side))

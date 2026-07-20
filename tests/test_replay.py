@@ -677,3 +677,39 @@ def test_replay_system_state_keys_match_live_feed(tmp_db: Path) -> None:
         f"replay serves {captured['state_keys']}, live serves {live_keys} — "
         "extend replay._state_at whenever load_system_state grows"
     )
+
+
+def test_window_bars_param_extends_replay_window(tmp_db: Path) -> None:
+    """The vol_thrust never-fires class, third appearance (round-005,
+    2026-07-20): strategies with multi-day lookbacks were silently
+    truncated to 400 bars and fired ZERO times in the gauntlet while
+    being valid live. params.window_bars now extends the replay window;
+    this pins the convention across replay (here), run_variant, and
+    parity_check (same param, same meaning)."""
+    from tests.fixtures.bars import make_bar_series
+    base = datetime(2026, 3, 1, tzinfo=timezone.utc)
+    _seed_bars(tmp_db, make_bar_series("BTC/USD", base, n=700))
+
+    seen = {"max_window": 0}
+
+    def deep_lookback(bars_so_far, params, ctx):
+        seen["max_window"] = max(seen["max_window"], len(bars_so_far))
+        return None
+
+    signals.STRATEGY_REGISTRY["deep_lookback"] = deep_lookback
+    try:
+        variant = {"strategy": "deep_lookback",
+                   "params": {"window_bars": 600},
+                   "context_keys": [], "enabled": True}
+        with db.connect(tmp_db) as conn:
+            replay.replay_variant(
+                conn, "deep_v", variant, ["BTC/USD"],
+                base - timedelta(minutes=1), base + timedelta(days=5),
+            )
+    finally:
+        del signals.STRATEGY_REGISTRY["deep_lookback"]
+
+    assert seen["max_window"] > 400, (
+        f"window_bars=600 ignored: strategy max window {seen['max_window']} "
+        "— multi-day lookbacks are being starved again"
+    )

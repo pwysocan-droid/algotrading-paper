@@ -2174,8 +2174,9 @@ def run_variant(
         ctx["basket_bars"] = {s: load_recent_bars(conn, s, limit=2200) for s in symbols}
 
     emitted: list[Signal] = []
+    bar_limit = max(400, int(params.get("window_bars", 0)))
     for symbol in symbols:
-        bars = load_recent_bars(conn, symbol)
+        bars = load_recent_bars(conn, symbol, limit=bar_limit)
         if not bars:
             continue
         sig = fn(bars, params, ctx)

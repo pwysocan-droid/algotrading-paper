@@ -448,7 +448,8 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "strategy": "weekly_pullback_limit",
         "params": {"uptrend_min": 0.08, "pullback_depth": 0.03,
                    "limit_life_hours": 12, "tp": 0.12, "sl": 0.05,
-                   "time_exit_hours": 120},
+                   "time_exit_hours": 120,
+                   "window_bars": 2400},  # 168h lookback needs 2016 bars
         "context_keys": [],
         "enabled": False,
         "phase_qualified": False,
@@ -466,7 +467,8 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "strategy": "magnitude_persistence_directional_hold",
         "params": {"mag_window": 21, "persistence_min": 0.25,
                    "regime_trend_min": 0.06, "tp": 0.14, "sl": 0.05,
-                   "time_exit_hours": 144},
+                   "time_exit_hours": 144,
+                   "window_bars": 7000},  # 21+ DAILY closes need ~6.3k bars
         "context_keys": [],
         "enabled": False,
         "phase_qualified": False,

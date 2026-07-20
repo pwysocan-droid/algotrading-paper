@@ -227,6 +227,13 @@ def replay_variant(
     strategy_name = variant["strategy"]
     fn = get_strategy_fn(strategy_name)
     params = variant.get("params", {})
+    # Per-variant lookback: a strategy declaring params.window_bars gets
+    # at least that much window — round-005's two multi-day ideas fired
+    # ZERO times in their first gauntlet because 168h/21-day lookbacks
+    # were silently truncated to 400 bars (the vol_thrust never-fires
+    # class, third appearance, 2026-07-20).
+    if window_cap:
+        window_cap = max(window_cap, int(params.get("window_bars", 0)) + 2)
 
     # Cross-symbol context (context_keys=['btc_bars']): preload BTC bars
     # once; per step, slice to timestamps <= the signal bar's timestamp so
