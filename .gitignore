@@ -35,6 +35,7 @@ htmlcov/
 *.db
 !trader.db
 !context.db
+equities.db  # research artifact, rebuilt from Alpaca; too large for git
 *.db-journal
 *.sqlite
 *.sqlite3

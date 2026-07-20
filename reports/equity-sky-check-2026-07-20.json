@@ -1,0 +1,441 @@
+{
+  "date": "2026-07-20",
+  "windows": {
+    "survivorship_caveat": true,
+    "2016-2019": {
+      "ts_directional": {
+        "cells_positive": "0/0",
+        "mean_pct": null,
+        "cells": {
+          "lb1h1": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb1h3": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb1h6": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb3h1": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb3h3": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb3h6": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb6h1": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb6h3": {
+            "n": 0,
+            "mean_pct": null
+          },
+          "lb6h6": {
+            "n": 0,
+            "mean_pct": null
+          }
+        }
+      },
+      "ts_long_or_flat_incr": {
+        "lb1h1": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb1h3": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb1h6": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb3h1": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb3h3": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb3h6": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb6h1": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb6h3": {
+          "n": 0,
+          "incr_vs_drift": null
+        },
+        "lb6h6": {
+          "n": 0,
+          "incr_vs_drift": null
+        }
+      },
+      "cross_sectional_6_1": {
+        "n_months": 0,
+        "monthly_spread_pct": null,
+        "se": null
+      }
+    },
+    "2020-2021": {
+      "ts_directional": {
+        "cells_positive": "9/9",
+        "mean_pct": 4.3,
+        "cells": {
+          "lb1h1": {
+            "n": 2989,
+            "mean_pct": 0.44
+          },
+          "lb1h3": {
+            "n": 933,
+            "mean_pct": 3.81
+          },
+          "lb1h6": {
+            "n": 375,
+            "mean_pct": 4.11
+          },
+          "lb3h1": {
+            "n": 2610,
+            "mean_pct": 1.53
+          },
+          "lb3h3": {
+            "n": 745,
+            "mean_pct": 5.07
+          },
+          "lb3h6": {
+            "n": 370,
+            "mean_pct": 8.23
+          },
+          "lb6h1": {
+            "n": 2044,
+            "mean_pct": 1.4
+          },
+          "lb6h3": {
+            "n": 557,
+            "mean_pct": 4.29
+          },
+          "lb6h6": {
+            "n": 187,
+            "mean_pct": 9.82
+          }
+        }
+      },
+      "ts_long_or_flat_incr": {
+        "lb1h1": {
+          "n": 2989,
+          "incr_vs_drift": -1.1
+        },
+        "lb1h3": {
+          "n": 933,
+          "incr_vs_drift": -2.29
+        },
+        "lb1h6": {
+          "n": 375,
+          "incr_vs_drift": -7.81
+        },
+        "lb3h1": {
+          "n": 2610,
+          "incr_vs_drift": -0.57
+        },
+        "lb3h3": {
+          "n": 745,
+          "incr_vs_drift": -1.98
+        },
+        "lb3h6": {
+          "n": 370,
+          "incr_vs_drift": -5.39
+        },
+        "lb6h1": {
+          "n": 2044,
+          "incr_vs_drift": -0.19
+        },
+        "lb6h3": {
+          "n": 557,
+          "incr_vs_drift": -0.53
+        },
+        "lb6h6": {
+          "n": 187,
+          "incr_vs_drift": -0.48
+        }
+      },
+      "cross_sectional_6_1": {
+        "n_months": 10,
+        "monthly_spread_pct": 1.33,
+        "se": 1.24
+      }
+    },
+    "2022": {
+      "ts_directional": {
+        "cells_positive": "3/8",
+        "mean_pct": 2.34,
+        "cells": {
+          "lb1h1": {
+            "n": 1926,
+            "mean_pct": -1.76
+          },
+          "lb1h3": {
+            "n": 578,
+            "mean_pct": -1.51
+          },
+          "lb1h6": {
+            "n": 193,
+            "mean_pct": 5.14
+          },
+          "lb3h1": {
+            "n": 1540,
+            "mean_pct": -0.41
+          },
+          "lb3h3": {
+            "n": 385,
+            "mean_pct": 6.05
+          },
+          "lb3h6": {
+            "n": 192,
+            "mean_pct": 13.54
+          },
+          "lb6h1": {
+            "n": 961,
+            "mean_pct": -1.41
+          },
+          "lb6h3": {
+            "n": 192,
+            "mean_pct": -0.88
+          },
+          "lb6h6": {
+            "n": 0,
+            "mean_pct": null
+          }
+        }
+      },
+      "ts_long_or_flat_incr": {
+        "lb1h1": {
+          "n": 1926,
+          "incr_vs_drift": -0.45
+        },
+        "lb1h3": {
+          "n": 578,
+          "incr_vs_drift": 2.35
+        },
+        "lb1h6": {
+          "n": 193,
+          "incr_vs_drift": 7.39
+        },
+        "lb3h1": {
+          "n": 1540,
+          "incr_vs_drift": 0.38
+        },
+        "lb3h3": {
+          "n": 385,
+          "incr_vs_drift": 7.08
+        },
+        "lb3h6": {
+          "n": 192,
+          "incr_vs_drift": 15.1
+        },
+        "lb6h1": {
+          "n": 961,
+          "incr_vs_drift": -1.5
+        },
+        "lb6h3": {
+          "n": 192,
+          "incr_vs_drift": -0.35
+        },
+        "lb6h6": {
+          "n": 0,
+          "incr_vs_drift": null
+        }
+      },
+      "cross_sectional_6_1": {
+        "n_months": 4,
+        "monthly_spread_pct": 6.96,
+        "se": 5.55
+      }
+    },
+    "2023": {
+      "ts_directional": {
+        "cells_positive": "4/8",
+        "mean_pct": 0.95,
+        "cells": {
+          "lb1h1": {
+            "n": 1932,
+            "mean_pct": -0.84
+          },
+          "lb1h3": {
+            "n": 579,
+            "mean_pct": -6.18
+          },
+          "lb1h6": {
+            "n": 193,
+            "mean_pct": 7.02
+          },
+          "lb3h1": {
+            "n": 1544,
+            "mean_pct": -1.81
+          },
+          "lb3h3": {
+            "n": 386,
+            "mean_pct": 3.34
+          },
+          "lb3h6": {
+            "n": 193,
+            "mean_pct": 5.77
+          },
+          "lb6h1": {
+            "n": 965,
+            "mean_pct": 0.9
+          },
+          "lb6h3": {
+            "n": 193,
+            "mean_pct": -0.56
+          },
+          "lb6h6": {
+            "n": 0,
+            "mean_pct": null
+          }
+        }
+      },
+      "ts_long_or_flat_incr": {
+        "lb1h1": {
+          "n": 1932,
+          "incr_vs_drift": -1.1
+        },
+        "lb1h3": {
+          "n": 579,
+          "incr_vs_drift": -4.18
+        },
+        "lb1h6": {
+          "n": 193,
+          "incr_vs_drift": -1.36
+        },
+        "lb3h1": {
+          "n": 1544,
+          "incr_vs_drift": -1.98
+        },
+        "lb3h3": {
+          "n": 386,
+          "incr_vs_drift": -0.09
+        },
+        "lb3h6": {
+          "n": 193,
+          "incr_vs_drift": -0.66
+        },
+        "lb6h1": {
+          "n": 965,
+          "incr_vs_drift": -0.28
+        },
+        "lb6h3": {
+          "n": 193,
+          "incr_vs_drift": 0.92
+        },
+        "lb6h6": {
+          "n": 0,
+          "incr_vs_drift": null
+        }
+      },
+      "cross_sectional_6_1": {
+        "n_months": 4,
+        "monthly_spread_pct": 1.21,
+        "se": 1.17
+      }
+    },
+    "2024-2026": {
+      "ts_directional": {
+        "cells_positive": "6/9",
+        "mean_pct": 0.75,
+        "cells": {
+          "lb1h1": {
+            "n": 5558,
+            "mean_pct": 0.93
+          },
+          "lb1h3": {
+            "n": 1786,
+            "mean_pct": 2.48
+          },
+          "lb1h6": {
+            "n": 795,
+            "mean_pct": -0.16
+          },
+          "lb3h1": {
+            "n": 5158,
+            "mean_pct": 0.96
+          },
+          "lb3h3": {
+            "n": 1587,
+            "mean_pct": -1.0
+          },
+          "lb3h6": {
+            "n": 792,
+            "mean_pct": -8.5
+          },
+          "lb6h1": {
+            "n": 4558,
+            "mean_pct": 0.67
+          },
+          "lb6h3": {
+            "n": 1387,
+            "mean_pct": 0.83
+          },
+          "lb6h6": {
+            "n": 595,
+            "mean_pct": 10.5
+          }
+        }
+      },
+      "ts_long_or_flat_incr": {
+        "lb1h1": {
+          "n": 5558,
+          "incr_vs_drift": -1.18
+        },
+        "lb1h3": {
+          "n": 1786,
+          "incr_vs_drift": -3.85
+        },
+        "lb1h6": {
+          "n": 795,
+          "incr_vs_drift": -9.76
+        },
+        "lb3h1": {
+          "n": 5158,
+          "incr_vs_drift": -1.09
+        },
+        "lb3h3": {
+          "n": 1587,
+          "incr_vs_drift": -5.29
+        },
+        "lb3h6": {
+          "n": 792,
+          "incr_vs_drift": -15.59
+        },
+        "lb6h1": {
+          "n": 4558,
+          "incr_vs_drift": -1.28
+        },
+        "lb6h3": {
+          "n": 1387,
+          "incr_vs_drift": -4.56
+        },
+        "lb6h6": {
+          "n": 595,
+          "incr_vs_drift": -4.95
+        }
+      },
+      "cross_sectional_6_1": {
+        "n_months": 22,
+        "monthly_spread_pct": 2.17,
+        "se": 2.1
+      }
+    }
+  }
+}
