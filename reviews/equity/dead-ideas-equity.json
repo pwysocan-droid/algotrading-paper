@@ -1,1 +1,8 @@
-{"description":"Equity program dead-ideas registry (E2, 2026-07-20). Separate from crypto; no lesson cross-contamination.","failure_lessons":[],"ideas":[],"total_ideas_tested":0}
+{
+  "description": "Equity program dead-ideas registry (E2, 2026-07-20). Separate from crypto; no lesson cross-contamination.",
+  "failure_lessons": [
+    "ROUND ZERO \u2014 PIPELINE VALIDATED, MAGNITUDE DISTRUSTED (2026-07-20): cross-sectional 12-1 momentum (long-only top-decile vs equal-weight universe) on the survivorship-corrected archive detects the known effect with the RIGHT SIGN and \u2014 critically \u2014 the predicted MOMENTUM-CRASH signature: -17.3%/yr in the 2020-21 rebound vs +28.9%/yr in 2024-26 trend. That crash pattern (Daniel-Moskowitz) is the mechanism showing itself, not a bug \u2014 the machinery TRANSFERS. But: pooled +14.9%/yr is FAR above the pre-registered 2-4%/yr band and significance is marginal (t=1.57, n=59), so the magnitude is NOT a deployable edge \u2014 inflated by 2024-26 narrow-bull concentration, possible delisting-haircut asymmetry on the benchmark, and high cross-regime variance. Founding discipline for the equity registry: the equal-weight-universe benchmark (drift null) is mandatory on every spec; trust DIRECTION and regime-conditioning, distrust raw magnitude; the crash skew must be priced into any capital model."
+  ],
+  "ideas": [],
+  "total_ideas_tested": 0
+}

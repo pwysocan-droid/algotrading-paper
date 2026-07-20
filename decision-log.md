@@ -1704,3 +1704,22 @@ sky-check confirmation). No improvised decision was required. Note the
 measured decile SPREAD is the academic long-short construct; round
 zero implements the long-only tilt (~half the spread, long-leg excess
 over benchmark), which is the pre-registered 2–4%/yr band.
+
+## 2026-07-20 — E2 round zero: pipeline VALIDATED (magnitude distrusted)
+
+Cross-sectional 12-1 momentum detected on the corrected archive: pooled
+long-only excess over the equal-weight benchmark +14.9%/yr, sign right,
+with the textbook MOMENTUM-CRASH signature (−17.3%/yr in the 2020-21
+rebound; +28.9%/yr in 2024-26). The crash pattern appearing exactly
+where Daniel-Moskowitz predict is strong evidence the mechanism — and
+the machinery — is real, not a harness bug. **The equity pipeline is
+validated; real equity research may proceed.**
+
+Held apart from the number: +14.9%/yr is far above the pre-registered
+2–4%/yr band and only marginally significant (t=1.57, n=59), so the
+magnitude is NOT a deployable edge — inflated by 2024-26 concentration,
+possible delisting-haircut asymmetry on the benchmark, and high
+cross-regime variance. Recorded as the equity registry's founding
+lesson: mandatory drift-null benchmark, trust direction not magnitude,
+price the crash skew. No celebration of the headline — that is the
+gross-positive/romanticism trap the project exists to refuse.

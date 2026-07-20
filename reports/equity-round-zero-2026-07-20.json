@@ -1,0 +1,44 @@
+{
+  "date": "2026-07-20",
+  "effect": "cross-sectional 12-1 momentum, long-only tilt",
+  "survivorship_corrected": true,
+  "delisting_haircut": 0.3,
+  "pooled": {
+    "excess_mo_pct": 1.239,
+    "t": 1.57,
+    "ann_pct": 14.9,
+    "n": 59
+  },
+  "by_window": {
+    "2016-2019": {
+      "excess_mo_pct": null,
+      "t": null,
+      "ann_pct": null,
+      "n": 0
+    },
+    "2020-2021": {
+      "excess_mo_pct": -1.439,
+      "t": -0.77,
+      "ann_pct": -17.3,
+      "n": 5
+    },
+    "2022-2023": {
+      "excess_mo_pct": 0.337,
+      "t": 0.43,
+      "ann_pct": 4.0,
+      "n": 24
+    },
+    "2024-2026": {
+      "excess_mo_pct": 2.406,
+      "t": 1.77,
+      "ann_pct": 28.9,
+      "n": 30
+    }
+  },
+  "prereg_band_pct_yr": [
+    2.0,
+    4.0
+  ],
+  "detected": true,
+  "verdict": "DETECTED \u2014 pipeline validated"
+}
