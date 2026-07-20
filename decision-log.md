@@ -1655,6 +1655,36 @@ density, scannability under stress, dark-mode native). Reusing it
 saves a working session and ensures visual consistency across the
 two related projects.
 
+## 2026-07-20 — E2 OPENED: equity cross-sectional program (operator GO)
+
+Scope decision (operator "go now"): a second research program opens on
+US equities, justified by BREADTH + falsification-throughput + ~0.05%
+costs — explicitly NOT by a demonstrated sky-check edge (which did not
+survive survivorship correction, pooled t≈1.0). The crypto program and
+its v2 clock are unaffected; the two programs share machinery but not
+registries.
+
+- **Capital model (equity):** long-only cross-sectional tilt —
+  monthly rebalance, equal-weight top-decile of a point-in-time
+  liquid universe (~500 names by trailing-60d $vol → ~50 positions).
+  Distinct from crypto's 5-slot/$200. Backtest/paper first; live
+  execution needs Alpaca, same gate as crypto. Momentum's deep
+  negative skew (crash risk, Daniel-Moskowitz) is a first-class
+  capital-model input; the inaccessible short leg means we capture
+  ~half the academic spread.
+- **Registry:** separate reviews/equity/ + dead-ideas-equity.json —
+  no cross-contamination of lessons with crypto.
+- **Kill criterion (equity, draft):** round zero must first VALIDATE
+  the pipeline (detect 12-1 momentum inside/above the pre-registered
+  2–4%/yr long-only-over-benchmark band with correct sign). A failure
+  there is a BUILD bug, not a market verdict — fix before trusting any
+  equity result. Once validated: if no equity spec beats the
+  equal-weight benchmark net of costs at a 90% upper-CB over the
+  corrected archive with adequate power, the equity program archives —
+  same weatherproofing shape as crypto v2.
+- **Round zero = replication, not idea:** cross-sectional 12-1
+  momentum (Jegadeesh-Titman) is the positive control, run first.
+
 ## 2026-07-20 — Corrected equity re-score: pre-committed branch fires (breadth-only)
 
 The survivorship-corrected, point-in-time re-score landed (report
