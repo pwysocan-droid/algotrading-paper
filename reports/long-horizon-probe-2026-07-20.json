@@ -1,0 +1,92 @@
+{
+  "date": "2026-07-20",
+  "window": "selection only (through 2026-01-01)",
+  "design": "long-or-flat TS momentum vs unconditional drift, non-overlapping holds, all cells reported",
+  "grid": {
+    "lb1m_hold1m": {
+      "n": 107,
+      "momentum_mean_pct": -1.483434641281883,
+      "momentum_se": 1.4065360205739226,
+      "drift_mean_pct": 2.4190503566304056,
+      "drift_se": 2.3410146574241737,
+      "increment_pct": -3.9024849979122886
+    },
+    "lb1m_hold3m": {
+      "n": 33,
+      "momentum_mean_pct": -1.769924677920012,
+      "momentum_se": 2.8014663141904372,
+      "drift_mean_pct": 9.10675575794371,
+      "drift_se": 7.09527463570235,
+      "increment_pct": -10.87668043586372
+    },
+    "lb1m_hold6m": {
+      "n": 14,
+      "momentum_mean_pct": 8.992425132844797,
+      "momentum_se": 7.46314786345254,
+      "drift_mean_pct": 19.617938199117795,
+      "drift_se": 10.282932873316561,
+      "increment_pct": -10.625513066272998
+    },
+    "lb3m_hold1m": {
+      "n": 97,
+      "momentum_mean_pct": -2.555481582405302,
+      "momentum_se": 1.6971527700893356,
+      "drift_mean_pct": -0.049643080529188977,
+      "drift_se": 2.3704857155434387,
+      "increment_pct": -2.505838501876113
+    },
+    "lb3m_hold3m": {
+      "n": 32,
+      "momentum_mean_pct": -8.939750445406604,
+      "momentum_se": 4.700196379976433,
+      "drift_mean_pct": -0.9088843330961822,
+      "drift_se": 6.688742337539614,
+      "increment_pct": -8.030866112310422
+    },
+    "lb3m_hold6m": {
+      "n": 14,
+      "momentum_mean_pct": -11.387293665207661,
+      "momentum_se": 5.347152842038009,
+      "drift_mean_pct": 5.017924495377981,
+      "drift_se": 11.766040714111774,
+      "increment_pct": -16.40521816058564
+    },
+    "lb6m_hold1m": {
+      "n": 82,
+      "momentum_mean_pct": -2.7699297627048223,
+      "momentum_se": 1.5281508926120597,
+      "drift_mean_pct": 1.3258298698555213,
+      "drift_se": 2.550632334183933,
+      "increment_pct": -4.095759632560344
+    },
+    "lb6m_hold3m": {
+      "n": 27,
+      "momentum_mean_pct": -9.564466629573904,
+      "momentum_se": 3.6369705494684688,
+      "drift_mean_pct": 3.8175878037529563,
+      "drift_se": 7.499557558755237,
+      "increment_pct": -13.38205443332686
+    },
+    "lb6m_hold6m": {
+      "n": 13,
+      "momentum_mean_pct": -2.83073418727303,
+      "momentum_se": 7.090992747525597,
+      "drift_mean_pct": 1.5695673515183435,
+      "drift_se": 10.1368318543017,
+      "increment_pct": -4.400301538791373
+    }
+  },
+  "carry": {
+    "note": "trailing-30d mean funding tercile -> next-30d return (OVERLAPPING windows: SEs understated ~5x, direction only)",
+    "low_funding_tercile": {
+      "n": 1039,
+      "fwd_30d_pct": 3.369293732355223,
+      "se": 0.7198187038711533
+    },
+    "high_funding_tercile": {
+      "n": 1039,
+      "fwd_30d_pct": 1.8430746036998225,
+      "se": 0.7831398155508691
+    }
+  }
+}
