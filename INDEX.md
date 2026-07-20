@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-20T17:55:05Z
+2026-07-20T18:00:07Z
 
 7 surfaces tracked
 
@@ -17,7 +17,7 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [decision-log.md](decision-log.md) | 2026-07-20T17:35:26Z | B2 corrected archive: fetch d… |
+| [decision-log.md](decision-log.md) | 2026-07-20T17:58:36Z | Corrected equity re-score: pr… |
 | [philosophy.md](philosophy.md) | 2026-07-20T06:33:51Z | Lesson 22 amendments: regime… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
