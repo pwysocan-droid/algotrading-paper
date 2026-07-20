@@ -336,3 +336,14 @@ When we're talking through this project, I want you to:
   of what worked and didn't work for retail algorithmic traders
   through the 2010s and early 2020s is part of what this project
   is testing against. Don't withhold that context to be polite.
+
+## Addendum (2026-07-20): outside the loop
+
+Four rounds of automated synthesis optimized inside the frame; the
+frame itself — the time horizon of every test — was questioned by the
+operator, from outside the loop, and that one question explained more
+of the graveyard than any round had. Encode the practice, not just
+the finding: the machine's blind spots are the frame's edges, and
+some questions only get asked from outside. Keep standing channels
+(fresh contexts, the monthly rival audit, the operator's own
+curiosity) pointed at the frame, not only at its contents.
