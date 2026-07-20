@@ -1654,3 +1654,23 @@ wagon-watcher and the same constraints apply here (information
 density, scannability under stress, dark-mode native). Reusing it
 saves a working session and ensures visual consistency across the
 two related projects.
+
+## 2026-07-20 — Corrected equity re-score: pre-committed branch fires (breadth-only)
+
+The survivorship-corrected, point-in-time re-score landed (report
+equity-sky-pit-2026-07-20.json; archive 978→2,494 usable symbols with
+delisted names recovered, −30% involuntary haircut, universe by
+trailing-60d $vol). Cross-sectional 6-1 spread **weakened** vs the
+survivor-biased pass: 2020-21 FLIPPED to −2.57%/mo (t−1.09) — a clean
+survivorship tell — 2023 collapsed to +0.35 (t0.25), 2024-26 held at
++2.23 (t1.28, n=23); **pooled +1.25%±1.23/mo, t=+1.02, n=43**.
+
+Per the pre-commitment registered before these numbers existed: pooled
+t collapsed toward zero AND a window flipped sign, so **the E2
+rationale formally reverts to BREADTH-AND-THROUGHPUT ONLY** — no
+claimed live cross-sectional edge — **and round zero proceeds
+regardless** (pipeline validation against a known-true effect, not
+sky-check confirmation). No improvised decision was required. Note the
+measured decile SPREAD is the academic long-short construct; round
+zero implements the long-only tilt (~half the spread, long-leg excess
+over benchmark), which is the pre-registered 2–4%/yr band.
