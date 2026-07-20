@@ -103,6 +103,55 @@ deferred to Week 2 per `roadmap.md`.
 
 ---
 
+## 2026-07-20 — K1 adjudication: short-horizon crypto archived, residual on a dated clock
+
+The kill-criterion question, ruled explicitly rather than left to
+excitement about the equity result (operator-approved, this date):
+
+- The original two-prong criterion was superseded by v2 (ratified
+  2026-07-19); it cannot literally "fire." But its intent — no
+  sunk-cost limbo — is honored here with a written verdict.
+- **Short-horizon crypto continuation (≤24h, taker) is ARCHIVED**, on
+  the ceiling-study evidence (gross edge below the cost floor at every
+  horizon ≤12h). This is the death certificate for the sub-program
+  that consumed rounds 1–4; the foundry already excludes the band.
+- **The residual — 24h+maker fills and reversion-shaped 2–8 week
+  specs — remains ALIVE under v2**, resolving by 2026-08-31, gated on
+  the real-money RTC measurement. **If the RTC cannot run by
+  2026-08-15, the residual resolves on the assumed 0.6% cost figure,
+  treated as adverse** (burden on the strategy to clear the pessimistic
+  number) — so the deadline is not hostage to Alpaca's approval queue.
+- **The crypto clock runs independently of any equity scope decision.**
+
+## 2026-07-20 — The equity sky check, sober reading (corrects the "living sky" summary)
+
+The overnight E1 result, stated at the strictness of our own yardstick:
+
+- Crypto momentum in 2024–26 is negative/reverting (0/9 cells,
+  −12.4% directional). Equity momentum matches its 30-year PUBLISHED
+  profile — weak in any single window, visible in aggregate,
+  cross-sectional in nature.
+- Equity TS momentum ALSO lost to drift in-window (0/9 long-or-flat
+  vs-drift cells in 2024–26); it is not "alive" in the time-series
+  sense.
+- The only persistently positive signal is the CROSS-SECTIONAL 6-1
+  spread: +sign in all four measurable windows (+1.33/+6.96/+1.21/
+  +2.17 %/mo). Single-window significance is weak (2024–26:
+  +2.17±2.10, t≈1); pooled across the four windows ≈ t≈1.9. The
+  pooled figure is the actual motivation for a round-zero replication;
+  survivorship inflates both numbers (upper bounds).
+- **The real case for E2 is BREADTH and falsification-throughput**
+  (thousands of names vs. ~2 effective crypto series; ~0.05% vs 0.6%
+  costs; decades of regimes vs. one) — it holds even if the sky check
+  had come back flat. Not the sky-check magnitude.
+
+Round-zero pre-registration (captured now, promoted into the E2 entry
+when written): the positive control is cross-sectional 12-1 momentum,
+long-only US large-cap tilt; DETECTION = landing inside or above the
+literature band (~2–4%/yr over benchmark, post-2000, decaying) with
+the sign right, at the significance 20+ years of monthly data affords
+per the power table. A noisy positive is NOT detection.
+
 ## 2026-07-19 — Operator ratification: all pending drafts approved
 
 The operator approved all items awaiting signature ("approve all",
