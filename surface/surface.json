@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-21T20:40:07Z",
+  "generated_at": "2026-07-21T20:45:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 03s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 02s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 006 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-21T20:40:03.737206+00:00",
-    "last_run_human": "0m 03s ago",
-    "last_run_human_date": "2026-07-21 · 20:40 UTC",
-    "next_run_human": "59m 56s",
-    "uptime_recent": "17033 of 17052 ok · 99.9%",
+    "last_run_iso": "2026-07-21T20:45:04.518189+00:00",
+    "last_run_human": "0m 02s ago",
+    "last_run_human_date": "2026-07-21 · 20:45 UTC",
+    "next_run_human": "59m 57s",
+    "uptime_recent": "17034 of 17053 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,13 +92,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "281,200",
+      "count": "281,205",
       "delta": "+1492",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "281200"
+      "value": "281205"
     },
     {
       "name": "bar coverage",
@@ -112,13 +112,13 @@
     },
     {
       "name": "cron runs",
-      "count": "17,052",
+      "count": "17,053",
       "delta": "+286",
       "delta_class": null,
       "spark": "██████▁█",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "17052"
+      "value": "17053"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "7,859",
+      "count": "7,867",
       "delta": "+2590",
       "delta_class": null,
       "spark": "▇█▆▇▃▅▁▃",
       "spark_class": null,
       "key": "decisions",
-      "value": "7859"
+      "value": "7867"
     },
     {
       "name": "letters",
