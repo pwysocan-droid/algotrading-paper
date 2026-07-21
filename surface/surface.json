@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-21T03:30:08Z",
+  "generated_at": "2026-07-21T03:35:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-21T03:30:04.043098+00:00",
+    "last_run_iso": "2026-07-21T03:35:03.953015+00:00",
     "last_run_human": "0m 03s ago",
-    "last_run_human_date": "2026-07-21 · 03:30 UTC",
+    "last_run_human_date": "2026-07-21 · 03:35 UTC",
     "next_run_human": "59m 56s",
-    "uptime_recent": "16829 of 16848 ok · 99.9%",
+    "uptime_recent": "16830 of 16849 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -83,8 +83,8 @@
     {
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-07-20",
-      "detail": "Your pipeline is a metronome with no heartbeat. Seven consecutive runs, perfect cadence, identica...",
+      "thing": "Nightly skeptic · 2026-07-21",
+      "detail": "Your pipeline is a metronome, not a signal detector. Seven consecutive runs with identical bar co...",
       "kind": "ops",
       "promoted": false
     }
@@ -92,13 +92,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "280,189",
+      "count": "280,194",
       "delta": "+1501",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "280189"
+      "value": "280194"
     },
     {
       "name": "bar coverage",
@@ -112,33 +112,33 @@
     },
     {
       "name": "cron runs",
-      "count": "16,848",
+      "count": "16,849",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16848"
+      "value": "16849"
     },
     {
       "name": "llm calls",
-      "count": "33",
+      "count": "35",
       "delta": "+2",
       "delta_class": null,
-      "spark": "█▁▁▁▁▁▁▁",
-      "spark_class": null,
+      "spark": "▁▁▁▁▁▁▁█",
+      "spark_class": "growing",
       "key": "llm_calls",
-      "value": "33"
+      "value": "35"
     },
     {
       "name": "decisions",
-      "count": "6,139",
-      "delta": "+3023",
+      "count": "6,148",
+      "delta": "+3025",
       "delta_class": null,
-      "spark": "▇▃▇█▆▁▇▇",
+      "spark": "█▃▆█▆▁▇▆",
       "spark_class": null,
       "key": "decisions",
-      "value": "6139"
+      "value": "6148"
     },
     {
       "name": "letters",
@@ -213,8 +213,8 @@
     }
   ],
   "llm": {
-    "total_calls": 33,
-    "total_cost_usd": 3.3498,
+    "total_calls": 35,
+    "total_cost_usd": 3.7116,
     "by_caller": [
       {
         "called_from": "idea_foundry",
@@ -226,16 +226,16 @@
       {
         "called_from": "learnings_ledger",
         "model": "claude-opus-4-8",
-        "calls": 5,
-        "tokens": 146399,
-        "cost_usd": 1.1306
+        "calls": 6,
+        "tokens": 189024,
+        "cost_usd": 1.49
       },
       {
         "called_from": "adversarial_cron",
         "model": "claude-haiku-4-5",
-        "calls": 4,
-        "tokens": 4109,
-        "cost_usd": 0.0092
+        "calls": 5,
+        "tokens": 5159,
+        "cost_usd": 0.0116
       },
       {
         "called_from": "friday_bear_case_investigated#t1",

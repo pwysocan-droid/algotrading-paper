@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-21T03:30:06Z
+2026-07-21T03:35:05Z
 
 7 surfaces tracked
 
@@ -29,7 +29,7 @@ Phase 1  ·  Week 1
 
 ▸ First candidate-vs-null A/B readout — compare.py once arms accumulate closed trades · promotion bar p<0.05 over 100+
 
-▸ Nightly skeptic · 2026-07-20 — Your pipeline is a metronome with no heartbeat. Seven consecutive runs, perfect cadence, identica...
+▸ Nightly skeptic · 2026-07-21 — Your pipeline is a metronome, not a signal detector. Seven consecutive runs with identical bar co...
 
 ## § 03 — Read-me-when-lost · 4 pointers
 
