@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-21T09:25:07Z",
+  "generated_at": "2026-07-21T09:30:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-21T09:25:03.714445+00:00",
+    "last_run_iso": "2026-07-21T09:30:04.173016+00:00",
     "last_run_human": "0m 03s ago",
-    "last_run_human_date": "2026-07-21 · 09:25 UTC",
+    "last_run_human_date": "2026-07-21 · 09:30 UTC",
     "next_run_human": "59m 56s",
-    "uptime_recent": "16900 of 16919 ok · 99.9%",
+    "uptime_recent": "16901 of 16920 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "280,541",
-      "delta": "+1499",
+      "count": "280,545",
+      "delta": "+1498",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "280541"
+      "value": "280545"
     },
     {
       "name": "bar coverage",
       "count": "98%",
-      "delta": "-26",
+      "delta": "-27",
       "delta_class": "note",
-      "spark": "▃█▇▇▂▇█▁",
+      "spark": "▄█▇▇▃▇█▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "98"
     },
     {
       "name": "cron runs",
-      "count": "16,919",
+      "count": "16,920",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "16919"
+      "value": "16920"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "6,788",
-      "delta": "+2946",
+      "count": "6,793",
+      "delta": "+2942",
       "delta_class": null,
-      "spark": "██▇▁▇█▄▂",
+      "spark": "▇█▆▁▇▇▄▁",
       "spark_class": null,
       "key": "decisions",
-      "value": "6788"
+      "value": "6793"
     },
     {
       "name": "letters",
