@@ -1938,6 +1938,306 @@ def multiday_magnitude_persistence_directional_hold(
     )
 
 
+# ── Foundry round 006 (reviews/foundry/round-006.json) ──────────────────
+# Round thesis: the two dead-lens reattempts (microstructure candle-geometry,
+# calendar-timestamp coils) get their SKIP confirmed by the pre-mortem; the
+# gate family reopens on a genuinely cross-sectional (not own-outcome)
+# mechanism; cross_domain and multi_day_horizon get honest shots at open
+# territory. Per round policy every idea is implemented regardless of
+# verdict so the gauntlet, not paper review alone, is the arbiter.
+#
+# Pre-mortem (reviews/foundry/premortem-006.md) verdicts: idea 1 REDESIGN
+# (re-derive the volume-monotonic-decline conditional probability against
+# real data before spending a slot — the spec's own 0.25-0.35 claim is
+# higher than the naive 1/6 baseline despite arguing "lower"), idea 2 SKIP
+# (still pure OHLCV TR/close-position geometry — same data source as the
+# 4-for-4-dead microstructure lens, wrapped in a two-phase sequence, plus
+# an independent ceiling conflict), idea 3 SKIP (calendar timestamp +
+# OHLCV return only, no new data source; bets on monthly-return
+# continuation in the exact epoch measured at -12.4%/0-9; hedges its own
+# directional sign post hoc), idea 4 REDESIGN (legitimately reopens the
+# closed gate family on a real cross-sectional mechanism, but premise-check
+# the joint freshest-breakout-in-sync-window frequency before trusting the
+# arithmetic — it matches the shape of the two worst historical misses),
+# idea 5 IMPLEMENT (correctly occupies the explicitly-open 2-week TSMOM
+# band, required to beat drift not zero, least fragile base-rate math in
+# the round).
+#
+# Premise-checked 2026-07-21 against research_bars (all 5 symbols, full
+# ~2.5y history, daily/5-min bars as each idea's own resolution requires):
+#
+# Idea 1: direct histogram of sign(vol_day[-1]-vol_day[-2]) etc. conditioned
+# on 3 consecutive daily up-closes gives P(vol monotonic decline | 3
+# up-days) = 0.162 (84/519) — essentially the naive combinatorial baseline
+# of 1/6=0.167, NOT the spec's claimed 0.25-0.35, confirming the
+# pre-mortem's arithmetic-error finding (the direction is right — very
+# slightly below baseline, consistent with a weak negative pairing — but
+# the magnitude the spec assumed was never real). Full-conjunction fire
+# count (3 up-days AND vol decline AND 3d gain in [2%,12%]) across the
+# entire 5-symbol history: n=64 — BELOW the n>=100 decidability floor.
+# Implemented unchanged per spec (no parameter rescue attempted, matching
+# the r005-idea-5 precedent of letting the gauntlet measure the true rate
+# rather than hand-tuning after a miss): this idea may return an
+# inconclusive-starved sample, and the gauntlet write-up should say so
+# plainly rather than reading a sub-100 n as a verdict either way.
+#
+# Idea 4: direct count of "this symbol's breakout bar is the current bar
+# AND >=3-of-5 symbols broke out within the trailing 12 bars" against the
+# full 5-symbol bar history: 22,118 joint-qualifying events out of 31,892
+# raw breakout events (69.3% co-occurrence) — far ABOVE the spec's assumed
+# 25-40% fraction, the OPPOSITE direction from the pre-mortem's fragility
+# fear (the two historical 166x/186x misses under-fired; this over-fires
+# if anything, because crypto breakouts are more synchronized than the
+# spec's own correlation-adjusted estimate assumed). Comfortably decidable
+# with no parameter change; cooldown will cut the realized rate well below
+# this raw count but nowhere near the n>=100 floor.
+#
+# Idea 2 (SKIP, implemented anyway): raw pre-cooldown fire count ~295
+# across the full basket-history (~0.068/sym/day) — decidable on count
+# alone; the SKIP rests on the closed-lens/ceiling argument, not sample
+# size.
+#
+# Idea 3 (SKIP, implemented anyway): |prior calendar-month return| > 5%
+# holds on 73-80% of symbol-months (spec assumed ~70%) — comfortably
+# clears n>=100; the SKIP rests on the closed-lens/regime-conflict/
+# post-hoc-sign argument, not sample size. Implemented with the clean
+# symmetric sign rule the spec itself states (LONG on prior return >
+# +threshold, SHORT on prior return < -threshold) — the spec's own hedge
+# ("test long-only if short arm degenerate") is exactly the post-hoc
+# sign-fitting the pre-mortem flagged, so it is deliberately NOT carried
+# into the implementation; the gauntlet gets to see both arms honestly.
+#
+# Idea 5: non-overlapping weekly |R14|>6% qualification rate measured at
+# 47-71% per symbol (BTC 47%, ETH 63%, SOL 71%, LINK 71%, AVAX 71%) against
+# the spec's assumed 55-65% — matches within the calibration scatter this
+# project already expects; comfortably decidable.
+
+
+def _is_last_bar_of_day(ts: datetime) -> bool:
+    """True if the next 5-min bar would roll into a new UTC calendar day —
+    round-006 idea 1's 'daily bucket completes' trigger, computed from the
+    current bar's own timestamp so no look-ahead into bar N+1 is needed."""
+    return (ts + timedelta(minutes=5)).date() != ts.date()
+
+
+def _daily_close_volume(bars: list[BarRow]) -> tuple[list[float], list[float]]:
+    """One (close, summed volume) pair per UTC calendar day, oldest-first.
+    Only called when the current bar is a day's last bar (see
+    _is_last_bar_of_day), so every day in the result is a complete day —
+    never the r005-idea-5 partial-day trap of a single 00:00 bar posing as
+    a full day's close/volume."""
+    closes: dict[Any, float] = {}
+    vols: dict[Any, float] = {}
+    for b in bars:
+        d = _ts(b).date()
+        closes[d] = b.close
+        vols[d] = vols.get(d, 0.0) + b.volume
+    days = sorted(closes.keys())
+    return [closes[d] for d in days], [vols[d] for d in days]
+
+
+def predator_prey_volume_depletion_rebound(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-006 idea 1 (premortem-006.md: REDESIGN — premise-checked
+    against research_bars; see the round-006 header comment above for the
+    measured n=64, below the n>=100 floor, kept unchanged per spec).
+    Ecology's predator-prey depletion trough: 3 consecutive daily up-closes
+    on MONOTONICALLY DECLINING daily volume (supply exhaustion), gated to a
+    2-12% cumulative 3-day gain band. Enters on the bar that completes the
+    third daily bucket."""
+    up_days_required = int(params.get("up_days_required", 3))
+    min_gain = float(params.get("min_3d_gain", 0.02))
+    max_gain = float(params.get("max_3d_gain", 0.12))
+
+    last = bars[-1]
+    if not _is_last_bar_of_day(_ts(last)):
+        return None
+    closes, vols = _daily_close_volume(bars)
+    if len(closes) < up_days_required + 1:
+        return None
+    if not all(closes[-1 - k] > closes[-2 - k] for k in range(up_days_required)):
+        return None
+    if not all(vols[-1 - k] < vols[-2 - k] for k in range(up_days_required - 1)):
+        return None
+    gain = closes[-1] / closes[-1 - up_days_required] - 1.0
+    if not (min_gain <= gain <= max_gain):
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="predator_prey_depletion_rebound",
+        side="buy", bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"three_day_gain": gain, "daily_volumes": vols[-up_days_required:]},
+    )
+
+
+def range_compression_then_directional_expansion_gap(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-006 idea 2 (premortem-006.md: SKIP — still pure OHLCV TR/
+    close-position geometry, the 4-for-4-dead microstructure lens's exact
+    data source; implemented anyway per the round policy). Multi-bar TR
+    compression (N bars below the trailing distribution's 40th percentile)
+    followed by a decisive expansion bar (TR > expansion_mult * trailing
+    mean) closing at its own range's extreme resolves the direction."""
+    compression_bars = int(params.get("compression_bars", 6))
+    tr_lookback = int(params.get("tr_lookback", 96))
+    compression_pct = float(params.get("compression_pct", 0.4))
+    expansion_mult = float(params.get("expansion_mult", 2.0))
+    close_extreme_frac = float(params.get("close_extreme_frac", 0.2))
+
+    n = len(bars)
+    needed = tr_lookback + compression_bars + 1
+    if n < needed + 1:
+        return None
+
+    def _tr_at(i: int) -> float:
+        b, prev_close = bars[i], bars[i - 1].close
+        return max(b.high - b.low, abs(b.high - prev_close), abs(b.low - prev_close))
+
+    window_trs = [_tr_at(i) for i in range(n - 1 - tr_lookback, n - 1)]
+    sorted_trs = sorted(window_trs)
+    pct_val = sorted_trs[min(int(len(sorted_trs) * compression_pct), len(sorted_trs) - 1)]
+    mean_tr = sum(window_trs) / len(window_trs)
+    if not all(_tr_at(n - 2 - k) < pct_val for k in range(compression_bars)):
+        return None
+    if _tr_at(n - 1) <= expansion_mult * mean_tr:
+        return None
+
+    last = bars[-1]
+    rng = last.high - last.low
+    if rng <= 0:
+        return None
+    close_pos = (last.close - last.low) / rng
+    if close_pos >= 1.0 - close_extreme_frac:
+        side = "buy"
+    elif close_pos <= close_extreme_frac:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="tr_compression_expansion_gap",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"close_position": close_pos, "expansion_tr": _tr_at(n - 1), "mean_tr": mean_tr},
+    )
+
+
+def month_end_rebalance_flow_directional_persistence(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-006 idea 3 (premortem-006.md: SKIP — calendar timestamp +
+    OHLCV return only, no new data source; bets on monthly continuation in
+    the epoch measured at -12.4%/0-9; implemented anyway per the round
+    policy, WITHOUT the spec's own post-hoc sign hedge that the pre-mortem
+    flagged as curve-fitting). At UTC month-start, the prior calendar
+    month's return sets a symmetric directional entry: long after a strong
+    up-month, short after a strong down-month."""
+    threshold = float(params.get("prior_month_return_threshold", 0.05))
+    entry_window = int(params.get("entry_window_bars_after_month_start", 12))
+
+    last = bars[-1]
+    ts = _ts(last)
+    month_start = ts.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    bars_since_start = int((ts - month_start).total_seconds() // 300)
+    if bars_since_start < 0 or bars_since_start >= entry_window:
+        return None
+    prior_month_start = (month_start - timedelta(days=1)).replace(day=1)
+    start_bar = _bar_at_or_before(bars, prior_month_start)
+    end_bar = _bar_at_or_before(bars, month_start - timedelta(minutes=5))
+    if start_bar is None or end_bar is None or start_bar.close <= 0:
+        return None
+    prior_return = end_bar.close / start_bar.close - 1.0
+    if prior_return > threshold:
+        side = "buy"
+    elif prior_return < -threshold:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="month_end_rebalance_flow",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"prior_month_return": prior_return},
+    )
+
+
+def constraint_rejection_pressure_release_engine(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-006 idea 4 (premortem-006.md: REDESIGN — premise-checked
+    against research_bars; see the round-006 header comment above for the
+    measured 69.3% co-occurrence, comfortably decidable, no parameter
+    change made). Reopens the closed self-referential GATE family on a
+    genuinely cross-sectional mechanism: a fresh breakout is armed only
+    when >=sync_count_min of the basket broke out within the same trailing
+    window — a synchronized-beta signal absent from any single symbol's
+    own trade stream. Requires context_keys=['basket_bars']."""
+    breakout_lookback = int(params.get("breakout_lookback", 48))
+    sync_window = int(params.get("sync_window_bars", 12))
+    sync_count_min = int(params.get("sync_count_min", 3))
+
+    last = bars[-1]
+    if len(bars) < breakout_lookback + 1:
+        return None
+    prior_high = max(b.high for b in bars[-1 - breakout_lookback: -1])
+    if last.close <= prior_high:
+        return None  # this symbol's own breakout isn't fresh on the current bar
+
+    basket = context.get("basket_bars")
+    if not basket:
+        return None
+
+    def _recent_breakout(sym_bars: list[BarRow]) -> bool:
+        n = len(sym_bars)
+        lo = max(breakout_lookback, n - sync_window)
+        for i in range(lo, n):
+            window = sym_bars[i - breakout_lookback: i]
+            if window and sym_bars[i].close > max(b.high for b in window):
+                return True
+        return False
+
+    sync_count = sum(1 for sym_bars in basket.values() if sym_bars and _recent_breakout(sym_bars))
+    if sync_count < sync_count_min:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="constraint_rejection_pressure_release",
+        side="buy", bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"sync_count": sync_count, "prior_high": prior_high},
+    )
+
+
+def multiweek_directional_regime_persistence_hold(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-006 idea 5 (premortem-006.md: IMPLEMENT — no fatal flaw
+    found; the round's mandated continuation canary). Symmetric long/short
+    on the trailing 14-day return sign, evaluated once per symbol per UTC
+    week (Monday 00:00) and held 7 days — occupies the 2-week TSMOM band
+    the archive explicitly flagged OPEN, distinct from the reverting
+    monthly scale. A sign-flip in its own results IS the regime-flip
+    alarm, not just a failure."""
+    threshold = float(params.get("threshold", 0.06))
+    lookback_hours = 336  # 14 days
+
+    last = bars[-1]
+    ts = _ts(last)
+    if ts.weekday() != 0 or ts.hour != 0 or ts.minute != 0:
+        return None
+    start = _bar_at_or_before(bars[:-1], ts - timedelta(hours=lookback_hours))
+    if start is None or start.close <= 0:
+        return None
+    r14 = last.close / start.close - 1.0
+    if r14 > threshold:
+        side = "buy"
+    elif r14 < -threshold:
+        side = "sell"
+    else:
+        return None
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="multiweek_directional_regime_hold",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"r14_return": r14},
+    )
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
@@ -1972,6 +2272,11 @@ STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "weekly_pullback_limit": weekly_pullback_limit_into_uptrend,
     "placebo_gated_weekly_trend": placebo_streak_gated_weekly_trend_engine,
     "magnitude_persistence_directional_hold": multiday_magnitude_persistence_directional_hold,
+    "predator_prey_depletion_rebound": predator_prey_volume_depletion_rebound,
+    "tr_compression_expansion_gap": range_compression_then_directional_expansion_gap,
+    "month_end_rebalance_flow": month_end_rebalance_flow_directional_persistence,
+    "constraint_rejection_pressure_release": constraint_rejection_pressure_release_engine,
+    "multiweek_directional_regime_hold": multiweek_directional_regime_persistence_hold,
 }
 
 

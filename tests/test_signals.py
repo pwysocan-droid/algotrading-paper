@@ -80,13 +80,18 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "weekly_pullback_limit_into_uptrend", "placebo_streak_gated_weekly_trend_engine",
         "multiday_magnitude_persistence_directional_hold",
     }
+    foundry_006 = {
+        "predator_prey_volume_depletion_rebound", "range_compression_then_directional_expansion_gap",
+        "month_end_rebalance_flow_directional_persistence", "constraint_rejection_pressure_release_engine",
+        "multiweek_directional_regime_persistence_hold",
+    }
     assert set(STRATEGY_VARIANTS.keys()) == (
         retired | candidates | foundry_001 | foundry_002 | foundry_003 | foundry_004
-        | foundry_005 | {"null_baseline"}
+        | foundry_005 | foundry_006 | {"null_baseline"}
     )
     assert all(
         STRATEGY_VARIANTS[n].get("enabled") is False
-        for n in foundry_001 | foundry_002 | foundry_003 | foundry_004 | foundry_005
+        for n in foundry_001 | foundry_002 | foundry_003 | foundry_004 | foundry_005 | foundry_006
     ), "foundry rounds stay disabled pending their gauntlets"
 
     # The live roster: null placebo + the gauntlet's top 2 as A/B arms
@@ -1272,3 +1277,194 @@ class TestFoundryRound005:
             bars, {"mag_window": 4, "persistence_min": 0.9}, {}) is None
         assert signals.multiday_magnitude_persistence_directional_hold(
             bars, {"mag_window": 4, "regime_trend_min": 0.5}, {}) is None
+
+
+class TestFoundryRound006:
+    def test_all_registered(self) -> None:
+        for key in ("predator_prey_depletion_rebound", "tr_compression_expansion_gap",
+                    "month_end_rebalance_flow", "constraint_rejection_pressure_release",
+                    "multiweek_directional_regime_hold"):
+            assert key in signals.STRATEGY_REGISTRY
+
+    # -- idea 1: predator-prey volume-depletion rebound -------------------------
+
+    def _predator_prey_bars(self, symbol: str = "BTC/USD") -> list[BarRow]:
+        """4 daily bars at 23:55 UTC (day-end): 3 consecutive up-closes on
+        monotonically declining volume, 6% cumulative 3-day gain."""
+        start = datetime(2026, 7, 1, 23, 55, tzinfo=timezone.utc)
+        days = [(100.0, 100.0), (102.0, 90.0), (104.0, 80.0), (106.0, 70.0)]
+        bars = []
+        for i, (c, v) in enumerate(days):
+            ts = (start + timedelta(days=i)).isoformat()
+            bars.append(_bar(symbol, ts, c - 0.5, c + 0.5, c - 1.0, c, v))
+        return bars
+
+    def test_predator_prey_fires_buy(self) -> None:
+        sig = signals.predator_prey_volume_depletion_rebound(
+            self._predator_prey_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["three_day_gain"] == pytest.approx(0.06)
+
+    def test_predator_prey_no_fire_off_day_boundary(self) -> None:
+        bars = self._predator_prey_bars()
+        b = bars[-1]
+        mid_day_ts = datetime(2026, 7, 4, 12, 0, tzinfo=timezone.utc).isoformat()
+        bars[-1] = _bar(b.symbol, mid_day_ts, b.open, b.high, b.low, b.close, b.volume)
+        assert signals.predator_prey_volume_depletion_rebound(bars, {}, {}) is None
+
+    def test_predator_prey_no_fire_when_volume_rises(self) -> None:
+        bars = self._predator_prey_bars()
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, b.open, b.high, b.low, b.close, 95.0)
+        assert signals.predator_prey_volume_depletion_rebound(bars, {}, {}) is None
+
+    # -- idea 2: TR compression then directional expansion -----------------------
+
+    def _compression_expansion_bars(self, symbol: str = "BTC/USD") -> list[BarRow]:
+        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        bars = []
+        for i in range(11):  # 11 bars of TR=1.0 (7 land in the 10-bar window)
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar(symbol, ts, 100.0, 100.5, 99.5, 100.0, 100.0))
+        for i in range(11, 14):  # 3 compressed bars, TR=0.1
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar(symbol, ts, 100.0, 100.05, 99.95, 100.0, 100.0))
+        ts = (start + timedelta(minutes=5 * 14)).isoformat()
+        bars.append(_bar(symbol, ts, 100.0, 103.0, 100.0, 102.9, 200.0))  # expansion, closes near high
+        return bars
+
+    def _compression_params(self) -> dict:
+        return {"compression_bars": 3, "tr_lookback": 10, "compression_pct": 0.4,
+                "expansion_mult": 2.0, "close_extreme_frac": 0.2}
+
+    def test_compression_expansion_fires_buy(self) -> None:
+        sig = signals.range_compression_then_directional_expansion_gap(
+            self._compression_expansion_bars(), self._compression_params(), {})
+        assert sig is not None and sig.side == "buy"
+
+    def test_compression_expansion_no_fire_without_extreme_close(self) -> None:
+        bars = self._compression_expansion_bars()
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, b.open, b.high, b.low, 101.5, b.volume)  # mid-range close
+        assert signals.range_compression_then_directional_expansion_gap(
+            bars, self._compression_params(), {}) is None
+
+    def test_compression_expansion_no_fire_without_expansion(self) -> None:
+        bars = self._compression_expansion_bars()
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, b.timestamp, 100.0, 100.3, 99.9, 100.2, b.volume)  # no real expansion
+        assert signals.range_compression_then_directional_expansion_gap(
+            bars, self._compression_params(), {}) is None
+
+    # -- idea 3: month-end rebalance flow -----------------------------------------
+
+    def _month_rebalance_bars(self, symbol: str = "BTC/USD", ramp: bool = True) -> list[BarRow]:
+        bars = []
+        for i in range(30):  # June: daily bars, close ramps 100 -> 112 if ramp else flat
+            day = datetime(2026, 6, 1 + i, tzinfo=timezone.utc)
+            c = 100.0 + i * (12.0 / 29) if ramp else 100.0
+            bars.append(_bar(symbol, day.isoformat(), c - 0.5, c + 0.5, c - 1.0, c, 100.0))
+        july1 = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        bars.append(_bar(symbol, july1.isoformat(), 113.0, 113.5, 112.5, 113.0, 100.0))
+        return bars
+
+    def test_month_rebalance_fires_buy_after_strong_up_month(self) -> None:
+        sig = signals.month_end_rebalance_flow_directional_persistence(
+            self._month_rebalance_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["prior_month_return"] == pytest.approx(0.12, abs=1e-6)
+
+    def test_month_rebalance_no_fire_outside_entry_window(self) -> None:
+        bars = self._month_rebalance_bars()
+        late_ts = datetime(2026, 7, 1, 2, 0, tzinfo=timezone.utc).isoformat()  # 24 bars in, past window
+        b = bars[-1]
+        bars[-1] = _bar(b.symbol, late_ts, b.open, b.high, b.low, b.close, b.volume)
+        assert signals.month_end_rebalance_flow_directional_persistence(bars, {}, {}) is None
+
+    def test_month_rebalance_no_fire_within_neutral_band(self) -> None:
+        bars = self._month_rebalance_bars(ramp=False)
+        assert signals.month_end_rebalance_flow_directional_persistence(bars, {}, {}) is None
+
+    # -- idea 4: constraint-rejection cross-sectional sync ------------------------
+
+    def _sync_bars(self, symbol: str, breakout: bool) -> list[BarRow]:
+        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        bars = []
+        for i in range(5):
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar(symbol, ts, 100.0, 100.5, 99.5, 100.0, 100.0))
+        ts = (start + timedelta(minutes=25)).isoformat()
+        if breakout:
+            bars.append(_bar(symbol, ts, 100.0, 101.5, 99.9, 101.2, 100.0))
+        else:
+            bars.append(_bar(symbol, ts, 100.0, 100.4, 99.6, 100.0, 100.0))
+        return bars
+
+    def _sync_basket(self, breakouts: dict[str, bool]) -> dict[str, list[BarRow]]:
+        return {sym: self._sync_bars(sym, on) for sym, on in breakouts.items()}
+
+    def _sync_params(self) -> dict:
+        return {"breakout_lookback": 5, "sync_window_bars": 3, "sync_count_min": 3}
+
+    def test_sync_fires_buy_when_three_of_five_break_out(self) -> None:
+        basket = self._sync_basket({
+            "BTC/USD": True, "ETH/USD": True, "SOL/USD": True,
+            "LINK/USD": False, "AVAX/USD": False,
+        })
+        sig = signals.constraint_rejection_pressure_release_engine(
+            basket["BTC/USD"], self._sync_params(), {"basket_bars": basket})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["sync_count"] == 3
+
+    def test_sync_no_fire_below_sync_count_min(self) -> None:
+        basket = self._sync_basket({
+            "BTC/USD": True, "ETH/USD": True, "SOL/USD": False,
+            "LINK/USD": False, "AVAX/USD": False,
+        })
+        assert signals.constraint_rejection_pressure_release_engine(
+            basket["BTC/USD"], self._sync_params(), {"basket_bars": basket}) is None
+
+    def test_sync_no_fire_without_own_breakout_or_basket(self) -> None:
+        basket = self._sync_basket({
+            "BTC/USD": False, "ETH/USD": True, "SOL/USD": True,
+            "LINK/USD": True, "AVAX/USD": True,
+        })
+        assert signals.constraint_rejection_pressure_release_engine(
+            basket["BTC/USD"], self._sync_params(), {"basket_bars": basket}) is None
+        basket_on = self._sync_basket({
+            "BTC/USD": True, "ETH/USD": True, "SOL/USD": True,
+            "LINK/USD": True, "AVAX/USD": True,
+        })
+        assert signals.constraint_rejection_pressure_release_engine(
+            basket_on["BTC/USD"], self._sync_params(), {}) is None
+
+    # -- idea 5: multiweek directional regime persistence -------------------------
+
+    def _next_monday(self, base: datetime) -> datetime:
+        return base + timedelta(days=(7 - base.weekday()) % 7)
+
+    def _multiweek_bars(self, symbol: str = "BTC/USD", gain: float = 0.07) -> list[BarRow]:
+        monday = self._next_monday(datetime(2026, 7, 1, tzinfo=timezone.utc))
+        start_ts = monday - timedelta(hours=336)
+        start_bar = _bar(symbol, start_ts.isoformat(), 99.5, 100.5, 99.0, 100.0, 100.0)
+        last_close = 100.0 * (1 + gain)
+        last_bar = _bar(symbol, monday.isoformat(), last_close - 0.5, last_close + 0.5,
+                         last_close - 1.0, last_close, 100.0)
+        return [start_bar, last_bar]
+
+    def test_multiweek_fires_buy_on_monday_when_r14_exceeds_threshold(self) -> None:
+        sig = signals.multiweek_directional_regime_persistence_hold(
+            self._multiweek_bars(), {}, {})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["r14_return"] == pytest.approx(0.07)
+
+    def test_multiweek_no_fire_off_monday(self) -> None:
+        bars = self._multiweek_bars()
+        b = bars[-1]
+        tuesday = (datetime.fromisoformat(b.timestamp) + timedelta(days=1)).isoformat()
+        bars[-1] = _bar(b.symbol, tuesday, b.open, b.high, b.low, b.close, b.volume)
+        assert signals.multiweek_directional_regime_persistence_hold(bars, {}, {}) is None
+
+    def test_multiweek_no_fire_within_neutral_band(self) -> None:
+        bars = self._multiweek_bars(gain=0.03)
+        assert signals.multiweek_directional_regime_persistence_hold(bars, {}, {}) is None

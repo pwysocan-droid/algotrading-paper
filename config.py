@@ -473,4 +473,60 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "enabled": False,
         "phase_qualified": False,
     },
+    # ── Foundry round 006 (reviews/foundry/round-006.json) ──────────────
+    # Pre-mortem (reviews/foundry/premortem-006.md): idea 1 REDESIGN
+    # (premise-checked, n=64 below floor, kept unchanged per spec), idea 2
+    # SKIP, idea 3 SKIP, idea 4 REDESIGN (premise-checked, 69.3%
+    # co-occurrence, comfortably decidable, kept unchanged), idea 5
+    # IMPLEMENT. Every idea is implemented regardless per the round
+    # policy — the gauntlet is the arbiter, not the paper review.
+    "predator_prey_volume_depletion_rebound": {
+        "strategy": "predator_prey_depletion_rebound",
+        "params": {"up_days_required": 3, "min_3d_gain": 0.02,
+                   "max_3d_gain": 0.12, "tp": 0.1, "sl": 0.05,
+                   "time_exit_hours": 96,
+                   "window_bars": 1200},  # 4+ daily buckets need ~1.2k bars
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "range_compression_then_directional_expansion_gap": {
+        "strategy": "tr_compression_expansion_gap",
+        "params": {"compression_bars": 6, "tr_lookback": 96,
+                   "compression_pct": 0.4, "expansion_mult": 2.0,
+                   "close_extreme_frac": 0.2, "tp": 0.05, "sl": 0.03,
+                   "time_exit_hours": 24},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "month_end_rebalance_flow_directional_persistence": {
+        "strategy": "month_end_rebalance_flow",
+        "params": {"prior_month_return_threshold": 0.05,
+                   "entry_window_bars_after_month_start": 12,
+                   "tp": 0.08, "sl": 0.04, "time_exit_hours": 96,
+                   "window_bars": 20000},  # prior-month lookback needs ~2mo of bars
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "constraint_rejection_pressure_release_engine": {
+        "strategy": "constraint_rejection_pressure_release",
+        "params": {"breakout_lookback": 48, "sync_window_bars": 12,
+                   "sync_count_min": 3, "tp": 0.06, "sl": 0.03,
+                   "time_exit_hours": 48},
+        "context_keys": ["basket_bars"],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "multiweek_directional_regime_persistence_hold": {
+        "strategy": "multiweek_directional_regime_hold",
+        "params": {"lookback_bars": 4032, "threshold": 0.06,
+                   "eval_cadence_bars": 2016, "tp": 0.15, "sl": 0.07,
+                   "time_exit_hours": 168,
+                   "window_bars": 4100},  # 14-day (4032-bar) lookback
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
 }
