@@ -24,7 +24,8 @@
     "SLOW-BAND FIRST MEASUREMENT (2026-07-19, selection window only): naive 4-week momentum with 2-week holds nets +0.49%/trade at n=120 \u2014 the first strategy-shaped positive at n>=100 in project history \u2014 and its matched drift null (unconditional weekly buys, same exits, n=287) nets -0.04% (gross +0.46% ~= the fee floor). The momentum increment over drift is +0.5%/trade but sub-1-SE: a lead, not an edge. The slow band is BACKTESTABLE (per-variant exits made it so) and now has a measured baseline: any 2-8-week spec must beat the DRIFT NULL, not zero \u2014 unconditional crypto buying covered costs in this window, so absolute positives at slow horizons are the gross-positive trap wearing a longer coat.",
     "REVERSION AT EVERY MEASURED HORIZON (2026-07-20, operator-designed long-horizon probe, selection window only, ALL cells reported): long-or-flat momentum underperformed unconditional drift in 9/9 cells of the {1,3,6}mo-lookback x {1,3,6}mo-hold grid (increments -2.5% to -16.4%); high-funding (crowded) months ran +1.8%/30d vs +3.4% for low-funding (direction matches BIS crash-premium and the measured multi-day shock-fade). Unified read: 2024-25 crypto in this basket REVERTS at multi-day through monthly scales while drift dominates long-only returns \u2014 continuation was tested in many costumes under continuation-rewarding exits and died everywhere; the live structure is reversion + drift. Caveats: one regime, ~2 effective assets, n=13-14 at 6mo cells; the 2-week TSMOM result (momentum BEAT drift) marks the weekly-to-monthly crossover as open. Specs engaging reversion must still beat the DRIFT null, and asymmetric exits must match the thesis shape (a reversion thesis under pro-continuation exits is self-sabotage \u2014 see FADE-SHAPED and the exit-confound test). AMENDMENTS (same day, external referee): (1) REGIME CAVEAT \u2014 the layered-horizon literature (short reversal / medium continuation / long reversal) says horizon structure is regime-dependent, and crypto trends violently in bull phases; 'reverts everywhere' may be a fact about 2024-26, not about crypto. Lesson 22 is PROVISIONAL until the same grid is run on 2017-2023 daily bars incl. the 2020-21 trend regime (in progress). (2) CANARY MANDATE \u2014 every future round must include at least ONE continuation-shaped spec regardless of the prevailing worldview, so a regime flip announces itself in our own results rather than in a drawdown. A unifying theory inherited by the generator is exactly where registry-feedback inbreeding accelerates under the banner of insight. (3) Reversion-inside-drift specs (pullback buying) are knife-catchers in a regime break: their kill criteria must reference the drift assumption explicitly.",
     "REGIME IS THE VARIABLE (2026-07-20, regime-split grid on 2017-present dailies \u2014 supersedes the naive reading of the prior lesson): DIRECTIONAL (long/short, drift-free) monthly momentum earned +28.8% per hold in 2020-21, +21.6% in 2022, +13.4% in 2023 \u2014 then FLIPPED SIGN to -12.4% (0/9 cells) in 2024-25, which is our ENTIRE archive. Every verdict this project has produced \u2014 the ceiling, the graveyard, the reversion signature \u2014 is conditioned on one side of a coin that flips on multi-year scales. Consequences: (1) long-or-flat 'momentum' increments mostly measure drift-timing, not signal \u2014 use directional measurements; (2) any spec fit to the archive learns the reversion epoch and INVERTS if the regime flips back \u2014 the continuation canary is load-bearing, not decorative; (3) slow regime detection (e.g. trailing 12mo directional-momentum profitability) is a first-class research question, arguably THE question; (4) live/shadow evidence from the current epoch cannot validate behavior in the other one \u2014 epoch-humility in every promotion decision.",
-    "RARE-TOUCH CONJUNCTIONS MISS WORST OF ALL (r003 + r005): the two largest base-rate misses on record both required a PRICE TO TOUCH A SPECIFIC LEVEL WITHIN A WINDOW while a slower regime condition also held \u2014 slot_scarcity_conviction_gate (r003, n=7, ~166x under) and weekly_pullback_limit_into_uptrend (r005, n=3, ~186x under). Both cleared every arithmetic sanity check on paper (positively-correlated conjuncts, explicit base-rate math) and both still missed by two orders of magnitude, worse than any non-touch conjunction (4x-28x). A resting-limit-touch condition inside a slow regime is not like an OHLCV threshold conjunction \u2014 the touch almost never coincides with the regime being live over the sampled history. Premise-check actual touch frequency against the target regime (not just the regime's own frequency) before spending a gauntlet slot on any future 'price comes to a level, inside a multi-day regime' design."
+    "RARE-TOUCH CONJUNCTIONS MISS WORST OF ALL (r003 + r005): the two largest base-rate misses on record both required a PRICE TO TOUCH A SPECIFIC LEVEL WITHIN A WINDOW while a slower regime condition also held \u2014 slot_scarcity_conviction_gate (r003, n=7, ~166x under) and weekly_pullback_limit_into_uptrend (r005, n=3, ~186x under). Both cleared every arithmetic sanity check on paper (positively-correlated conjuncts, explicit base-rate math) and both still missed by two orders of magnitude, worse than any non-touch conjunction (4x-28x). A resting-limit-touch condition inside a slow regime is not like an OHLCV threshold conjunction \u2014 the touch almost never coincides with the regime being live over the sampled history. Premise-check actual touch frequency against the target regime (not just the regime's own frequency) before spending a gauntlet slot on any future 'price comes to a level, inside a multi-day regime' design.",
+    "PREMORTEM CANNOT SEE REGIME RISK (r005 multiday_magnitude_persistence_directional_hold, r006 multiweek_directional_regime_persistence_hold \u2014 2nd occurrence, promoted): both ideas cleared premortem paper review with an explicit IMPLEMENT verdict ('no fatal flaw found') and both died anyway on the identical underlying mechanism (REGIME IS THE VARIABLE: directional monthly-scale momentum inverted to negative across this project's entire 2024-25 archive). Premortem's error classes \u2014 arithmetic miscalibration, closed-lens reattempt, regime conflict visible IN THE SPEC ITSELF, post-hoc sign-fitting \u2014 are all paper-detectable; a spec that correctly locates itself in genuinely open, previously-untested territory (as both of these did) is by construction invisible to a paper review whose only evidence base is the same measured archive the mechanism may be about to invert against. A clean premortem IMPLEMENT verdict means 'no flaw found on paper,' not 'likely to survive' \u2014 the CANARY MANDATE exists precisely because this class of failure can only be caught empirically, and both canary-shaped specs did their job: they failed informatively instead of silently."
   ],
   "ideas": [
     {
@@ -431,7 +432,82 @@
         "net_expectancy_pct": -1.02,
         "premortem_correct": false
       }
+    },
+    {
+      "name": "predator_prey_volume_depletion_rebound",
+      "lineage": "foundry r006 \u00b7 cross_domain_import",
+      "tested": "2026-07-22 \u00b7 930d constrained replay, taker AND maker fills",
+      "result": "n=62 taker/58 maker, -$77.49 taker/-$31.72 maker, edge/slot -$1.25 taker/-$0.55 maker, win 35.5%/39.7%, Sharpe -0.12/0.10",
+      "verdict": "dead",
+      "epitaph": "Premortem verdict: REDESIGN \u2014 flagged that the spec's claimed 0.25-0.35 conditional probability of volume-decline-given-3-up-days contradicted its own 'lower than baseline' argument (naive baseline 1/6\u22480.167) and demanded a direct histogram before spending a slot. The check was run and vindicated the premortem almost exactly: measured P(vol monotonic decline | 3 up-days) = 0.162 (84/519) \u2014 the naive baseline, not the spec's inflated 0.25-0.35. Implemented unchanged per spec (letting the gauntlet measure the true rate rather than hand-tuning after a miss). Full-conjunction fire count landed at n=64 project-wide (62 taker/58 maker after fill-model splits), narrowly below the idea's own n>=100 decidability floor \u2014 the premortem's secondary inconclusive-risk also materialized, just mildly rather than catastrophically. On the sample gauntled, win rate (35.5%/39.7%) cleared the nominal 33% breakeven for +10%/-5% exits, but only 10 of 62 taker trades (16%) actually resolved at take_profit; 30 (48%) timed out at diluted magnitudes far short of the 10% target, and 22 (35%) hit the full stop \u2014 so net expectancy stayed negative-to-negligible (-0.13%/+0.11%/trade, both under the +0.5% kill bar) despite the win-rate arithmetic looking survivable. Win rate above nominal tp/sl breakeven does not imply positive expectancy when time-exit, not tp/sl, is the modal outcome \u2014 the realized payout ratio is much flatter than the stated exits imply.",
+      "control_arm": null,
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.025,
+        "actual": 0.0133,
+        "net_expectancy_pct": -0.13,
+        "premortem_correct": true
+      }
+    },
+    {
+      "name": "range_compression_then_directional_expansion_gap",
+      "lineage": "foundry r006 \u00b7 microstructure_from_ohlcv",
+      "tested": "2026-07-22 \u00b7 killed@180d (staged), taker AND maker",
+      "result": "n=84 taker/84 maker, -$23.54 taker/-$15.78 maker, edge/slot -$0.28 taker/-$0.19 maker, win 47.6%/47.6%, Sharpe 1.67/1.38",
+      "verdict": "dead",
+      "epitaph": "Premortem verdict: SKIP \u2014 the two-phase TR-compression/expansion framing is still pure OHLCV candle geometry, the identical data source behind the microstructure lens's 4-for-4 death record, plus an independent ceiling conflict (same-bar resolution sits in the measured-empty sub-12h band). Implemented anyway per round policy. Confirmed dead: killed at the 180d stage on both fill models. The gauntlet surfaces a subtlety the premortem didn't need to resolve: mean per-trade return was actually POSITIVE (+0.36% taker/+0.29% maker, win rate 47.6% both) \u2014 the shape looks survivable read as percentages \u2014 yet dollar-weighted edge/slot, this project's actual fitness metric, was negative both ways (-$0.28/-$0.19). The reason is sizing, not signal: stop-loss exits carry consistently larger notional (~$233 in the sampled trades) than the smaller, more variable time-exit wins, so the dollar P&L is worse than the naive %-average implies. A fifth confirmation that OHLCV candle geometry alone is exhausted \u2014 the lens needs order-book/footprint data to proceed, and no repackaging of the same four inputs (wick, body, volume, sequencing) has escaped that ceiling in five tries.",
+      "control_arm": "MICROSTRUCTURE-FROM-OHLCV LENS EXHAUSTED (dead-ideas.json failure_lessons): wick rejection, absorption, gap-fill, one-sided thrust \u2014 4/4 prior candle-geometry shapes dead, same OHLCV-only data source this idea repackages as a two-phase TR compression/expansion sequence.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.5,
+        "actual": 0.0933,
+        "net_expectancy_pct": 0.36,
+        "premortem_correct": true
+      }
+    },
+    {
+      "name": "month_end_rebalance_flow_directional_persistence",
+      "lineage": "foundry r006 \u00b7 behavioral_calendar",
+      "tested": "2026-07-22 \u00b7 930d constrained replay, taker AND maker fills",
+      "result": "n=105 taker/123 maker, -$177.64 taker/-$274.04 maker, edge/slot -$1.69 taker/-$2.23 maker, win 32.4%/30.1%, Sharpe -0.43/-1.03",
+      "verdict": "dead",
+      "epitaph": "Premortem verdict: SKIP \u2014 the rebalance-flow narrative supplies no new data source (UTC month-boundary timestamp + prior-month OHLCV return, the same two ingredients behind four dead calendar/price-level ideas), bets on monthly-return continuation in the exact epoch REGIME IS THE VARIABLE measured at -12.4%/0-9, and hedges its own directional sign post hoc ('test long-only if short arm degenerate') rather than committing to one. Implemented with the clean symmetric sign rule the spec itself states, deliberately NOT carrying the post-hoc hedge into code, so the gauntlet saw both arms honestly. All three premortem objections confirmed: dead on both fill models, win rate (32.4%/30.1%) at or below the idea's own ~33% breakeven, edge/slot solidly negative (-$1.69/-$2.23), and the fire-rate premise check (73-80% of symbol-months qualify, vs. the spec's assumed ~70%) was the most accurate base-rate prediction in the round \u2014 this death is not a decidability problem, it is the regime problem, confirmed with a comfortable sample.",
+      "control_arm": "BEHAVIORAL-CALENDAR LENS EXHAUSTED (failure_lessons): round-number fade/continuation and named clock-time coils 4-for-4 dead, no data source beyond OHLCV timestamp+price; REGIME IS THE VARIABLE (failure_lessons): directional monthly momentum measured at -12.4% (0/9 cells) across this project's entire 2024-25 archive \u2014 the exact continuation bet this idea's month-start entry makes.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.023,
+        "actual": 0.0226,
+        "net_expectancy_pct": -0.35,
+        "premortem_correct": true
+      }
+    },
+    {
+      "name": "constraint_rejection_pressure_release_engine",
+      "lineage": "foundry r006 \u00b7 meta_self_referential",
+      "tested": "2026-07-22 \u00b7 killed@180d (staged), taker AND maker",
+      "result": "n=556 taker/559 maker, -$728.00 taker/-$578.16 maker, edge/slot -$1.31 taker/-$1.03 maker, win 34.7%/35.8%, Sharpe -1.50/-1.32, max_dd 73.2%/59.0%",
+      "verdict": "dead",
+      "epitaph": "Premortem verdict: REDESIGN \u2014 accepted the gate-family reopening as legitimate (a cross-sectional synchronization count is genuinely absent from any single engine's own trade stream, unlike the five closed-family specs that all conditioned on their own past outcomes), but warned the entry structure (this symbol's breakout is the CURRENT bar, nested inside a S>=3 synchronization window) matched the exact shape of the two worst historical fire-rate misses on record (166x, 186x under-prediction) and demanded a premise check before trusting the arithmetic. The premise check was run (22,118 of 31,892 raw breakout events, 69.3%, co-occurred with S>=3 \u2014 far ABOVE the spec's assumed 25-40%) and it caught a real miscalibration, but in the OPPOSITE direction the premortem feared: this idea over-fired, not under-fired, because crypto breakouts are more cross-sectionally synchronized than even the spec's own correlation-adjusted estimate assumed. Killed at the 180d stage on both fill models anyway \u2014 win rate (34.7%/35.8%) sits below the idea's own 38% breakeven, net expectancy is deeply negative (-0.16%/trade taker), and max drawdown (73%/59%) is the worst of the round by a wide margin. The cross-sectional-synchronization MECHANISM itself remains formally untested against its intended control (this symbol's own ungated breakouts) \u2014 that comparison was not run this round, so the family-reopening question is undecided on its own terms even though this specific spec is unambiguously dead on absolute performance.",
+      "control_arm": null,
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.036,
+        "actual": 0.618,
+        "net_expectancy_pct": -0.16,
+        "premortem_correct": false
+      }
+    },
+    {
+      "name": "multiweek_directional_regime_persistence_hold",
+      "lineage": "foundry r006 \u00b7 multi_day_horizon",
+      "tested": "2026-07-22 \u00b7 killed@180d (staged), taker AND maker",
+      "result": "n=50 taker/48 maker, -$324.55 taker/-$323.96 maker, edge/slot -$6.49 taker/-$6.75 maker, win 30.0%/29.2%, Sharpe -5.23/-5.62, max_dd 32.9%/33.0%",
+      "verdict": "dead",
+      "epitaph": "Premortem verdict: IMPLEMENT \u2014 the round's mandated continuation canary (CANARY MANDATE), found no fatal paper-detectable flaw, credited it for being the least fragile base-rate math in the round (a single univariate |R14|>6% threshold, not a multi-condition or nested-timing conjunction) and for correctly occupying the one band REGIME IS THE VARIABLE / REVERSION AT EVERY MEASURED HORIZON left explicitly OPEN (2-week TSMOM, where directional momentum previously beat drift). The base-rate math held up as promised: per-symbol qualification measured at 47-71% pre-implementation (spec assumed 55-65%), and the realized fire rate (0.056/sym/day taker, pro-rated from the 180d stage) lands within the calibration scatter this project already expects. But the canary is designed to be informative either way, and it fired NEGATIVE, decisively: win rate 30.0%/29.2% (nowhere near the ~40% breakeven for +15%/-7% exits), edge/slot -$6.49/-$6.75 \u2014 the worst in the round \u2014 and Sharpe -5.2/-5.6, killed at the 180d stage on both fill models before the full 930d run. Per its own kill criterion ('a sign-flip in its result IS the regime-flip alarm \u2014 a positive result is itself the load-bearing signal, not just a pass'), this result is the alarm NOT sounding: the 2-week-to-7-day band, the one directional-continuation territory this project's regime-split grid had not yet tested, now also fails \u2014 the reversion regime that governs 1-6mo horizons extends down into the 2-week band too. The premortem's paper review was correct that there was no flaw to find; the flaw was empirical, in the regime, and only the gauntlet could see it \u2014 exactly the blind spot PREMORTEM CANNOT SEE REGIME RISK (new lesson, promoted this round after its second occurrence) now names.",
+      "control_arm": "REVERSION AT EVERY MEASURED HORIZON (failure_lessons): long-or-flat momentum underperformed drift in 9/9 cells of the {1,3,6}mo grid; REGIME IS THE VARIABLE (failure_lessons): directional monthly momentum flipped to -12.4% (0/9 cells) across the entire 2024-25 archive \u2014 this idea's 2-week/7-day band was the one open question those lessons left standing, and it is now closed in the same direction.",
+      "gradient": {
+        "predicted_fires_per_sym_day": 0.0858,
+        "actual": 0.0556,
+        "net_expectancy_pct": -2.75,
+        "premortem_correct": true
+      }
     }
   ],
-  "total_ideas_tested": 33
+  "total_ideas_tested": 38
 }
