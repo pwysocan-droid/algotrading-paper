@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-22T19:05:09Z",
+  "generated_at": "2026-07-22T19:10:09Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 04s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 05s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 007 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-22T19:05:04.603659+00:00",
-    "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-07-22 · 19:05 UTC",
-    "next_run_human": "59m 55s",
-    "uptime_recent": "17302 of 17321 ok · 99.9%",
+    "last_run_iso": "2026-07-22T19:10:04.161276+00:00",
+    "last_run_human": "0m 05s ago",
+    "last_run_human_date": "2026-07-22 · 19:10 UTC",
+    "next_run_human": "59m 54s",
+    "uptime_recent": "17303 of 17322 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "282,506",
+      "count": "282,511",
       "delta": "+1474",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "282506"
+      "value": "282511"
     },
     {
       "name": "bar coverage",
       "count": "97%",
       "delta": "-49",
       "delta_class": "note",
-      "spark": "▁▄█▄▅▁█▅",
+      "spark": "▁▄▇▅▅▂█▅",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "97"
     },
     {
       "name": "cron runs",
-      "count": "17,321",
+      "count": "17,322",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "17321"
+      "value": "17322"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "10,329",
-      "delta": "+2603",
+      "count": "10,339",
+      "delta": "+2611",
       "delta_class": null,
       "spark": "▁█▁▅▁▃▆▃",
       "spark_class": null,
       "key": "decisions",
-      "value": "10329"
+      "value": "10339"
     },
     {
       "name": "letters",
