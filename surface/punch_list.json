@@ -27,11 +27,11 @@
       "promoted": false
     },
     {
-      "id": "ops:Nightly skeptic · 2026-07-21",
+      "id": "ops:Nightly skeptic · 2026-07-22",
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-07-21",
-      "detail": "Your pipeline is a metronome, not a signal detector. Seven consecutive runs with identical bar co...",
+      "thing": "Nightly skeptic · 2026-07-22",
+      "detail": "Your pipeline is a heartbeat monitor on a flatline. Seven consecutive runs of identical bars_adde...",
       "kind": "ops",
       "promoted": false
     }
