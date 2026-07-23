@@ -1797,3 +1797,21 @@ signature):
   research use; a true market-cap-weighted all-universe UMD analog is the
   one remaining check, needed only if construction precision ever matters
   (e.g., factor-neutralizing a real spec). Pipeline validated for round one.
+
+## 2026-07-23 — E2 round one: no price-factor candidate (honest thin result)
+
+First real equity specs ran (reports/equity-gauntlet-2026-07-23.json):
+four price/volume anomalies (12-1 momentum, low-vol-60, 1m-reversal,
+52wk-high) as long-only top-decile gross excess over the equal-weight
+liquid-universe benchmark, survivorship-corrected, regime-split, n=59mo.
+**No factor clears the best-of-4 hurdle (~1.7t)**: momentum +1.24%/mo
+t=1.57 (only positive, sub-threshold, 2024-26-concentrated), the rest
+noise or negative. The top-500-liquid universe is efficient to simple
+price factors at monthly horizon by raw excess — the equity sky, for
+THIS instrument, is also thin. Caveat banked: low-vol was scored by the
+wrong metric (raw excess vs its true risk-adjusted nature); re-score
+before its verdict stands. Round one produced no candidate; the machinery
+worked (honest negative, multiple-testing controlled). Next equity probes
+(operator's call): risk-adjusted low-vol, smaller-cap universe, or
+accept that OHLCV-only equity factors on liquid large-caps are as thin as
+crypto's and the edge needs fundamentals we don't have.

@@ -1,0 +1,50 @@
+{
+  "date": "2026-07-23",
+  "note": "gross excess over equal-weight benchmark; N=4 factors -> best-of-N haircut applies; net-of-cost + holdout are next",
+  "factors": {
+    "momentum_12_1": {
+      "pooled_excess_mo_pct": 1.239,
+      "pooled_t": 1.57,
+      "n_months": 59,
+      "window_t": {
+        "2016-2019": null,
+        "2020-2021": -0.77,
+        "2022-2023": 0.43,
+        "2024-2026": 1.77
+      }
+    },
+    "low_vol_60": {
+      "pooled_excess_mo_pct": -0.458,
+      "pooled_t": -0.95,
+      "n_months": 59,
+      "window_t": {
+        "2016-2019": null,
+        "2020-2021": 0.26,
+        "2022-2023": -0.43,
+        "2024-2026": -1.05
+      }
+    },
+    "reversal_1m": {
+      "pooled_excess_mo_pct": 0.237,
+      "pooled_t": 0.37,
+      "n_months": 59,
+      "window_t": {
+        "2016-2019": null,
+        "2020-2021": -0.71,
+        "2022-2023": 0.68,
+        "2024-2026": 0.02
+      }
+    },
+    "high_52w_prox": {
+      "pooled_excess_mo_pct": -0.235,
+      "pooled_t": -0.43,
+      "n_months": 59,
+      "window_t": {
+        "2016-2019": null,
+        "2020-2021": -0.8,
+        "2022-2023": -0.49,
+        "2024-2026": 0.02
+      }
+    }
+  }
+}
