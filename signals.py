@@ -2238,6 +2238,424 @@ def multiweek_directional_regime_persistence_hold(
     )
 
 
+# ── Foundry round 007 (reviews/foundry/round-007.json) ──────────────────
+# Round thesis: harvest the one measured multi-day contrarian edge with a
+# maker fill instead of chasing it, reopen the cross-sectional gate family
+# on basket dispersion (the round's mandated continuation canary), probe
+# the one untested information-theoretic corner (directional compressibility
+# asymmetry), take a second cross-domain shot at volume-exhaustion under a
+# ratio (not raw-count) signature, and let the 6th OHLCV-geometry permutation
+# get its SKIP verdict confirmed by the gauntlet rather than paper review
+# alone. Per round policy every idea is implemented regardless of verdict.
+#
+# Pre-mortem (reviews/foundry/premortem-007.md) verdicts: idea 1 REDESIGN
+# (params contradicted the fire-rate math's own loosened-trigger assumption),
+# idea 2 IMPLEMENT (legitimate external-information gate reopening, this
+# round's mandated canary), idea 3 REDESIGN (direction was taken from trend
+# sign, not from the novel asymmetry statistic — reproduces r005's already-
+# falsified gate+trend-sign shape), idea 4 REDESIGN (second volume-exhaustion
+# cross-domain idea in two rounds, calibrated n sits below the decidability
+# floor), idea 5 SKIP (MICROSTRUCTURE-FROM-OHLCV LENS EXHAUSTED, 6th
+# permutation of the same four closed inputs).
+#
+# Premise-checked 2026-07-23 against research_bars (all 5 symbols, full
+# ~2.5y history):
+#
+# Idea 1 (liquidity_window_shock_fade_maker, REDESIGN applied — shock_pct
+# 0.03->0.02, vol_mult 3.0->2.5, matching the fire-rate math's own assumed
+# loosened trigger per the pre-mortem): at the strict spec params (0.03/3.0)
+# the shock population measures 256 raw events (not the ~53 the round-004/
+# control-arm shock population implied — a different bar-count base);
+# loosened to 0.02/2.5 the population is 728 raw shocks, and the extension-
+# to-fill maker condition (further 0.6% move within 6 bars) fills 480/728 =
+# 66% — comfortably decidable (n=480), far above the spec's own conservative
+# 15-25% fill-rate assumption.
+#
+# Idea 2 (cross_sectional_dispersion_gate_trend_engine, IMPLEMENT, no
+# change): direct measurement of the 5-symbol aligned history — gate-open
+# frac (dispersion below trailing-20-day 30th percentile) is 29.8% (spec
+# assumed ~30%, matches almost exactly); joint gate-open + BTC fresh-96-bar-
+# breakout frac is 0.54%/bar, n~1006 for BTC alone over the aligned window —
+# comfortably decidable before the basket-sign filter or cooldown.
+#
+# Idea 3 (kolmogorov_directional_asymmetry_break, REDESIGN applied — the
+# `AND current close > close[lookback]` trend-confirmation clause is
+# dropped per the pre-mortem; direction comes purely from sign(A)): a
+# day-sampled histogram of the asymmetry statistic A (RLE-run-count proxy,
+# see _rle_complexity below) over the full 5-symbol history gives
+# |A|>0.20 in 0.25% of samples (11/4336) — non-empty (passes the premise-
+# check kill_criterion) but far rarer than the spec's own "~25-30% of a
+# symmetric-ish distribution" assumption, because a run-count-based
+# compressibility proxy has a naturally narrow range. Implemented unchanged
+# at asym_thresh=0.2 per spec (no threshold rescue attempted, matching the
+# r006-idea-1 precedent) — this may land as a thin sample and the gauntlet
+# write-up should say so plainly.
+#
+# Idea 4 (epidemic_susceptible_depletion_terminal_burst, REDESIGN applied —
+# run_pct 0.02->0.012 AND decline_bars 4->2; the pre-mortem asked to widen
+# run_pct/run_bars "or otherwise raise the raw run-population rate"): at
+# the spec's own run_pct=0.02/decline_bars=4, the efficiency-rising-AND-
+# volume-falling conjunction measures n=3 across the full 5-symbol history
+# — essentially empty, confirming the pre-mortem's fear decisively (runs of
+# monotonicity over 4 points are far rarer than raising the raw run count
+# alone can fix: widening run_pct to 0.012 alone, still at decline_bars=4,
+# only reaches n=5). decline_bars is the real lever: at run_pct=0.012 with
+# decline_bars=2 (a single step each for efficiency-rising and volume-
+# falling) the conjunction measures n=310 — comfortably decidable. This is
+# the actual redesign applied.
+#
+# Idea 5 (trapped_breakout_volume_void_reversal, SKIP, implemented anyway):
+# low-volume-breakout fraction of fresh-extreme breaks measures 2.7%
+# (1530/56508) — the anti-correlation the pre-mortem suspected is real
+# (spec assumed 15-25%) but the set is not empty; re-entry-within-6-bars
+# conditional on a void breakout is 69% (1056/1530), well above the spec's
+# ~40% assumption. Joint raw count 1056 pre-cooldown — comfortably
+# decidable on sample size alone; the SKIP rests entirely on the closed-
+# lens argument, not starvation.
+
+
+def _rle_complexity(seq: list[int]) -> int:
+    """Run-length-encoding run-count: the number of maximal constant runs
+    in a quantized symbol sequence. Used as an approximate compressibility
+    proxy (fewer runs = more repetitive = more compressible) in place of
+    full LZ76 parsing or sample entropy — monotonic with true
+    compressibility for a small fixed alphabet and far cheaper to compute
+    per bar. Round-007 idea 3's core statistic."""
+    if not seq:
+        return 0
+    runs = 1
+    for i in range(1, len(seq)):
+        if seq[i] != seq[i - 1]:
+            runs += 1
+    return runs
+
+
+def _quantize(vals: list[float], bins: int) -> list[int]:
+    """Equal-frequency bin assignment (0..bins-1) by rank within `vals`,
+    preserving original order — round-007 idea 3's magnitude-sub-stream
+    quantization."""
+    order = sorted(range(len(vals)), key=lambda i: vals[i])
+    n = len(vals)
+    q = [0] * n
+    for rank, i in enumerate(order):
+        q[i] = min(bins - 1, rank * bins // n)
+    return q
+
+
+def liquidity_window_shock_fade_maker(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-007 idea 1 (premortem-007.md: REDESIGN — params realigned to
+    the fire-rate math's own assumed loosened trigger; premise-checked
+    2026-07-23, see round-007 header for the measured 728-raw/480-filled
+    counts). A resting maker order fades a shock bar's direction, filled
+    only if price extends the mispricing a further extend_frac within
+    fill_window bars — price comes to you at the deepened extreme
+    (matching the r003 retest-limit no-chase idiom), not a chased entry."""
+    shock_pct = float(params.get("shock_pct", 0.02))
+    vol_mult = float(params.get("vol_mult", 2.5))
+    med_lookback = int(params.get("median_lookback_bars", 96))
+    extend_frac = float(params.get("extend_frac", 0.006))
+    fill_window = int(params.get("fill_window", 6))
+
+    last = bars[-1]
+    last_i = len(bars) - 1
+    if last_i < med_lookback + fill_window + 1:
+        return None
+
+    def _tr_at(i: int) -> float:
+        b, prev_close = bars[i], bars[i - 1].close
+        return max(b.high - b.low, abs(b.high - prev_close), abs(b.low - prev_close))
+
+    for k in range(1, fill_window + 1):  # most recent qualifying shock wins
+        j = last_i - k
+        if j - med_lookback < 1:
+            break
+        shock = bars[j]
+        if shock.open <= 0:
+            continue
+        move = (shock.close - shock.open) / shock.open
+        if abs(move) < shock_pct:
+            continue
+        window_trs = [_tr_at(i) for i in range(j - med_lookback, j)]
+        med_tr = statistics.median(window_trs)
+        if med_tr <= 0 or _tr_at(j) < vol_mult * med_tr:
+            continue
+        up = move > 0
+        side = "sell" if up else "buy"
+        extend_price = shock.close * (1 + extend_frac) if up else shock.close * (1 - extend_frac)
+        between = bars[j + 1: last_i]
+        already_filled = (
+            any(b.high >= extend_price for b in between) if up
+            else any(b.low <= extend_price for b in between)
+        )
+        if already_filled:
+            return None  # extension already consumed within the window
+        now_fill = last.high >= extend_price if up else last.low <= extend_price
+        if not now_fill:
+            return None  # armed, still waiting — no chase
+        return Signal(
+            symbol=last.symbol, variant_name="", strategy="shock_fade_maker",
+            side=side, bar_timestamp=last.timestamp, price_at_signal=extend_price,
+            reasoning={"shock_move": move, "extend_price": extend_price, "shock_ts": shock.timestamp},
+        )
+    return None
+
+
+def cross_sectional_dispersion_gate_trend_engine(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-007 idea 2 (premortem-007.md: IMPLEMENT — legitimate external-
+    information gate reopening the closed self-referential-gate family;
+    the round's mandated continuation canary). Premise-checked 2026-07-23,
+    see round-007 header for the measured 29.8% gate-open frac and n~1006
+    joint frac (BTC alone). Gates a with-trend breakout on cross-sectional
+    dispersion of the basket's trailing returns — a property no single
+    symbol's own OHLCV stream carries: low dispersion (basket moving
+    together) arms a breakout entry aligned with BTC's own trailing return
+    sign. Documented approximation: the rolling dispersion percentile is
+    sampled once per `bars_per_day` bars (default 288, i.e. once per UTC
+    day) rather than recomputed every bar — the same day-bucket idiom used
+    by predator_prey_volume_depletion_rebound, keeping the O(basket x days)
+    scan tractable. Requires context_keys=['basket_bars']."""
+    disp_w = int(params.get("disp_lookback_bars", 48))
+    disp_pctile = float(params.get("disp_pctile", 30))
+    disp_roll_days = int(params.get("disp_roll_days", 20))
+    trend_lookback = int(params.get("trend_lookback", 96))
+    sign_bars = int(params.get("return_sign_bars", 288))
+    bars_per_day = int(params.get("bars_per_day", 288))
+
+    basket = context.get("basket_bars")
+    if not basket:
+        return None
+    last = bars[-1]
+    last_i = len(bars) - 1
+    need = disp_roll_days * bars_per_day + max(disp_w, trend_lookback, sign_bars) + 1
+    if last_i < need:
+        return None
+
+    def _dispersion_at(end_i: int) -> float | None:
+        rets = []
+        for sym_bars in basket.values():
+            if end_i < 0 or end_i >= len(sym_bars) or end_i - disp_w < 0:
+                return None
+            start_close = sym_bars[end_i - disp_w].close
+            if start_close <= 0:
+                return None
+            rets.append(sym_bars[end_i].close / start_close - 1.0)
+        return statistics.pstdev(rets) if len(rets) >= 2 else None
+
+    cur_disp = _dispersion_at(last_i)
+    if cur_disp is None:
+        return None
+    hist = []
+    for d in range(1, disp_roll_days + 1):
+        v = _dispersion_at(last_i - d * bars_per_day)
+        if v is None:
+            return None
+        hist.append(v)
+    rank_pct = 100.0 * sum(1 for v in hist if v <= cur_disp) / len(hist)
+    if rank_pct > disp_pctile:
+        return None  # gate closed — basket not in a synchronized regime
+
+    prior = bars[-1 - trend_lookback: -1]
+    if last.close > max(b.high for b in prior):
+        side = "buy"
+    elif last.close < min(b.low for b in prior):
+        side = "sell"
+    else:
+        return None  # no fresh breakout this bar
+
+    if last_i - sign_bars < 0 or bars[last_i - sign_bars].close <= 0:
+        return None
+    own_ret = last.close / bars[last_i - sign_bars].close - 1.0
+    btc_bars = basket.get("BTC/USD")
+    if not btc_bars or last_i >= len(btc_bars) or last_i - sign_bars < 0:
+        return None
+    btc_start = btc_bars[last_i - sign_bars].close
+    if btc_start <= 0:
+        return None
+    btc_ret = btc_bars[last_i].close / btc_start - 1.0
+    if side == "buy" and not (own_ret > 0 and btc_ret > 0):
+        return None
+    if side == "sell" and not (own_ret < 0 and btc_ret < 0):
+        return None  # not basket-aligned
+
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="dispersion_gate_trend",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"dispersion": cur_disp, "dispersion_rank_pct": rank_pct,
+                   "own_return": own_ret, "btc_return": btc_ret},
+    )
+
+
+def kolmogorov_directional_asymmetry_break(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-007 idea 3 (premortem-007.md: REDESIGN — the `AND current
+    close > close[lookback]` trend-confirmation clause is dropped;
+    direction comes purely from sign(A) per the pre-mortem, to avoid
+    reproducing r005's already-falsified "info-theoretic gate + trend-
+    sign direction" shape). Premise-checked 2026-07-23, see round-007
+    header for the measured 0.25% |A|>0.20 tail frac (non-empty, far
+    rarer than the spec assumed). Compares the compressibility of the
+    up-move and down-move magnitude sub-streams over the trailing
+    window using _rle_complexity/_quantize (documented approximation of
+    LZ-complexity/sample entropy, see their docstrings)."""
+    lookback = int(params.get("lookback", 192))
+    bins = int(params.get("quantize_bins", 8))
+    asym_thresh = float(params.get("asym_thresh", 0.2))
+
+    last_i = len(bars) - 1
+    if last_i < lookback:
+        return None
+    window = bars[last_i - lookback: last_i + 1]
+    rets = [
+        window[i].close / window[i - 1].close - 1.0
+        for i in range(1, len(window))
+        if window[i - 1].close > 0 and window[i].close > 0
+    ]
+    ups = [r for r in rets if r > 0]
+    downs = [abs(r) for r in rets if r < 0]
+    if len(ups) < bins or len(downs) < bins:
+        return None
+    c_up = _rle_complexity(_quantize(ups, bins))
+    c_down = _rle_complexity(_quantize(downs, bins))
+    denom = c_up + c_down
+    if denom == 0:
+        return None
+    asym = (c_down - c_up) / denom
+    if asym > asym_thresh:
+        side = "buy"
+    elif asym < -asym_thresh:
+        side = "sell"
+    else:
+        return None
+
+    last = bars[-1]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="asymmetry_break",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"asymmetry": asym, "c_up": c_up, "c_down": c_down},
+    )
+
+
+def epidemic_susceptible_depletion_terminal_burst(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-007 idea 4 (premortem-007.md: REDESIGN — widen the raw
+    run-population rate before spending the slot; premise-checked
+    2026-07-23, see round-007 header for the measured n=3 at spec params
+    vs n=310 after the applied redesign). At the spec's own
+    run_pct=0.02/decline_bars=4, the efficiency-rising-AND-volume-falling
+    conjunction measured essentially empty — monotonicity over 4 points
+    is far rarer than the spec's arithmetic assumed, and widening
+    run_pct alone does not fix it. decline_bars is the real lever:
+    dropped to 2 (a single step-down comparison each for efficiency and
+    volume) the conjunction is comfortably decidable. Contrarian entry
+    against a same-direction run once volume-per-displacement efficiency
+    has been rising while volume itself falls (susceptible-pool
+    depletion, SIR final-size import)."""
+    run_bars = int(params.get("run_bars", 8))
+    run_pct = float(params.get("run_pct", 0.012))
+    decline_bars = int(params.get("decline_bars", 2))
+
+    last_i = len(bars) - 1
+    if last_i < max(run_bars, decline_bars):
+        return None
+    rets = [
+        bars[i].close / bars[i - 1].close - 1.0
+        for i in range(last_i - run_bars + 1, last_i + 1)
+        if bars[i - 1].close > 0
+    ]
+    if len(rets) < run_bars:
+        return None
+    signs = [1 if r > 0 else -1 if r < 0 else 0 for r in rets]
+    if signs[0] == 0 or any(s != signs[0] for s in signs):
+        return None
+    if bars[last_i - run_bars].close <= 0:
+        return None
+    net = bars[last_i].close / bars[last_i - run_bars].close - 1.0
+    if abs(net) < run_pct:
+        return None
+
+    eff = []
+    for i in range(last_i - decline_bars + 1, last_i + 1):
+        if bars[i - 1].close <= 0 or bars[i].volume <= 0:
+            return None
+        r = bars[i].close / bars[i - 1].close - 1.0
+        eff.append(abs(r) / bars[i].volume)
+    if not all(eff[k] < eff[k + 1] for k in range(len(eff) - 1)):
+        return None
+    vols = [bars[i].volume for i in range(last_i - decline_bars + 1, last_i + 1)]
+    if not all(vols[k] > vols[k + 1] for k in range(len(vols) - 1)):
+        return None
+
+    side = "sell" if signs[0] > 0 else "buy"  # contrarian against the run
+    last = bars[last_i]
+    return Signal(
+        symbol=last.symbol, variant_name="", strategy="susceptible_depletion_burst",
+        side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+        reasoning={"run_return": net, "efficiency": eff, "volumes": vols},
+    )
+
+
+def trapped_breakout_volume_void_reversal(
+    bars: list[BarRow], params: dict[str, Any], context: dict[str, Any]
+) -> Signal | None:
+    """Round-007 idea 5 (premortem-007.md: SKIP — MICROSTRUCTURE-FROM-
+    OHLCV LENS EXHAUSTED, 5-for-5 dead; implemented anyway per round
+    policy so the gauntlet, not paper review, is the arbiter). Premise-
+    checked 2026-07-23, see round-007 header for the measured 2.7% low-
+    volume-breakout frac and 69% re-entry conditional (n=1056 joint,
+    pre-cooldown). A breakout to a fresh N-bar extreme on abnormally LOW
+    volume (no resting liquidity consumed) that then re-enters the prior
+    range within trap_window bars signals trapped chasers forced to
+    exit; enters contrarian on the re-entry close."""
+    level_lookback = int(params.get("level_lookback", 96))
+    void_frac = float(params.get("void_frac", 0.6))
+    trap_window = int(params.get("trap_window", 6))
+
+    last = bars[-1]
+    last_i = len(bars) - 1
+    if last_i < level_lookback + trap_window + 1:
+        return None
+
+    for k in range(1, trap_window + 1):  # most recent qualifying breakout wins
+        j = last_i - k
+        if j - level_lookback < 0:
+            break
+        level_window = bars[j - level_lookback: j]
+        med_vol = statistics.median(b.volume for b in level_window)
+        brk = bars[j]
+        hi = max(b.high for b in level_window)
+        lo = min(b.low for b in level_window)
+        if brk.close > hi:
+            side, level = "sell", hi
+        elif brk.close < lo:
+            side, level = "buy", lo
+        else:
+            continue
+        if med_vol <= 0 or brk.volume >= void_frac * med_vol:
+            continue  # not a void breakout — normal volume backed the break
+        between = bars[j + 1: last_i]
+        already = (
+            any(b.close < level for b in between) if side == "sell"
+            else any(b.close > level for b in between)
+        )
+        if already:
+            return None  # re-entry already happened within the window
+        now_reentry = last.close < level if side == "sell" else last.close > level
+        if not now_reentry:
+            return None  # armed, still waiting — no chase
+        return Signal(
+            symbol=last.symbol, variant_name="", strategy="volume_void_reversal",
+            side=side, bar_timestamp=last.timestamp, price_at_signal=last.close,
+            reasoning={"level": level, "breakout_vol": brk.volume, "median_vol": med_vol},
+        )
+    return None
+
+
 STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "bollinger": bollinger_strategy,
     "macross": macross_strategy,
@@ -2277,6 +2695,11 @@ STRATEGY_REGISTRY: dict[str, StrategyFn] = {
     "month_end_rebalance_flow": month_end_rebalance_flow_directional_persistence,
     "constraint_rejection_pressure_release": constraint_rejection_pressure_release_engine,
     "multiweek_directional_regime_hold": multiweek_directional_regime_persistence_hold,
+    "shock_fade_maker": liquidity_window_shock_fade_maker,
+    "dispersion_gate_trend": cross_sectional_dispersion_gate_trend_engine,
+    "asymmetry_break": kolmogorov_directional_asymmetry_break,
+    "susceptible_depletion_burst": epidemic_susceptible_depletion_terminal_burst,
+    "volume_void_reversal": trapped_breakout_volume_void_reversal,
 }
 
 

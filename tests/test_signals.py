@@ -85,13 +85,19 @@ def test_registry_null_baseline_is_the_only_live_variant() -> None:
         "month_end_rebalance_flow_directional_persistence", "constraint_rejection_pressure_release_engine",
         "multiweek_directional_regime_persistence_hold",
     }
+    foundry_007 = {
+        "liquidity_window_shock_fade_maker", "cross_sectional_dispersion_gate_trend_engine",
+        "kolmogorov_directional_asymmetry_break", "epidemic_susceptible_depletion_terminal_burst",
+        "trapped_breakout_volume_void_reversal",
+    }
     assert set(STRATEGY_VARIANTS.keys()) == (
         retired | candidates | foundry_001 | foundry_002 | foundry_003 | foundry_004
-        | foundry_005 | foundry_006 | {"null_baseline"}
+        | foundry_005 | foundry_006 | foundry_007 | {"null_baseline"}
     )
     assert all(
         STRATEGY_VARIANTS[n].get("enabled") is False
-        for n in foundry_001 | foundry_002 | foundry_003 | foundry_004 | foundry_005 | foundry_006
+        for n in foundry_001 | foundry_002 | foundry_003 | foundry_004 | foundry_005
+        | foundry_006 | foundry_007
     ), "foundry rounds stay disabled pending their gauntlets"
 
     # The live roster: null placebo + the gauntlet's top 2 as A/B arms
@@ -1468,3 +1474,220 @@ class TestFoundryRound006:
     def test_multiweek_no_fire_within_neutral_band(self) -> None:
         bars = self._multiweek_bars(gain=0.03)
         assert signals.multiweek_directional_regime_persistence_hold(bars, {}, {}) is None
+
+
+class TestFoundryRound007:
+    def test_all_registered(self) -> None:
+        for key in ("shock_fade_maker", "dispersion_gate_trend", "asymmetry_break",
+                    "susceptible_depletion_burst", "volume_void_reversal"):
+            assert key in signals.STRATEGY_REGISTRY
+
+    # -- idea 1: liquidity-window shock fade maker --------------------------
+
+    def _shock_fade_params(self) -> dict:
+        return {"shock_pct": 0.02, "vol_mult": 2.5, "median_lookback_bars": 5,
+                "extend_frac": 0.006, "fill_window": 2}
+
+    def _shock_fade_bars(self, last_high: float = 104.7) -> list[BarRow]:
+        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        bars = []
+        for i in range(6):  # indices 0-5: flat, TR=1.0 (median window)
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.0, 100.5, 99.5, 100.0, 100.0))
+        ts = (start + timedelta(minutes=30)).isoformat()  # index 6: shock, +4%
+        bars.append(_bar("BTC/USD", ts, 100.0, 104.5, 99.9, 104.0, 300.0))
+        ts = (start + timedelta(minutes=35)).isoformat()  # index 7: no touch yet
+        bars.append(_bar("BTC/USD", ts, 104.0, 104.3, 103.9, 104.2, 100.0))
+        ts = (start + timedelta(minutes=40)).isoformat()  # index 8: last bar
+        bars.append(_bar("BTC/USD", ts, 104.2, last_high, 104.0, 104.3, 100.0))
+        return bars
+
+    def test_shock_fade_fires_sell_on_extension_fill(self) -> None:
+        sig = signals.liquidity_window_shock_fade_maker(
+            self._shock_fade_bars(), self._shock_fade_params(), {})
+        assert sig is not None and sig.side == "sell"
+        assert sig.reasoning["extend_price"] == pytest.approx(104.624)
+
+    def test_shock_fade_no_fire_without_extension_touch(self) -> None:
+        bars = self._shock_fade_bars(last_high=104.3)  # never reaches 104.624
+        assert signals.liquidity_window_shock_fade_maker(
+            bars, self._shock_fade_params(), {}) is None
+
+    # -- idea 2: cross-sectional dispersion gate trend engine ---------------
+
+    def _dispersion_params(self) -> dict:
+        return {"disp_lookback_bars": 3, "disp_pctile": 30, "disp_roll_days": 2,
+                "trend_lookback": 4, "return_sign_bars": 4, "bars_per_day": 5}
+
+    def _dispersion_basket(
+        self, overrides: dict[str, dict[int, float]], n: int = 20,
+    ) -> dict[str, list[BarRow]]:
+        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        symbols = ["BTC/USD", "ETH/USD", "SOL/USD", "LINK/USD", "AVAX/USD"]
+        basket = {}
+        for sym in symbols:
+            sym_overrides = overrides.get(sym, {})
+            bars = []
+            for i in range(n):
+                c = sym_overrides.get(i, 100.0)
+                ts = (start + timedelta(minutes=5 * i)).isoformat()
+                bars.append(_bar(sym, ts, c, c + 0.5, c - 0.5, c, 100.0))
+            basket[sym] = bars
+        return basket
+
+    def test_dispersion_gate_fires_buy_when_synchronized_and_breaking_out(self) -> None:
+        # Historical dispersion samples (idx 14 vs 11, idx 9 vs 6) are wide;
+        # the current sample (idx 19 vs 16) is uniform across the basket
+        # (zero dispersion) -> ranks at the bottom -> gate opens. All
+        # symbols share the same +5% breakout at idx 19, aligned with BTC.
+        overrides = {
+            "BTC/USD": {11: 100.0, 14: 110.0, 6: 100.0, 9: 108.0, 19: 105.0},
+            "ETH/USD": {11: 100.0, 14: 95.0, 6: 100.0, 9: 102.0, 19: 105.0},
+            "SOL/USD": {11: 100.0, 14: 120.0, 6: 100.0, 9: 90.0, 19: 105.0},
+            "LINK/USD": {11: 100.0, 14: 100.0, 6: 100.0, 9: 115.0, 19: 105.0},
+            "AVAX/USD": {11: 100.0, 14: 103.0, 6: 100.0, 9: 98.0, 19: 105.0},
+        }
+        basket = self._dispersion_basket(overrides)
+        sig = signals.cross_sectional_dispersion_gate_trend_engine(
+            basket["BTC/USD"], self._dispersion_params(), {"basket_bars": basket})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["dispersion_rank_pct"] == pytest.approx(0.0)
+
+    def test_dispersion_gate_no_fire_when_dispersion_high(self) -> None:
+        # Same historical samples, but the current sample now disagrees
+        # sharply across symbols -> current dispersion ranks at the top ->
+        # gate stays closed.
+        overrides = {
+            "BTC/USD": {11: 100.0, 14: 110.0, 6: 100.0, 9: 108.0, 19: 130.0},
+            "ETH/USD": {11: 100.0, 14: 95.0, 6: 100.0, 9: 102.0, 19: 70.0},
+            "SOL/USD": {11: 100.0, 14: 120.0, 6: 100.0, 9: 90.0, 19: 105.0},
+            "LINK/USD": {11: 100.0, 14: 100.0, 6: 100.0, 9: 115.0, 19: 105.0},
+            "AVAX/USD": {11: 100.0, 14: 103.0, 6: 100.0, 9: 98.0, 19: 105.0},
+        }
+        basket = self._dispersion_basket(overrides)
+        assert signals.cross_sectional_dispersion_gate_trend_engine(
+            basket["BTC/USD"], self._dispersion_params(), {"basket_bars": basket}) is None
+
+    def test_dispersion_gate_no_fire_when_not_basket_aligned(self) -> None:
+        # Gate opens (same low-current-dispersion setup) and AVAX breaks
+        # out with a positive own-return, but BTC's own trailing return is
+        # negative -> not basket-aligned -> no fire.
+        overrides = {
+            "BTC/USD": {11: 100.0, 14: 110.0, 6: 100.0, 9: 108.0, 15: 100.0, 19: 98.0},
+            "ETH/USD": {11: 100.0, 14: 95.0, 6: 100.0, 9: 102.0, 19: 103.0},
+            "SOL/USD": {11: 100.0, 14: 120.0, 6: 100.0, 9: 90.0, 19: 101.0},
+            "LINK/USD": {11: 100.0, 14: 100.0, 6: 100.0, 9: 115.0, 19: 102.0},
+            "AVAX/USD": {11: 100.0, 14: 103.0, 6: 100.0, 9: 98.0,
+                         15: 100.0, 16: 100.0, 17: 100.0, 18: 100.0, 19: 105.0},
+        }
+        basket = self._dispersion_basket(overrides)
+        assert signals.cross_sectional_dispersion_gate_trend_engine(
+            basket["AVAX/USD"], self._dispersion_params(), {"basket_bars": basket}) is None
+
+    # -- idea 3: kolmogorov directional asymmetry break ----------------------
+
+    def _asym_params(self) -> dict:
+        return {"lookback": 16, "quantize_bins": 4, "asym_thresh": 0.2}
+
+    def _asym_bars(self, up_rets: list[float], down_rets: list[float]) -> list[BarRow]:
+        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        closes = [1000.0]
+        for r in up_rets + down_rets:
+            closes.append(closes[-1] * (1 + r))
+        bars = []
+        for i, c in enumerate(closes):
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, c, c + 0.5, c - 0.5, c, 100.0))
+        return bars
+
+    _UP_MONOTONIC = [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008]
+    _DOWN_ZIGZAG = [-0.001, -0.008, -0.002, -0.007, -0.003, -0.006, -0.004, -0.005]
+    _DOWN_MONOTONIC = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008]
+
+    def test_asymmetry_fires_buy_when_up_stream_more_compressible(self) -> None:
+        bars = self._asym_bars(self._UP_MONOTONIC, self._DOWN_ZIGZAG)
+        sig = signals.kolmogorov_directional_asymmetry_break(bars, self._asym_params(), {})
+        assert sig is not None and sig.side == "buy"
+        assert sig.reasoning["asymmetry"] == pytest.approx(1 / 3)
+
+    def test_asymmetry_fires_sell_when_down_stream_more_compressible(self) -> None:
+        # up-stream is the chaotic zigzag magnitudes (as positive returns),
+        # down-stream is the organized monotonic magnitudes -> down more
+        # compressible -> asymmetry negative -> sell.
+        up_chaotic = [-r for r in self._DOWN_ZIGZAG]
+        bars = self._asym_bars(up_chaotic, self._DOWN_MONOTONIC)
+        sig = signals.kolmogorov_directional_asymmetry_break(bars, self._asym_params(), {})
+        assert sig is not None and sig.side == "sell"
+        assert sig.reasoning["asymmetry"] == pytest.approx(-1 / 3)
+
+    def test_asymmetry_no_fire_when_both_streams_equally_organized(self) -> None:
+        bars = self._asym_bars(self._UP_MONOTONIC, self._DOWN_MONOTONIC)
+        assert signals.kolmogorov_directional_asymmetry_break(
+            bars, self._asym_params(), {}) is None
+
+    # -- idea 4: epidemic susceptible depletion terminal burst ---------------
+
+    def _depletion_params(self) -> dict:
+        return {"run_bars": 8, "run_pct": 0.01, "decline_bars": 2}
+
+    def _depletion_bars(self, vol7: float = 200.0, vol8: float = 100.0) -> list[BarRow]:
+        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        bars = []
+        for i in range(9):  # closes 100..108, one bar per unit up-move
+            c = 100.0 + i
+            v = 100.0
+            if i == 7:
+                v = vol7
+            elif i == 8:
+                v = vol8
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, c - 0.5, c + 0.5, c - 1.0, c, v))
+        return bars
+
+    def test_depletion_fires_sell_on_rising_efficiency_falling_volume(self) -> None:
+        sig = signals.epidemic_susceptible_depletion_terminal_burst(
+            self._depletion_bars(), self._depletion_params(), {})
+        assert sig is not None and sig.side == "sell"
+
+    def test_depletion_no_fire_when_efficiency_not_rising(self) -> None:
+        bars = self._depletion_bars(vol7=100.0, vol8=200.0)  # volume RISES
+        assert signals.epidemic_susceptible_depletion_terminal_burst(
+            bars, self._depletion_params(), {}) is None
+
+    # -- idea 5: trapped breakout volume void reversal -----------------------
+
+    def _void_params(self) -> dict:
+        return {"level_lookback": 5, "void_frac": 0.6, "trap_window": 3}
+
+    def _void_bars(self, breakout_vol: float = 50.0, reentry_close: float = 100.0) -> list[BarRow]:
+        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        bars = []
+        ts = start.isoformat()
+        bars.append(_bar("BTC/USD", ts, 100.0, 100.5, 99.5, 100.0, 100.0))  # filler, idx0
+        for i in range(1, 6):  # idx 1-5: level-building window
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.0, 100.5, 99.5, 100.0, 100.0))
+        ts = (start + timedelta(minutes=30)).isoformat()  # idx 6: breakout, low volume
+        bars.append(_bar("BTC/USD", ts, 100.0, 101.2, 99.9, 101.0, breakout_vol))
+        for i in (7, 8):  # no re-entry yet
+            ts = (start + timedelta(minutes=5 * i)).isoformat()
+            bars.append(_bar("BTC/USD", ts, 100.8, 101.0, 100.7, 100.8, 100.0))
+        ts = (start + timedelta(minutes=45)).isoformat()  # idx 9: last bar
+        bars.append(_bar("BTC/USD", ts, 100.8, 100.9, 99.8, reentry_close, 100.0))
+        return bars
+
+    def test_void_reversal_fires_sell_on_reentry(self) -> None:
+        sig = signals.trapped_breakout_volume_void_reversal(
+            self._void_bars(), self._void_params(), {})
+        assert sig is not None and sig.side == "sell"
+        assert sig.reasoning["level"] == pytest.approx(100.5)
+
+    def test_void_reversal_no_fire_when_breakout_volume_not_void(self) -> None:
+        bars = self._void_bars(breakout_vol=100.0)  # not below void_frac * median
+        assert signals.trapped_breakout_volume_void_reversal(
+            bars, self._void_params(), {}) is None
+
+    def test_void_reversal_no_fire_without_reentry(self) -> None:
+        bars = self._void_bars(reentry_close=100.9)  # stays above the level
+        assert signals.trapped_breakout_volume_void_reversal(
+            bars, self._void_params(), {}) is None

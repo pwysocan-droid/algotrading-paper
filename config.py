@@ -529,4 +529,63 @@ STRATEGY_VARIANTS: dict[str, StrategyVariant] = {
         "enabled": False,
         "phase_qualified": False,
     },
+    # ── Foundry round 007 (reviews/foundry/round-007.json) ───────────────
+    # Pre-mortem (reviews/foundry/premortem-007.md): idea 1 REDESIGN
+    # (params realigned to the fire-rate math's own loosened trigger,
+    # premise-checked: 728 raw / 480 filled), idea 2 IMPLEMENT (mandated
+    # continuation canary, premise-checked: 29.8% gate-open, n~1006 joint),
+    # idea 3 REDESIGN (trend-confirmation dropped, direction from sign(A)
+    # alone; premise-checked: 0.25% |A|>0.2 tail, non-empty but thin),
+    # idea 4 REDESIGN (decline_bars 4->2 is the real lever, not run_pct
+    # alone; premise-checked: n=3 at spec params -> n=310 after redesign),
+    # idea 5 SKIP (OHLCV geometry lens exhausted 5-for-5; premise-checked:
+    # not starved, n=1056 joint — the SKIP rests on the lens argument, not
+    # sample size). Every idea implemented regardless per the round policy
+    # — the gauntlet is the arbiter, not the paper review. See the
+    # signals.py round-007 header comment for full premise-check detail.
+    "liquidity_window_shock_fade_maker": {
+        "strategy": "shock_fade_maker",
+        "params": {"shock_pct": 0.02, "vol_mult": 2.5,
+                   "median_lookback_bars": 96, "extend_frac": 0.006,
+                   "fill_window": 6, "tp": 0.06, "sl": 0.04,
+                   "time_exit_hours": 96},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "cross_sectional_dispersion_gate_trend_engine": {
+        "strategy": "dispersion_gate_trend",
+        "params": {"disp_lookback_bars": 48, "disp_pctile": 30,
+                   "disp_roll_days": 20, "trend_lookback": 96,
+                   "return_sign_bars": 288, "tp": 0.06, "sl": 0.03,
+                   "time_exit_hours": 48,
+                   "window_bars": 6100},  # 20d rolling dispersion needs ~5.8k bars
+        "context_keys": ["basket_bars"],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "kolmogorov_directional_asymmetry_break": {
+        "strategy": "asymmetry_break",
+        "params": {"lookback": 192, "quantize_bins": 8, "asym_thresh": 0.2,
+                   "tp": 0.06, "sl": 0.03, "time_exit_hours": 48},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "epidemic_susceptible_depletion_terminal_burst": {
+        "strategy": "susceptible_depletion_burst",
+        "params": {"run_bars": 8, "run_pct": 0.012, "decline_bars": 2,
+                   "tp": 0.05, "sl": 0.03, "time_exit_hours": 48},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
+    "trapped_breakout_volume_void_reversal": {
+        "strategy": "volume_void_reversal",
+        "params": {"level_lookback": 96, "void_frac": 0.6, "trap_window": 6,
+                   "tp": 0.05, "sl": 0.03, "time_exit_hours": 36},
+        "context_keys": [],
+        "enabled": False,
+        "phase_qualified": False,
+    },
 }
