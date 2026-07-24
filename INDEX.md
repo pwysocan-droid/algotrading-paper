@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-24T04:35:07Z
+2026-07-24T04:40:07Z
 
 7 surfaces tracked
 
@@ -17,7 +17,7 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [decision-log.md](decision-log.md) | 2026-07-24T04:21:56Z | D1 shock-fade: first genuine… |
+| [decision-log.md](decision-log.md) | 2026-07-24T04:39:51Z | Direction set: instrument-as-… |
 | [philosophy.md](philosophy.md) | 2026-07-20T06:33:51Z | Lesson 22 amendments: regime… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
