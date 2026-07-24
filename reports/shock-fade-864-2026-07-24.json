@@ -1,0 +1,31 @@
+{
+  "date": "2026-07-24",
+  "shock_fade": {
+    "n": 18,
+    "net_pct": 3.68,
+    "t": 2.34,
+    "win": 0.667,
+    "by_regime": {
+      "2023H2": null,
+      "2024H1": null,
+      "2024H2": 3.88,
+      "2025H1": 3.91,
+      "2025H2": 2.59
+    }
+  },
+  "placebo_large_bar": {
+    "n": 110,
+    "net_pct": 1.294,
+    "t": 1.05,
+    "win": 0.491,
+    "by_regime": {
+      "2023H2": null,
+      "2024H1": 0.61,
+      "2024H2": 3.72,
+      "2025H1": -2.79,
+      "2025H2": 4.94
+    }
+  },
+  "shock_minus_placebo_pct": 2.386,
+  "verdict": "SURVIVES probe"
+}

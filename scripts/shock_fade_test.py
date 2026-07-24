@@ -18,6 +18,7 @@ vol-widened costs, OR shock-fade indistinguishable from the placebo.
 from __future__ import annotations
 
 import json
+import os
 import statistics
 import sys
 from datetime import datetime, timezone
@@ -30,7 +31,9 @@ from config import WATCHED_SYMBOLS
 REPO = Path(__file__).resolve().parent.parent
 SELECTION_END = "2026-01-01T00:00:00+00:00"
 SHOCK_RET, SHOCK_VOL, VOL_WIN = 0.03, 3.0, 100
-TP, SL, HOLD_BARS = 0.08, 0.05, 1440        # 8%/5% / 120h (5-min bars)
+TP, SL = 0.08, 0.05
+HOLD_BARS = int(os.environ.get("HOLD_BARS", "1440"))
+PURE_HOLD = os.environ.get("PURE_HOLD") == "1"  # exit at horizon, no barriers
 COOLDOWN = 288                               # 1 day between fades per symbol
 FEE, SLIP_NORM, SLIP_SHOCK = 0.0025, 0.0005, 0.0015   # entry slip 3x on shocks
 REGIMES = {"2023H2": ("2023-07", "2024-01"), "2024H1": ("2024-01", "2024-07"),
@@ -52,15 +55,18 @@ def sim_exit(bars, i0, side, entry):
         tp, sl = entry * (1 + TP), entry * (1 - SL)
     else:
         tp, sl = entry * (1 - TP), entry * (1 + SL)
+    end = min(i0 + HOLD_BARS, len(bars) - 1)
+    if PURE_HOLD:                       # matched yardstick: capture the drift, no barriers
+        return bars[end]["close"], "time"
     for k in range(i0, min(i0 + HOLD_BARS, len(bars))):
-        hi, lo, cl = bars[k]["high"], bars[k]["low"], bars[k]["close"]
+        hi, lo = bars[k]["high"], bars[k]["low"]
         if side == "long":
             if lo <= sl: return sl, "sl"
             if hi >= tp: return tp, "tp"
         else:
             if hi >= sl: return sl, "sl"
             if lo <= tp: return tp, "tp"
-    return bars[min(i0 + HOLD_BARS, len(bars) - 1)]["close"], "time"
+    return bars[end]["close"], "time"
 
 
 def net_pct(side, entry, exit_px, shock_entry):
@@ -140,7 +146,7 @@ def main() -> int:
     out = {"date": datetime.now(timezone.utc).date().isoformat(),
            "shock_fade": s, "placebo_large_bar": p,
            "shock_minus_placebo_pct": round(edge, 3), "verdict": verdict}
-    (REPO / "reports" / f"shock-fade-{out['date']}.json").write_text(
+    (REPO / "reports" / f"shock-fade-{os.environ.get(chr(72)+chr(79)+chr(76)+chr(68)+chr(95)+chr(66)+chr(65)+chr(82)+chr(83),'x')}-{out['date']}.json").write_text(
         json.dumps(out, indent=2) + "\n")
     print("wrote report")
     return 0

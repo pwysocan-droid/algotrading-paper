@@ -1815,3 +1815,56 @@ worked (honest negative, multiple-testing controlled). Next equity probes
 (operator's call): risk-adjusted low-vol, smaller-cap universe, or
 accept that OHLCV-only equity factors on liquid large-caps are as thin as
 crypto's and the edge needs fundamentals we don't have.
+
+## 2026-07-23 — E2 equity price-factor structure declared NULL (learned, not abandoned)
+
+The combination stage closed the within-structure equity search:
+multi-factor composites REDUCE excess and IR vs momentum-alone (the
+non-momentum factors are noise, not decorrelated edge). Combined with
+round one (no single-factor candidate) and round 1b (horizon rejected
+as the cause), the **equity price-factor structure — single and
+combined, across weekly/monthly/quarterly, on liquid large-caps — is
+declared NULL: efficient after costs.** This is a MEASURED negative, not
+a shrug: momentum is real-but-sub-threshold and survivorship/concentration
+-limited; everything else is noise; blending doesn't rescue it.
+
+Kept: mom+lowvol as a risk-reduction construction (0.94x benchmark vol,
+gross-positive) — a drawdown tool, not alpha.
+
+Directional consequence (matches the operator's instinct): the tradeable
+edge, if it exists, is NOT in continuous directional price prediction —
+the structure we have now exhausted in BOTH markets. The search pivots to
+a DIFFERENT STRUCTURE. The strongest evidence-backed lead is the crypto
+SHOCK-FADE (a measured −3 to −4% contrarian move after volume shocks,
+n=53, event-driven — recorded as a lesson but never built into a spec).
+Pending operator go: resurrect shock-fade as the first different-structure
+experiment. Equity program pauses here, NOT closed — reopens with
+fundamentals/small-cap data or a non-price-factor structure.
+
+## 2026-07-23 — D1 shock-fade: first genuine LEAD, quarantined (not a candidate)
+
+The first different-structure experiment. First cut (tp8/sl5) was KILLED —
+but that was an EXIT-SHAPE MISMATCH (asymmetric continuation exits on a
+reversion thesis; the low-vol-wrong-yardstick error again). Matched
+yardstick (pure multi-day hold, capture the drift) REVIVED it:
+- 72h pure hold: shock-fade n=18, net +3.68%/tr, t=2.34, win 67%,
+  POSITIVE in all three sub-regimes; placebo (fade any large bar, no
+  volume) +1.29%; shock beats placebo by +2.4%/tr.
+- 120h pure hold: shock-fade +0.65% (t0.28), placebo +2.12% — KILLED.
+
+**Verdict: LEAD, not candidate — and it must not be over-claimed:**
+(1) n=18 fails our own n<30 quarantine (the slot_scarcity glow shape);
+(2) horizon-unstable (72h alive, 120h dead) = likely best-of-horizon
+selection inflating the 72h t; (3) the placebo is itself strongly
+positive and regime-flipping (2025H1 -2.8%), so the family rides the
+2024-25 REVERSION regime and would invert in a trend. The exit-shape fix
+was the real win here — it proves the discipline works and that the
+mechanism has SOME reality (shock beats placebo at the matched horizon).
+
+Next moves (disciplined, no over-testing into a false positive):
+(a) register shock-fade as a SHADOW ARM -> accumulate FORWARD, truly
+    out-of-sample fades at zero risk (the infrastructure exists);
+(b) cross-market POWER test on the equity archive (thousands of symbols,
+    many regimes) — does high-vol-move mean-reversion hold out of the
+    crypto-2024-25 window at real n; (c) regime-condition any future spec
+    on the canary (only fade in reversion regimes). Holdout NOT burned.
