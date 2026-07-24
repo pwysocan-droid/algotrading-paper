@@ -17,10 +17,11 @@ waived verbally, from memory, or in the moment.
 
 ## Article 0 — Objective
 
-0.1. The objective is a trading machine whose edge survives costs. At this
-capital scale the dollars are small; the deliverable is a *working machine
-and the proof it works* — an edge that clears the honesty gauntlet, or the
-credible finding that a given structure cannot.
+0.1. The objective is a trading machine whose edge survives costs — a WIN,
+found by creative, rigorous iteration. At this capital scale the dollars are
+small; the deliverable is a working machine and the proof it works. A
+credible negative is an acceptable outcome of any one experiment, never the
+aim of the program.
 
 0.2. The evidence forbids one whole approach and points at another. ~40
 falsifications established that **hunting mispricing** — out-predicting an
@@ -29,6 +30,20 @@ costs. Any proposal requiring prediction of mispricing is out of scope by
 constitution. The two positive findings were **risk-premium-shaped**:
 compensation for bearing something, not reward for predicting something.
 The machine is built on that.
+
+0.3. **The generative mandate (the point).** This project exists because
+an LLM can rethink these markets from first principles and across domains,
+fast, learning from an accumulated graveyard — and may find profitable
+structure precisely *because* it is not bound by a quant's inherited priors.
+That capacity is the ENGINE. The rigor in the rest of this charter is the
+SAFETY NET that lets the engine take bold, unconventional, risky idea-swings
+without ruin or self-deception — bounded capital and honest measurement are
+what *make* aggressive idea-risk affordable, not what forbid it. Forget
+inherited wisdom that has not earned its place here; generate weird, novel,
+contrarian hypotheses freely; and let the honest machine — never caution —
+decide which survive. The goal is to WIN: find a new, profitable way to
+trade these markets. The credible negative is the fallback we can live with,
+never the target. A machine that only learns to say "no" has failed.
 
 ## Article 1 — Inherited findings (the evidence this stands on)
 

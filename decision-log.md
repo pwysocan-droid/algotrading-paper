@@ -1974,3 +1974,20 @@ funded/idle; not run).
 
 Not a pivot away from trading — a correction back TO it: underwriting is
 trading, just the kind the evidence licenses.
+
+## 2026-07-23 — Rebalance: rigor is the safety net, creativity is the point
+
+Operator reasserted the top-line philosophy: the project exists to use an
+LLM's capacity to RETHINK equity and crypto markets from first principles —
+be rigorous, but forget inherited wisdom that doesn't matter and try new,
+risky, novel ideas, for the goal of finding new ways to be profitable (not
+for publishing). Correction to my drift: I had over-indexed on defense
+(risk-management charter, "the honest negative is the product") and even
+halted the creative engine instead of re-pointing it. Added CONSTITUTION
+Article 0.3 (the generative mandate): bounded capital + honest measurement
+are what MAKE bold idea-risk affordable; a machine that only says "no" has
+failed. The creative engine turns back ON — re-pointed away from the spent
+crypto price-factor window toward NEW territory (equity defined-risk options
+/ variance risk premium, novel risk-premium and event structures, forward
+and alt-data evaluation), with the LLM generating aggressively and the
+honest machine gating. Goal restated: WIN — find a profitable machine.
