@@ -2009,3 +2009,28 @@ riskless, starts now) validates the loop; live gated on capital sizing +
 options approval + a survived paper kill. Also added CONSTITUTION 0.4:
 speed is an edge because the edge decays; the solvency cap licenses fast
 small live/paper bets over slow in-window backtests.
+
+## 2026-07-24 — VRP harvester built + first live paper run (fast loop working)
+
+Candidate #1 machine (scripts/vrp_harvester.py) runs end-to-end on the
+Alpaca paper account (level-3, $100k): stock bars → put chain → ~1-SD-OTM
+strike selection → richness gate (credit/width) → LLM stand-aside → multi-
+leg paper order path. First run: at the real 20% richness bar it SKIPPED all
+three indices (premium genuinely thin — SPY/QQQ/IWM credit 4-15% of width),
+which is the discipline working (a good underwriter won't sell cheap
+insurance). A forced-low-threshold test showed the LLM stand-aside FIRES.
+
+HONEST FINDING (the fast loop earned its keep): the LLM stand-aside is too
+blunt to be useful yet — it (a) defaults to generic caution because every
+5-week window has a CPI/FOMC, so it would stand aside ~always, and (b) is
+guessing future macro dates it can't know from training. #1 next build:
+feed a REAL catalyst calendar (FOMC/CPI/jobs published dates + earnings) and
+refine the logic to the correct thesis — routine scheduled events are
+already priced into IV (don't stand aside), stand aside only for UNDERPRICED
+tail risk / extraordinary events. The machine currently errs safe (writes
+nothing), the right direction to err, but not yet earning.
+
+Operator to-do: NONE for the paper loop (runs riskless now). LIVE later
+needs (a) options approval on the live account (currently level None) and
+(b) a Book capital level where 5% is a real spread ($200 too small). E-1.0
+stays shelved.
