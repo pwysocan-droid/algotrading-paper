@@ -41,7 +41,7 @@ HD = {"APCA-API-KEY-ID": os.environ.get("ALPACA_LIVE_KEY_ID", H["APCA-API-KEY-ID
 UNDERLYINGS = ["SPY", "QQQ", "IWM"]
 DTE_TARGET = 35
 WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3}     # spread width in $
-RICHNESS_MIN = 0.20                          # credit >= 20% of width => IV>RV enough
+RICHNESS_MIN = float(os.environ.get("RICHNESS_MIN", "0.20"))  # credit/width bar
 BOOK_CAPITAL = 100_000.0                     # paper book; 5% = $5k max loss/position
 MAX_LOSS_FRAC = 0.05
 LEGDER = REPO / "book" / "positions.jsonl"
