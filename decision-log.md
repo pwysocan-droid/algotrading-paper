@@ -1916,3 +1916,26 @@ Status: directional decision recorded; EXECUTION is a future chapter. The
 forward threads continue meanwhile per stop-generating-not-verifying
 (shock-fade shadow accumulation, equity round one). No new build committed
 by this entry — it sets the constitution the next chapter is built against.
+
+## 2026-07-23 — Successor program: execution begins (foundations laid)
+
+Per "start next steps now": the two constitution-required foundations are
+built, before any position or autopsy (0.1, 2.1, 3.1):
+- **Mechanical conflict gate** (scripts/conflict_check.py, Art. 4.2):
+  machine-generates the conflict declaration from book/positions.jsonl;
+  smoke-tested CLEAR against the empty ledger. Integrity is a state-machine
+  check, not self-policing (4.1).
+- **Registry structure**: book/ (positions ledger + candidate pre-regs) and
+  service/ (autopsy pre-regs), public + timestamped (4.4).
+- **Book candidate #1 pre-registered** (book/pre-reg-funding-carry-basis.md,
+  Art. 2.8): the constitution applied to funding carry produced admission
+  ONLY as delta-neutral basis, a mechanism-priced 100%-of-venue tail
+  (venue-failure dominates), solvency-forced ≤5%/venue sizing, and a
+  fair-compensation test (implied breakeven frequency) that rejects most
+  venues. Honest execution gap surfaced pre-position: Alpaca is spot-only,
+  so funding carry is VENUE-BLOCKED; the true first executable Book position
+  is likely a spot-only defined-risk premium. No capital moved.
+
+The constitution's first contact with a real candidate WORKED — it steered
+to paid-less-but-survive and refused to hide the venue gap. Forward threads
+(shock-fade shadow, equity round one) continue in parallel.
