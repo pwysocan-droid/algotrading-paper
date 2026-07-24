@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-24T03:30:08Z",
+  "generated_at": "2026-07-24T03:35:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-24T03:30:04.027697+00:00",
+    "last_run_iso": "2026-07-24T03:35:03.935321+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-07-24 · 03:30 UTC",
+    "last_run_human_date": "2026-07-24 · 03:35 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "17691 of 17710 ok · 99.9%",
+    "uptime_recent": "17692 of 17711 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -83,8 +83,8 @@
     {
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-07-23",
-      "detail": "Your pipeline is humming but your decision gates are frozen. Seven consecutive runs, all nominal,...",
+      "thing": "Nightly skeptic · 2026-07-24",
+      "detail": "Pipeline is humming on fumes while decisions calcify. Seven consecutive cron runs all nominal and...",
       "kind": "ops",
       "promoted": false
     }
@@ -92,53 +92,53 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "284,386",
+      "count": "284,391",
       "delta": "+1470",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "284386"
+      "value": "284391"
     },
     {
       "name": "bar coverage",
       "count": "96%",
       "delta": "-53",
       "delta_class": "note",
-      "spark": "▆▄▁██▆▅▆",
+      "spark": "▅▄▁██▆▅▆",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "96"
     },
     {
       "name": "cron runs",
-      "count": "17,710",
+      "count": "17,711",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "17710"
+      "value": "17711"
     },
     {
       "name": "llm calls",
-      "count": "39",
-      "delta": "+1",
+      "count": "47",
+      "delta": "+8",
       "delta_class": null,
-      "spark": "█▁▁▁▁▁▁▁",
-      "spark_class": null,
+      "spark": "▁▁▁▁▁▁▁█",
+      "spark_class": "growing",
       "key": "llm_calls",
-      "value": "39"
+      "value": "47"
     },
     {
       "name": "decisions",
-      "count": "13,634",
+      "count": "13,640",
       "delta": "+2502",
       "delta_class": null,
-      "spark": "▁▆▂█▂▂▅▄",
+      "spark": "▁█▄█▂▃▇▄",
       "spark_class": null,
       "key": "decisions",
-      "value": "13634"
+      "value": "13640"
     },
     {
       "name": "letters",
@@ -213,8 +213,8 @@
     }
   ],
   "llm": {
-    "total_calls": 39,
-    "total_cost_usd": 4.3032,
+    "total_calls": 47,
+    "total_cost_usd": 4.7444,
     "by_caller": [
       {
         "called_from": "idea_foundry",
@@ -226,58 +226,58 @@
       {
         "called_from": "adversarial_cron",
         "model": "claude-haiku-4-5",
-        "calls": 7,
-        "tokens": 7087,
-        "cost_usd": 0.0156
+        "calls": 8,
+        "tokens": 8143,
+        "cost_usd": 0.018
       },
       {
         "called_from": "learnings_ledger",
         "model": "claude-opus-4-8",
-        "calls": 6,
-        "tokens": 189024,
-        "cost_usd": 1.49
+        "calls": 7,
+        "tokens": 230870,
+        "cost_usd": 1.8208
       },
       {
         "called_from": "friday_bear_case_investigated#t1",
         "model": "claude-opus-4-8",
-        "calls": 2,
-        "tokens": 6945,
-        "cost_usd": 0.0533
+        "calls": 3,
+        "tokens": 10378,
+        "cost_usd": 0.0789
       },
       {
         "called_from": "friday_bear_case_investigated#t2",
         "model": "claude-opus-4-8",
-        "calls": 2,
-        "tokens": 4451,
-        "cost_usd": 0.0271
+        "calls": 3,
+        "tokens": 4575,
+        "cost_usd": 0.0302
       },
       {
         "called_from": "friday_bear_case_investigated#t3",
         "model": "claude-opus-4-8",
-        "calls": 2,
-        "tokens": 6707,
-        "cost_usd": 0.0564
+        "calls": 3,
+        "tokens": 7252,
+        "cost_usd": 0.07
       },
       {
         "called_from": "friday_bear_case_investigated#t4",
         "model": "claude-opus-4-8",
-        "calls": 2,
-        "tokens": 7377,
-        "cost_usd": 0.0545
+        "calls": 3,
+        "tokens": 7775,
+        "cost_usd": 0.0644
       },
       {
         "called_from": "friday_bear_case_investigated#t5",
         "model": "claude-opus-4-8",
-        "calls": 2,
-        "tokens": 7965,
-        "cost_usd": 0.0565
+        "calls": 3,
+        "tokens": 8352,
+        "cost_usd": 0.0662
       },
       {
         "called_from": "friday_bear_case_investigated#t6",
         "model": "claude-opus-4-8",
-        "calls": 2,
-        "tokens": 11989,
-        "cost_usd": 0.0724
+        "calls": 3,
+        "tokens": 13836,
+        "cost_usd": 0.1185
       },
       {
         "called_from": "friday_bear_case_investigated#t7",
