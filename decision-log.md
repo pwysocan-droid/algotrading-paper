@@ -1939,3 +1939,17 @@ built, before any position or autopsy (0.1, 2.1, 3.1):
 The constitution's first contact with a real candidate WORKED — it steered
 to paid-less-but-survive and refused to hide the venue gap. Forward threads
 (shock-fade shadow, equity round one) continue in parallel.
+
+## 2026-07-23 — Generators halted (search mode closed, monitors continue)
+
+Operator-approved. The VPS was still autonomously generating foundry
+rounds against the spent-budget window — "continuing to generate after the
+kill" (8.4). Removed from the VPS crontab: cron-foundry (autopilot),
+cron-implementer, cron-outside (monthly outside-eyes). KEPT: cron-fetch
+(live A/B trade loop), cron-skeptic (digest heartbeat + parity), cron-friday
+(weekly review of the live A/B), cron-context (funding/OI/book tape). The
+machine is now in MONITOR mode, not SEARCH mode — honoring
+stop-generating-never-stop-verifying. A GENERATORS_HALTED sentinel makes
+pipeline_health forgive the deliberate foundry stall (alarms must not cry
+wolf on an intentional stop). Predecessor forward threads (live A/B) accrue;
+successor program (CONSTITUTION.md) proceeds separately.

@@ -1,0 +1,4 @@
+Foundry generators (autopilot, implementer, outside-eyes) intentionally
+halted 2026-07-23: in-window search closed on statistical-budget grounds
+(decision-log). Monitors continue (live A/B, digest heartbeat, tape).
+Remove this file to re-enable stall alarms if generation resumes.

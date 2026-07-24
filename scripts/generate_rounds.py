@@ -66,10 +66,14 @@ def pipeline_health(repo_root: Path = REPO_ROOT,
     ts = now or datetime.now(timezone.utc)
     warnings: list[str] = []
 
+    # Deliberate halt (decision-log 2026-07-23): a stopped generator must
+    # not alarm — the "alarms forgive" principle. Skip the foundry-stall
+    # and foundry-ALERT checks while the sentinel exists.
+    halted = (repo_root / "GENERATORS_HALTED").exists()
     rounds = sorted((repo_root / "reviews" / "foundry").glob("round-*.json"))
     if rounds:
         age_days = (ts.timestamp() - rounds[-1].stat().st_mtime) / 86400.0
-        if age_days > 3.0:
+        if age_days > 3.0 and not halted:
             warnings.append(
                 f"⚠ FOUNDRY STALLED: newest round ({rounds[-1].stem}) is "
                 f"{age_days:.1f} days old — no new round in >3 days. Check "
@@ -91,7 +95,7 @@ def pipeline_health(repo_root: Path = REPO_ROOT,
         pass
 
     log_dir = repo_root / "vps" / "logs"
-    if log_dir.exists():
+    if log_dir.exists() and not halted:
         for prefix in ("foundry", "implementer"):
             # Concatenate yesterday+today in order and judge only the LAST
             # run block: an ALERT followed by a later successful run is a
