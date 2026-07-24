@@ -1991,3 +1991,21 @@ crypto price-factor window toward NEW territory (equity defined-risk options
 / variance risk premium, novel risk-premium and event structures, forward
 and alt-data evaluation), with the LLM generating aggressively and the
 honest machine gating. Goal restated: WIN — find a profitable machine.
+
+## 2026-07-23 — Candidate #1 spec: variance-risk-premium harvester (paper-first, fast)
+
+The machine's first real position, pre-registered (book/pre-reg-variance-
+premium.md): an "underwriter with a brain" — sell defined-risk equity
+option credit spreads (bounded max loss = strike width − credit, admissible
+under 2.2) to harvest the variance risk premium (options systematically
+overpriced — the evidence-aligned, retail-accessible risk-transfer edge),
+with the LLM's differentiating job being the STAND-ASIDE rule: read the
+information surface and refuse to write insurance into a known catalyst
+(earnings, FOMC, live tail narrative) that static IV-rank misses. That
+context judgment is the decaying LLM arbitrage; per Art. 0.4 speed captures
+it via a fast loop. Honest capital constraint surfaced: $200 is too small
+for a 5%-sized spread, so PAPER-FIRST (Alpaca paper options, forward,
+riskless, starts now) validates the loop; live gated on capital sizing +
+options approval + a survived paper kill. Also added CONSTITUTION 0.4:
+speed is an edge because the edge decays; the solvency cap licenses fast
+small live/paper bets over slow in-window backtests.

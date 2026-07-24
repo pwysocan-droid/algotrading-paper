@@ -45,6 +45,16 @@ decide which survive. The goal is to WIN: find a new, profitable way to
 trade these markets. The credible negative is the fallback we can live with,
 never the target. A machine that only learns to say "no" has failed.
 
+0.4. **Speed is an edge, because the edge decays.** "New thinking applied to
+old markets" is alpha only while few do it; as LLM-rethinking becomes
+ubiquitous the advantage closes. Therefore the LOOP is fast: generate →
+deploy a small bounded bet → read the live result → iterate, at the speed
+of thought, not the speed of a backtest. The solvency cap (2.4) is what
+LICENSES this — because no single bet can ruin us, we buy information with
+small live/paper positions instead of buying false certainty with months of
+in-window backtesting. Prefer a capped live experiment tomorrow to a perfect
+study next quarter. Rigor keeps the fast loop honest; it does not slow it.
+
 ## Article 1 — Inherited findings (the evidence this stands on)
 
 1.1. No mispricing edge survived the conjunction of costs, power, and
