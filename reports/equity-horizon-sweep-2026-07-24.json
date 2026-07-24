@@ -1,0 +1,89 @@
+{
+  "date": "2026-07-24",
+  "cells": {
+    "momentum_12_1/weekly": {
+      "excess_per_reb_pct": 0.303,
+      "t": 1.6,
+      "ann_IR": 0.72,
+      "decile_vol_over_bench": 1.42,
+      "n": 250
+    },
+    "low_vol_60/weekly": {
+      "excess_per_reb_pct": -0.111,
+      "t": -0.94,
+      "ann_IR": -0.42,
+      "decile_vol_over_bench": 0.78,
+      "n": 250
+    },
+    "reversal_1m/weekly": {
+      "excess_per_reb_pct": 0.047,
+      "t": 0.27,
+      "ann_IR": 0.12,
+      "decile_vol_over_bench": 1.44,
+      "n": 250
+    },
+    "high_52w_prox/weekly": {
+      "excess_per_reb_pct": -0.12,
+      "t": -1.03,
+      "ann_IR": -0.46,
+      "decile_vol_over_bench": 0.88,
+      "n": 250
+    },
+    "momentum_12_1/monthly": {
+      "excess_per_reb_pct": 1.239,
+      "t": 1.59,
+      "ann_IR": 0.72,
+      "decile_vol_over_bench": 1.59,
+      "n": 59
+    },
+    "low_vol_60/monthly": {
+      "excess_per_reb_pct": -0.458,
+      "t": -0.96,
+      "ann_IR": -0.43,
+      "decile_vol_over_bench": 0.69,
+      "n": 59
+    },
+    "reversal_1m/monthly": {
+      "excess_per_reb_pct": 0.237,
+      "t": 0.37,
+      "ann_IR": 0.17,
+      "decile_vol_over_bench": 1.45,
+      "n": 59
+    },
+    "high_52w_prox/monthly": {
+      "excess_per_reb_pct": -0.235,
+      "t": -0.43,
+      "ann_IR": -0.2,
+      "decile_vol_over_bench": 0.83,
+      "n": 59
+    },
+    "momentum_12_1/quarterly": {
+      "excess_per_reb_pct": 3.258,
+      "t": 1.16,
+      "ann_IR": 0.52,
+      "decile_vol_over_bench": 2.09,
+      "n": 20
+    },
+    "low_vol_60/quarterly": {
+      "excess_per_reb_pct": -1.013,
+      "t": -1.12,
+      "ann_IR": -0.5,
+      "decile_vol_over_bench": 0.79,
+      "n": 20
+    },
+    "reversal_1m/quarterly": {
+      "excess_per_reb_pct": -0.089,
+      "t": -0.05,
+      "ann_IR": -0.02,
+      "decile_vol_over_bench": 1.41,
+      "n": 20
+    },
+    "high_52w_prox/quarterly": {
+      "excess_per_reb_pct": -2.04,
+      "t": -2.35,
+      "ann_IR": -1.05,
+      "decile_vol_over_bench": 0.97,
+      "n": 20
+    }
+  }
+}
