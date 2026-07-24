@@ -1868,3 +1868,51 @@ Next moves (disciplined, no over-testing into a false positive):
     many regimes) — does high-vol-move mean-reversion hold out of the
     crypto-2024-25 window at real n; (c) regime-condition any future spec
     on the canary (only fade in reversion regimes). Holdout NOT burned.
+
+## 2026-07-23 — Next chapter set: the instrument is the product
+
+The efficiency verdict (≈40 falsifications, both markets) settles direction:
+STOP hunting mispricing — every option that keeps hunting it just resets
+priors optimistically in a new venue and re-bets on the one capability the
+project never demonstrated (finding edge). The realized product was always
+the instrument + registry + knowledge (field-notes' own headline); at $200
+positions even a real edge is life-irrelevant, so "returns" was never the
+true goal — an unexamined assumption, now dropped.
+
+**PRODUCT — falsification-as-a-service (was Direction 5):** public,
+pre-registered autopsies of retail strategy claims — the one thing this
+machine is uniquely good at (killing claims cleanly) made the deliverable.
+Sequence: Cochrane on-ramp (authority from public rigor, available now) →
+Underwriters Laboratories aspiration (the mark becomes the institution) —
+but the retail ecosystem profits from the ABSENCE of rigor and won't pay
+for a mark until an audience makes rigor matter, so authority precedes any
+certification market; never assume the second is reachable.
+
+**LABORATORY + CREDENTIAL — risk-premium underwriting (was Direction 2),
+FOUNDATIONAL not subordinate:** the book is where the falsification method
+is developed and stress-tested (UL ran its own fire tests to WRITE the
+standards), AND the standing proof the auditor eats its own cooking. Roots,
+not a lesser fruit.
+
+Two constitutional rules, adopted now (cheap now, ruinous to retrofit):
+1. **SOLVENCY, NOT STATISTICS (tail rule).** Risk-premium tails are the
+   most sample-starved quantity and Lesson 7 forbids claiming them. Worse:
+   the machine's confidence a premium is "well paid" is HIGHEST exactly
+   when its tail is most overdue (calm-period selection) — confidence is
+   anti-correlated with safety. So size the book by the worst loss the
+   CONTRACT STRUCTURE permits (mechanism max — full liquidation cascade,
+   realized vol to its structural ceiling), never the worst the sample
+   showed; and prefer premia with long external histories (equity variance
+   ~90yr) over young ones (crypto funding ~6yr). Actuaries beat quants to
+   this by three centuries.
+2. **DISCLOSED BOOK (Berenson rule).** Every book position is a committed,
+   timestamped registry entry BEFORE any related audit publishes; the audit
+   tooling checks the registry for conflicts and declares them inline,
+   MECHANICALLY — the corruption that took Berenson was invisible to
+   Berenson, so integrity cannot be self-policed; it is a state-machine
+   check (per the autonomy operational lesson).
+
+Status: directional decision recorded; EXECUTION is a future chapter. The
+forward threads continue meanwhile per stop-generating-not-verifying
+(shock-fade shadow accumulation, equity round one). No new build committed
+by this entry — it sets the constitution the next chapter is built against.
