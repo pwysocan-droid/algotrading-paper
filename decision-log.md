@@ -1953,3 +1953,24 @@ stop-generating-never-stop-verifying. A GENERATORS_HALTED sentinel makes
 pipeline_health forgive the deliberate foundry stall (alarms must not cry
 wolf on an intentional stop). Predecessor forward threads (live A/B) accrue;
 successor program (CONSTITUTION.md) proceeds separately.
+
+## 2026-07-23 — Course correction: trading machine, not a publishing service
+
+Operator clarified: "we are not publishing public papers — this is all in
+the service of finding a trading machine, not publishing." The v1.0
+constitution over-abstracted into a public falsification Service. CORRECTED
+to v2.0: objective is a TRADING MACHINE whose edge survives costs. The
+"Service" (Article 3 publishing, Cochrane/UL sequencing) and the
+auditor-conflict integrity layer (old Article 4, conflict_check.py, service/)
+are removed entirely — there are no third-party audits, so no conflicts to
+manage. What remains: the Book (earn by underwriting BOUNDED risk — the
+evidence-aligned form of trading, since prediction-of-mispricing is dead)
+plus disciplined structural search of measured leads (shock-fade shadow
+accumulation, Layer-2 alt-data). Integrity narrows to DATA integrity + the
+operational law + "the machine must not lie to its operator."
+
+Also: E-1.0 real-money cost experiment SHELVED by operator (account stays
+funded/idle; not run).
+
+Not a pivot away from trading — a correction back TO it: underwriting is
+trading, just the kind the evidence licenses.
