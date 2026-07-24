@@ -113,6 +113,18 @@ that produced it.
   the system; condition on regime, and treat a single-regime finding as
   provisional until it survives another.
 
+- **A fixed dataset has a finite statistical budget, and adaptive reuse
+  spends it.** N rounds each conditioned on the last, against the same
+  data, eventually exhaust the dataset's ability to give a trustworthy
+  verdict on a NEW hypothesis — every in-window 'discovery' arrives
+  pre-contaminated by the search that found it. So the decision to stop
+  in-window *search* is economic (the budget is spent), not a claim that
+  the null won everywhere. Corollary — **stop generating, never stop
+  verifying**: abandoning a live forward test before its pre-registered
+  criterion resolves is the same sin as continuing past a fired kill, in
+  the opposite direction. Search mode and monitor mode end on different
+  clocks.
+
 - **Distinguish parameter-tuning from structure-change.** When you hit a
   measured ceiling, tuning parameters inside the same structure can't
   escape it. The escape is a *different structure* or a *different input
