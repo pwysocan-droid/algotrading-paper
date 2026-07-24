@@ -1,0 +1,41 @@
+{
+  "date": "2026-07-24",
+  "composites": {
+    "mom_only": {
+      "gross_mo_pct": 1.239,
+      "t": 1.59,
+      "ann_IR": 0.72,
+      "vol_over_bench": 1.59,
+      "turnover": 0.31,
+      "net_mo_pct_est": 1.208,
+      "n": 59
+    },
+    "mom+lowvol": {
+      "gross_mo_pct": 0.545,
+      "t": 1.21,
+      "ann_IR": 0.55,
+      "vol_over_bench": 0.94,
+      "turnover": 0.36,
+      "net_mo_pct_est": 0.508,
+      "n": 59
+    },
+    "mom+lowvol+rev": {
+      "gross_mo_pct": 0.543,
+      "t": 1.49,
+      "ann_IR": 0.67,
+      "vol_over_bench": 1.04,
+      "turnover": 0.77,
+      "net_mo_pct_est": 0.467,
+      "n": 59
+    },
+    "all4": {
+      "gross_mo_pct": 0.101,
+      "t": 0.28,
+      "ann_IR": 0.13,
+      "vol_over_bench": 0.88,
+      "turnover": 0.55,
+      "net_mo_pct_est": 0.045,
+      "n": 59
+    }
+  }
+}
