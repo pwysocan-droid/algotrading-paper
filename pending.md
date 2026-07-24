@@ -31,7 +31,7 @@ machine-managed by adversarial_cron.py — replaced nightly, don't edit.
   when: open
   kind: ops
 
-- thing: "Nightly skeptic · 2026-07-23"
-  detail: "Your pipeline is humming but your decision gates are frozen. Seven consecutive runs, all nominal,..."
+- thing: "Nightly skeptic · 2026-07-24"
+  detail: "Pipeline is humming on fumes while decisions calcify. Seven consecutive cron runs all nominal and..."
   when: open
   kind: ops
