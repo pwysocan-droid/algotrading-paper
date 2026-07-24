@@ -42,6 +42,8 @@ UNDERLYINGS = ["SPY", "QQQ", "IWM"]
 DTE_TARGET = 35
 WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3}     # spread width in $
 RICHNESS_MIN = float(os.environ.get("RICHNESS_MIN", "0.20"))  # credit/width bar
+PROFIT_TAKE = float(os.environ.get("PROFIT_TAKE", "0.50"))  # close at 50% of credit captured
+CLOSE_DTE = int(os.environ.get("CLOSE_DTE", "10"))          # close near expiry (gamma/pin)
 BOOK_CAPITAL = 100_000.0                     # paper book; 5% = $5k max loss/position
 MAX_LOSS_FRAC = 0.05
 LEGDER = REPO / "book" / "positions.jsonl"
@@ -212,11 +214,68 @@ def place_paper(rec):
     return r.status_code, r.text[:300]
 
 
+def _ledger_rows():
+    if not LEGDER.exists():
+        return []
+    return [json.loads(l) for l in LEGDER.read_text().splitlines() if l.strip()]
+
+
+def manage_positions(place):
+    """Exit half of the loop: close each open spread at PROFIT_TAKE of credit
+    captured, or near expiry. Defined-risk means the loss is already capped;
+    management harvests the profit and rolls off gamma/pin risk near expiry."""
+    rows = _ledger_rows()
+    changed = False
+    today = datetime.now(timezone.utc).date()
+    for r in rows:
+        if r.get("status") != "open":
+            continue
+        d = r.get("detail", {})
+        sym, expiry = d.get("sym"), d.get("expiry")
+        credit, contracts = d.get("credit"), d.get("contracts")
+        chain = option_chain(sym, expiry)
+        sp, lp = chain.get(float(d.get("short_k"))), chain.get(float(d.get("long_k")))
+        dte = (datetime.fromisoformat(expiry).date() - today).days
+        close_debit = None
+        if sp and lp and sp.get("ask") is not None and lp.get("bid") is not None:
+            close_debit = sp["ask"] - lp["bid"]         # buy short, sell long
+        reason = None
+        if close_debit is not None and close_debit <= PROFIT_TAKE * credit:
+            reason = "profit_take"
+        elif dte <= CLOSE_DTE:
+            reason = "near_expiry"
+        if not reason:
+            continue
+        realized = (credit - close_debit) * 100 * contracts if close_debit is not None else None
+        if place and close_debit is not None:
+            order = {"order_class": "mleg", "qty": str(contracts), "type": "limit",
+                     "time_in_force": "day", "limit_price": str(round(close_debit * 1.1 + 0.01, 2)),
+                     "legs": [
+                         {"symbol": d["short_occ"], "side": "buy", "ratio_qty": "1",
+                          "position_intent": "buy_to_close"},
+                         {"symbol": d["long_occ"], "side": "sell", "ratio_qty": "1",
+                          "position_intent": "sell_to_close"}]}
+            rr = requests.post(f"{PAPER}/v2/orders", json=order, headers=H, timeout=20)
+            r["close_order"] = {"status": rr.status_code, "body": rr.text[:160]}
+            print(f"     -> close order {rr.status_code}: {rr.text[:70]}")
+        r["status"] = "closed"; r["close_reason"] = reason
+        r["realized_pnl"] = round(realized, 2) if realized is not None else None
+        r["closed_ts"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        changed = True
+        rp = f"${realized:.0f}" if realized is not None else "?"
+        print(f"  MANAGE {sym} {d.get('short_k')}/{d.get('long_k')} -> CLOSE ({reason}) realized {rp}")
+    if changed:
+        LEGDER.write_text("".join(json.dumps(x) + "\n" for x in rows))
+
+
 def main() -> int:
     place = os.environ.get("PLACE") == "1"
     ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     print(f"VRP harvester {ts} · mode={'PAPER-PLACE' if place else 'DRY-RUN'} "
           f"· book ${BOOK_CAPITAL:,.0f} · 5% cap ${BOOK_CAPITAL*MAX_LOSS_FRAC:,.0f}\n")
+    print("-- manage open positions --")
+    manage_positions(place)
+    print("-- scan for new writes --")
     written = []
     for sym in UNDERLYINGS:
         try:
