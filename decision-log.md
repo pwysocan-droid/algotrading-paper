@@ -2064,3 +2064,17 @@ clean double-digit book return should trigger skepticism. Scales to
 several hundred k bounded by drawdown tolerance, not liquidity. Sequence:
 paper -> small live ($10-25k) -> sweet spot ONLY after the forward record
 clears the kill. Speed on the loop, patience on the capital.
+
+## 2026-07-24 — VRP machine complete and SCHEDULED (forward record begins)
+
+Position management + account reconciliation added: manage_positions closes
+each held spread at 50% of credit captured or DTE<=10, trusting actual
+GET /v2/positions (not the ledger's intent) so it never closes a phantom;
+open orders that never fill are marked 'unfilled', not force-closed. Full
+loop verified end-to-end (open 200, manage/close logic, P&L, ledger).
+SCHEDULED: vps/cron-vrp.sh runs weekdays 15:30 UTC (paper, PLACE mode) —
+manages opens, writes when premium is genuinely rich and the stand-aside
+clears, commits its ledger+report so the operator can watch. The machine is
+now RUNNING and building its forward paper record. Currently writes nothing
+(premium thin) — correct. Next builds (not blocking): live news feed for
+real-time tail detection (v3), and surfacing the VRP book in the digest.
