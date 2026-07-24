@@ -214,6 +214,18 @@ def place_paper(rec):
     return r.status_code, r.text[:300]
 
 
+def _held_option_symbols() -> dict:
+    """OCC symbol -> signed qty actually held on the paper account. Manage
+    trusts THIS, not the ledger's intent, before closing anything."""
+    try:
+        r = requests.get(f"{PAPER}/v2/positions", headers=H, timeout=20)
+        r.raise_for_status()
+        return {p["symbol"]: float(p["qty"]) for p in r.json()
+                if p.get("asset_class") == "us_option"}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def _ledger_rows():
     if not LEGDER.exists():
         return []
@@ -225,12 +237,25 @@ def manage_positions(place):
     captured, or near expiry. Defined-risk means the loss is already capped;
     management harvests the profit and rolls off gamma/pin risk near expiry."""
     rows = _ledger_rows()
+    held = _held_option_symbols()
     changed = False
     today = datetime.now(timezone.utc).date()
     for r in rows:
         if r.get("status") != "open":
             continue
         d = r.get("detail", {})
+        # reconcile: only manage legs actually HELD (open order may not have filled)
+        both_held = (held.get(d.get("short_occ"), 0) != 0
+                     and held.get(d.get("long_occ"), 0) != 0)
+        if not both_held:
+            age_days = (datetime.now(timezone.utc)
+                        - datetime.fromisoformat(r["ts"])).days
+            if age_days >= 1:
+                r["status"] = "unfilled"
+                r["note"] = "open order never filled (not held on account)"
+                changed = True
+                print(f"  MANAGE {d.get('sym')} -> UNFILLED (open never filled)")
+            continue
         sym, expiry = d.get("sym"), d.get("expiry")
         credit, contracts = d.get("credit"), d.get("contracts")
         chain = option_chain(sym, expiry)
