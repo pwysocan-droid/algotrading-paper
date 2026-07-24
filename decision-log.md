@@ -2055,8 +2055,12 @@ training-knowledge-limited — it won't catch a crisis it doesn't know about).
 
 Capital sweet spot (operator Q): defined-risk VRP is a breadth game, not a
 size game. ~$25k functional floor (below it the 5% cap forbids
-diversification); $50-100k target sweet spot (real breadth, non-trivial but
-modest dollars ~$5-15k/yr, no liquidity impact on index options); scales to
+diversification); $50-100k target sweet spot (real breadth, no liquidity impact on index
+options). CORRECTED return expectation (an earlier $5-15k/yr figure was too
+rosy): on TOTAL book capital ~5-8%/yr, of which ~half is just T-bill yield on
+the ~75% idle cash (solvency cap deploys only ~25%); the VRP EDGE adds only
+~2-4 points on top, with a fat NEGATIVE left tail (vol-spike years lose). Any
+clean double-digit book return should trigger skepticism. Scales to
 several hundred k bounded by drawdown tolerance, not liquidity. Sequence:
 paper -> small live ($10-25k) -> sweet spot ONLY after the forward record
 clears the kill. Speed on the loop, patience on the capital.
