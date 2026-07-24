@@ -46,6 +46,30 @@ BOOK_CAPITAL = 100_000.0                     # paper book; 5% = $5k max loss/pos
 MAX_LOSS_FRAC = 0.05
 LEGDER = REPO / "book" / "positions.jsonl"
 
+# Real scheduled-macro calendar (2026). FOMC decision dates are the Fed's
+# published 2026 schedule; CPI (~12th) and NFP (1st Friday) are computed.
+# These events are ALREADY PRICED INTO IV — their presence is context, NOT a
+# reason to stand aside. Verify FOMC dates against the Fed's published schedule.
+FOMC_2026 = ["2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17",
+             "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-16"]
+
+
+def scheduled_events(start_iso: str, end_iso: str) -> list[str]:
+    from datetime import date as _d, timedelta as _td
+    a, b = _d.fromisoformat(start_iso), _d.fromisoformat(end_iso)
+    out = [f"FOMC {d}" for d in FOMC_2026 if a <= _d.fromisoformat(d) <= b]
+    m = _d(a.year, a.month, 1)
+    while m <= b:
+        # NFP: first Friday; CPI: ~12th
+        nfp = m + _td(days=(4 - m.weekday()) % 7)
+        cpi = _d(m.year, m.month, 12)
+        if a <= nfp <= b:
+            out.append(f"Jobs/NFP {nfp}")
+        if a <= cpi <= b:
+            out.append(f"CPI {cpi}")
+        m = _d(m.year + (m.month == 12), (m.month % 12) + 1, 1)
+    return sorted(out)
+
 
 def stock_bars(sym, n=30):
     end = datetime.now(timezone.utc)
@@ -98,7 +122,13 @@ def nearest_expiry():
 
 
 def llm_standaside(sym, expiry, spot):
-    """The differentiator: refuse to write insurance into a known catalyst."""
+    """Differentiator, refined: routine scheduled macro is ALREADY priced into
+    IV, so their presence is NOT a reason to stand aside. Default WRITE; stand
+    aside only for EXTRAORDINARY, underpriced tail risk (a live crisis/regime
+    the surface hasn't caught up to). The scheduled calendar is given as priced
+    context so the model stops citing routine CPI/FOMC as a reason."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    events = scheduled_events(today, expiry)
     try:
         from claude_client import ClaudeClient, model_for_role
         from pydantic import BaseModel
@@ -106,31 +136,28 @@ def llm_standaside(sym, expiry, spot):
         class Verdict(BaseModel):
             decision: str      # "write" | "stand_aside"
             reason: str
-            catalysts: list[str]
 
-        today = datetime.now(timezone.utc).date().isoformat()
         prompt = (
-            f"You are the stand-aside gate of a variance-risk-premium options "
-            f"seller. Today is {today}. We are about to SELL a defined-risk put-"
-            f"credit spread on {sym} (spot {spot:.2f}) expiring {expiry} — i.e. "
-            f"we collect premium and profit if {sym} stays above the short "
-            f"strike. This blows up if we write into a known upcoming shock the "
-            f"static vol surface underprices. Decide 'stand_aside' if, between "
-            f"today and {expiry}, there is a scheduled macro catalyst likely to "
-            f"move {sym} (FOMC decision, CPI print, jobs report, major election/"
-            f"policy event) OR an active credible tail-risk narrative (banking/"
-            f"liquidity stress, geopolitical shock, sector contagion) in the "
-            f"current environment. Otherwise 'write'. Be concrete about the "
-            f"catalyst and its date if you cite one; do not invent dates you are "
-            f"unsure of — uncertainty about a catalyst is itself a reason to "
-            f"stand aside on an index in a tense tape.")
+            f"You gate a variance-risk-premium seller. Today {today}; selling a "
+            f"defined-risk put-credit spread on {sym} (spot {spot:.2f}) expiring "
+            f"{expiry}. DEFAULT IS TO WRITE — the premium is already rich enough "
+            f"to pass our richness gate. The following scheduled macro events "
+            f"fall in the window and are ALREADY PRICED INTO IMPLIED VOL, so they "
+            f"are NOT by themselves a reason to stand aside: {events or 'none'}. "
+            f"Return 'stand_aside' ONLY if there is an EXTRAORDINARY, currently "
+            f"UNDERPRICED tail risk the static vol surface has not caught up to — "
+            f"an active credible crisis or regime break (banking/liquidity "
+            f"contagion, disorderly geopolitical shock, a specific dislocation), "
+            f"NOT routine data prints or a generically 'uncertain' tape. If you "
+            f"cannot name a concrete extraordinary risk, return 'write'. One "
+            f"sentence reason.")
         c = ClaudeClient(model=model_for_role("synthesis"))
         v = c.complete_structured(prompt=prompt, schema_cls=Verdict,
-                                  called_from="vrp_standaside", max_tokens=1024)
-        return v.parsed.decision, v.parsed.reason, v.parsed.catalysts
-    except Exception as exc:  # noqa: BLE001 — LLM failure => conservative stand-aside
-        return "stand_aside", f"LLM gate unavailable ({type(exc).__name__}) — "
-        "conservative default", []
+                                  called_from="vrp_standaside", max_tokens=512)
+        return v.parsed.decision, v.parsed.reason, events
+    except Exception as exc:  # noqa: BLE001 — on LLM failure, WRITE (events are priced;
+        # the richness gate already protects us; a dead LLM must not freeze the book)
+        return "write", f"LLM gate unavailable ({type(exc).__name__}); events priced", events
 
 
 def propose(sym):
@@ -165,8 +192,8 @@ def propose(sym):
     if contracts < 1:
         rec["skip"] = "max loss > 5% cap even at 1 contract"
         return rec
-    dec, reason, cats = llm_standaside(sym, expiry, spot)
-    rec["standaside"] = {"decision": dec, "reason": reason, "catalysts": cats}
+    dec, reason, events = llm_standaside(sym, expiry, spot)
+    rec["standaside"] = {"decision": dec, "reason": reason, "scheduled_events": events}
     rec["action"] = "WRITE" if dec == "write" else "STAND_ASIDE"
     return rec
 
