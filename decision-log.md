@@ -2034,3 +2034,29 @@ Operator to-do: NONE for the paper loop (runs riskless now). LIVE later
 needs (a) options approval on the live account (currently level None) and
 (b) a Book capital level where 5% is a real spread ($200 too small). E-1.0
 stays shelved.
+
+## 2026-07-24 — VRP machine fully validated end-to-end (paper order path confirmed)
+
+v2 (real macro calendar + refined stand-aside) validated: at the real 20%
+richness bar it skips (premium thin); at forced-rich it correctly decides
+WRITE, reasoning that scheduled CPI/FOMC/NFP are already priced and no
+extraordinary tail is present. Paper multi-leg order placement CONFIRMED
+(Alpaca paper accepted a SPY 705/700p spread, status 200); test order
+cancelled + ledger reset afterward. The brain discriminates and the plumbing
+works.
+
+ONE GAP before autonomous running: the machine OPENS positions but does not
+yet MANAGE them — no profit-take (~50% of credit), no close-near-expiry, no
+breach handling. Opening without managing is a broken loop; a faithful paper
+forward test needs the exit half. NEXT BUILD: position management + then a
+daily paper schedule (writes when genuinely rich, manages exits). A live
+news feed for real-time tail detection is v3 (current stand-aside is
+training-knowledge-limited — it won't catch a crisis it doesn't know about).
+
+Capital sweet spot (operator Q): defined-risk VRP is a breadth game, not a
+size game. ~$25k functional floor (below it the 5% cap forbids
+diversification); $50-100k target sweet spot (real breadth, non-trivial but
+modest dollars ~$5-15k/yr, no liquidity impact on index options); scales to
+several hundred k bounded by drawdown tolerance, not liquidity. Sequence:
+paper -> small live ($10-25k) -> sweet spot ONLY after the forward record
+clears the kill. Speed on the loop, patience on the capital.
