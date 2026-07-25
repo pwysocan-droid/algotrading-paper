@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-25T03:30:09Z",
+  "generated_at": "2026-07-25T03:35:09Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 05s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 04s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 008 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-25T03:30:04.053936+00:00",
-    "last_run_human": "0m 05s ago",
-    "last_run_human_date": "2026-07-25 · 03:30 UTC",
-    "next_run_human": "59m 54s",
-    "uptime_recent": "17979 of 17998 ok · 99.9%",
+    "last_run_iso": "2026-07-25T03:35:04.222102+00:00",
+    "last_run_human": "0m 04s ago",
+    "last_run_human_date": "2026-07-25 · 03:35 UTC",
+    "next_run_human": "59m 55s",
+    "uptime_recent": "17980 of 17999 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -83,8 +83,8 @@
     {
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-07-24",
-      "detail": "Pipeline is humming on fumes while decisions calcify. Seven consecutive cron runs all nominal and...",
+      "thing": "Nightly skeptic · 2026-07-25",
+      "detail": "Your pipeline is a well-oiled machine adding 77–78 bars every five minutes while you're parking c...",
       "kind": "ops",
       "promoted": false
     }
@@ -92,53 +92,53 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "285,753",
-      "delta": "+1447",
+      "count": "285,757",
+      "delta": "+1446",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "285753"
+      "value": "285757"
     },
     {
       "name": "bar coverage",
       "count": "95%",
       "delta": "-78",
       "delta_class": "note",
-      "spark": "▄▅▇█▇▆▁▁",
+      "spark": "▄▅▇█▇▆▁▂",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "95"
     },
     {
       "name": "cron runs",
-      "count": "17,998",
+      "count": "17,999",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "17998"
+      "value": "17999"
     },
     {
       "name": "llm calls",
-      "count": "56",
-      "delta": "+17",
+      "count": "57",
+      "delta": "+10",
       "delta_class": null,
-      "spark": "█▁▁▁▁▁▁▁",
+      "spark": "█▁▁▁▁▁▁▂",
       "spark_class": null,
       "key": "llm_calls",
-      "value": "56"
+      "value": "57"
     },
     {
       "name": "decisions",
-      "count": "15,884",
-      "delta": "+2250",
+      "count": "15,893",
+      "delta": "+2253",
       "delta_class": null,
-      "spark": "▂▅▂█▁▃▁▂",
+      "spark": "▂▅▂█▁▃▂▂",
       "spark_class": null,
       "key": "decisions",
-      "value": "15884"
+      "value": "15893"
     },
     {
       "name": "letters",
@@ -213,8 +213,8 @@
     }
   ],
   "llm": {
-    "total_calls": 56,
-    "total_cost_usd": 5.1399,
+    "total_calls": 57,
+    "total_cost_usd": 5.1419,
     "by_caller": [
       {
         "called_from": "idea_foundry",
@@ -226,9 +226,9 @@
       {
         "called_from": "adversarial_cron",
         "model": "claude-haiku-4-5",
-        "calls": 8,
-        "tokens": 8143,
-        "cost_usd": 0.018
+        "calls": 9,
+        "tokens": 9113,
+        "cost_usd": 0.02
       },
       {
         "called_from": "vrp_standaside",
