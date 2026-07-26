@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-26T03:30:07Z",
+  "generated_at": "2026-07-26T03:35:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 04s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 03s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 008 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-26T03:30:03.586145+00:00",
-    "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-07-26 · 03:30 UTC",
-    "next_run_human": "59m 55s",
-    "uptime_recent": "18265 of 18284 ok · 99.9%",
+    "last_run_iso": "2026-07-26T03:35:03.878392+00:00",
+    "last_run_human": "0m 03s ago",
+    "last_run_human_date": "2026-07-26 · 03:35 UTC",
+    "next_run_human": "59m 56s",
+    "uptime_recent": "18266 of 18285 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -83,8 +83,8 @@
     {
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-07-25",
-      "detail": "Your pipeline is a well-oiled machine adding 77–78 bars every five minutes while you're parking c...",
+      "thing": "Nightly skeptic · 2026-07-26",
+      "detail": "Your pipeline is humming while your gates are fossilizing. The Phase 1b review is 29 days old wit...",
       "kind": "ops",
       "promoted": false
     }
@@ -92,13 +92,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "286,996",
+      "count": "287,001",
       "delta": "+1316",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "286996"
+      "value": "287001"
     },
     {
       "name": "bar coverage",
@@ -112,33 +112,33 @@
     },
     {
       "name": "cron runs",
-      "count": "18,284",
+      "count": "18,285",
       "delta": "+286",
       "delta_class": null,
       "spark": "█████▁██",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "18284"
+      "value": "18285"
     },
     {
       "name": "llm calls",
-      "count": "57",
-      "delta": "+1",
+      "count": "59",
+      "delta": "+2",
       "delta_class": null,
-      "spark": "█▁▁▁▁▁▁▁",
-      "spark_class": null,
+      "spark": "▁▁▁▁▁▁▁█",
+      "spark_class": "growing",
       "key": "llm_calls",
-      "value": "57"
+      "value": "59"
     },
     {
       "name": "decisions",
-      "count": "18,085",
-      "delta": "+2201",
+      "count": "18,101",
+      "delta": "+2208",
       "delta_class": null,
-      "spark": "▅▄▁█▅▃▂▄",
+      "spark": "▆▃▁█▅▂▂▄",
       "spark_class": null,
       "key": "decisions",
-      "value": "18085"
+      "value": "18101"
     },
     {
       "name": "letters",
@@ -213,9 +213,16 @@
     }
   ],
   "llm": {
-    "total_calls": 57,
-    "total_cost_usd": 5.1419,
+    "total_calls": 59,
+    "total_cost_usd": 5.5158,
     "by_caller": [
+      {
+        "called_from": "adversarial_cron",
+        "model": "claude-haiku-4-5",
+        "calls": 10,
+        "tokens": 10134,
+        "cost_usd": 0.0223
+      },
       {
         "called_from": "idea_foundry",
         "model": "claude-opus-4-8",
@@ -224,11 +231,11 @@
         "cost_usd": 2.4139
       },
       {
-        "called_from": "adversarial_cron",
-        "model": "claude-haiku-4-5",
-        "calls": 9,
-        "tokens": 9113,
-        "cost_usd": 0.02
+        "called_from": "learnings_ledger",
+        "model": "claude-opus-4-8",
+        "calls": 8,
+        "tokens": 279247,
+        "cost_usd": 2.1925
       },
       {
         "called_from": "vrp_standaside",
@@ -236,13 +243,6 @@
         "calls": 8,
         "tokens": 9843,
         "cost_usd": 0.0836
-      },
-      {
-        "called_from": "learnings_ledger",
-        "model": "claude-opus-4-8",
-        "calls": 7,
-        "tokens": 230870,
-        "cost_usd": 1.8208
       },
       {
         "called_from": "friday_bear_case_investigated#t1",
