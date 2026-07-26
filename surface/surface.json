@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-26T20:05:08Z",
+  "generated_at": "2026-07-26T20:10:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-26T20:05:04.462921+00:00",
+    "last_run_iso": "2026-07-26T20:10:03.944043+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-07-26 · 20:05 UTC",
+    "last_run_human_date": "2026-07-26 · 20:10 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "18464 of 18483 ok · 99.9%",
+    "uptime_recent": "18465 of 18484 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "287,894",
-      "delta": "+1340",
+      "count": "287,897",
+      "delta": "+1339",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "287894"
+      "value": "287897"
     },
     {
       "name": "bar coverage",
       "count": "88%",
-      "delta": "-172",
+      "delta": "-174",
       "delta_class": "note",
-      "spark": "▁▂▃▅▂▅█▄",
+      "spark": "▁▃▄▅▂▅█▄",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "88"
     },
     {
       "name": "cron runs",
-      "count": "18,483",
+      "count": "18,484",
       "delta": "+286",
       "delta_class": null,
       "spark": "▁███████",
       "spark_class": "growing",
       "key": "cron_runs",
-      "value": "18483"
+      "value": "18484"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "19,635",
-      "delta": "+2188",
+      "count": "19,642",
+      "delta": "+2185",
       "delta_class": null,
-      "spark": "▂▃▅▃▂▅█▁",
+      "spark": "▂▃▆▃▃▆█▁",
       "spark_class": null,
       "key": "decisions",
-      "value": "19635"
+      "value": "19642"
     },
     {
       "name": "letters",
