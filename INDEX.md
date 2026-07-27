@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-27T03:30:06Z
+2026-07-27T03:35:06Z
 
 7 surfaces tracked
 
@@ -29,7 +29,7 @@ Phase 1  ·  Week 1
 
 ▸ First candidate-vs-null A/B readout — compare.py once arms accumulate closed trades · promotion bar p<0.05 over 100+
 
-▸ Nightly skeptic · 2026-07-26 — Your pipeline is humming while your gates are fossilizing. The Phase 1b review is 29 days old wit...
+▸ Nightly skeptic · 2026-07-27 — Your pipeline is humming while decisions stall. Seven consecutive successful runs with stable bar...
 
 ## § 03 — Read-me-when-lost · 4 pointers
 

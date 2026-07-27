@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-27T03:30:07Z",
+  "generated_at": "2026-07-27T03:35:07Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-27T03:30:03.581518+00:00",
+    "last_run_iso": "2026-07-27T03:35:03.639999+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-07-27 · 03:30 UTC",
+    "last_run_human_date": "2026-07-27 · 03:35 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "18553 of 18572 ok · 99.9%",
+    "uptime_recent": "18554 of 18573 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -83,8 +83,8 @@
     {
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-07-26",
-      "detail": "Your pipeline is humming while your gates are fossilizing. The Phase 1b review is 29 days old wit...",
+      "thing": "Nightly skeptic · 2026-07-27",
+      "detail": "Your pipeline is humming while decisions stall. Seven consecutive successful runs with stable bar...",
       "kind": "ops",
       "promoted": false
     }
@@ -92,53 +92,53 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "288,321",
+      "count": "288,326",
       "delta": "+1395",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "288321"
+      "value": "288326"
     },
     {
       "name": "bar coverage",
       "count": "92%",
-      "delta": "-120",
+      "delta": "-118",
       "delta_class": "note",
-      "spark": "▃▂▁▆▇▂█▇",
+      "spark": "▄▂▁▆▇▂█▇",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "92"
     },
     {
       "name": "cron runs",
-      "count": "18,572",
+      "count": "18,573",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "18572"
+      "value": "18573"
     },
     {
       "name": "llm calls",
-      "count": "59",
-      "delta": "+2",
+      "count": "60",
+      "delta": "+1",
       "delta_class": null,
-      "spark": "█▁▁▁▁▁▁▁",
-      "spark_class": null,
+      "spark": "▁▁▁▁▁▁▁█",
+      "spark_class": "growing",
       "key": "llm_calls",
-      "value": "59"
+      "value": "60"
     },
     {
       "name": "decisions",
-      "count": "20,566",
-      "delta": "+2481",
+      "count": "20,571",
+      "delta": "+2470",
       "delta_class": null,
-      "spark": "▄▁▂▄▃▃█▃",
+      "spark": "▄▁▃▅▃▃█▃",
       "spark_class": null,
       "key": "decisions",
-      "value": "20566"
+      "value": "20571"
     },
     {
       "name": "letters",
@@ -213,15 +213,15 @@
     }
   ],
   "llm": {
-    "total_calls": 59,
-    "total_cost_usd": 5.5158,
+    "total_calls": 60,
+    "total_cost_usd": 5.518,
     "by_caller": [
       {
         "called_from": "adversarial_cron",
         "model": "claude-haiku-4-5",
-        "calls": 10,
-        "tokens": 10134,
-        "cost_usd": 0.0223
+        "calls": 11,
+        "tokens": 11132,
+        "cost_usd": 0.0244
       },
       {
         "called_from": "idea_foundry",
