@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-07-28T03:30:07Z
+2026-07-28T03:35:06Z
 
 7 surfaces tracked
 
@@ -29,7 +29,7 @@ Phase 1  ·  Week 1
 
 ▸ First candidate-vs-null A/B readout — compare.py once arms accumulate closed trades · promotion bar p<0.05 over 100+
 
-▸ Nightly skeptic · 2026-07-27 — Your pipeline is humming while decisions stall. Seven consecutive successful runs with stable bar...
+▸ Nightly skeptic · 2026-07-28 — Pipeline is mechanically healthy but tells you nothing—seven identical runs of commodity data ing...
 
 ## § 03 — Read-me-when-lost · 4 pointers
 
