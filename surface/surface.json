@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-30T11:25:14Z",
+  "generated_at": "2026-07-30T11:30:14Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 08s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 09s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 008 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-07-30T11:25:05.877683+00:00",
-    "last_run_human": "0m 08s ago",
-    "last_run_human_date": "2026-07-30 · 11:25 UTC",
-    "next_run_human": "59m 51s",
-    "uptime_recent": "19512 of 19531 ok · 99.9%",
+    "last_run_iso": "2026-07-30T11:30:05.042613+00:00",
+    "last_run_human": "0m 09s ago",
+    "last_run_human_date": "2026-07-30 · 11:30 UTC",
+    "next_run_human": "59m 50s",
+    "uptime_recent": "19513 of 19532 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -43,7 +43,7 @@
       "qual": "no strategies registered",
       "figure": "17",
       "unit": "",
-      "spark": "▁▁▃█▃▁▁▁",
+      "spark": "▁▁██▅▁▁▁",
       "spark_class": null
     },
     {
@@ -92,18 +92,18 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "293,016",
-      "delta": "+1490",
+      "count": "293,020",
+      "delta": "+1489",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "293016"
+      "value": "293020"
     },
     {
       "name": "bar coverage",
       "count": "98%",
-      "delta": "-30",
+      "delta": "-31",
       "delta_class": "note",
       "spark": "▇██▇▇▇▆▁",
       "spark_class": null,
@@ -112,13 +112,13 @@
     },
     {
       "name": "cron runs",
-      "count": "19,531",
+      "count": "19,532",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "19531"
+      "value": "19532"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "29,563",
-      "delta": "+2789",
+      "count": "29,569",
+      "delta": "+2788",
       "delta_class": null,
-      "spark": "▅▃█▁▄▁▁▃",
+      "spark": "▅▃█▁▄▁▂▂",
       "spark_class": null,
       "key": "decisions",
-      "value": "29563"
+      "value": "29569"
     },
     {
       "name": "letters",
