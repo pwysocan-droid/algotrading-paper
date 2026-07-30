@@ -27,11 +27,11 @@
       "promoted": false
     },
     {
-      "id": "ops:Nightly skeptic · 2026-07-29",
+      "id": "ops:Nightly skeptic · 2026-07-30",
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-07-29",
-      "detail": "Your pipeline is a metronome with zero friction—seven perfect 5-minute heartbeats, all green, all...",
+      "thing": "Nightly skeptic · 2026-07-30",
+      "detail": "Your pipeline is a metronome with no one steering. Seven consecutive runs, identical bar counts, ...",
       "kind": "ops",
       "promoted": false
     }
