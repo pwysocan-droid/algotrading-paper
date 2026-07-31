@@ -57,3 +57,4 @@ html/
 # Charter E Stage 0 — raw Kalshi snapshots stay local (never committed)
 venues/kalshi/kalshi.db
 venues/kalshi/kalshi.db-journal
+venues/kalshi/*.db.gz

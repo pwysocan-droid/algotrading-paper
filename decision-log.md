@@ -2226,3 +2226,25 @@ each snapshot writes ~800k rows (~80 MB) 3x/day — pointless disk accumulation.
 KEEP venues/kalshi/ (adapter/report) as a reusable calibration instrument for any
 future event-venue question. If left running, the cron-gc.sh >=80% disk guard is
 the safety net. To sunset: remove the two cron-kalshi lines from the crontab.
+
+## 2026-07-31 — Kalshi crons sunset (Charter E shelved, adapter retained)
+
+Charter E died at Stage 0 on a STRUCTURAL cost floor — the Kalshi fee schedule,
+not a market condition — so a standing collection informs no further decision.
+- **Crons stopped:** the two cron-kalshi entries (snapshot + report) removed from
+  the VPS crontab. Remaining crons: context, fetch, friday, gc, skeptic, vrp.
+- **Adapter retained:** venues/kalshi/ stays in the tree as a shelved instrument.
+- **kalshi.db decision:** the live DB (220 MB, 800k-row full-population snapshot)
+  is PRUNED for disk; one compressed archive of the adjudication snapshot is kept
+  on the VPS (venues/kalshi/kalshi-stage0-2026-07-31.db.gz, 40 MB, gitignored).
+  The committed reports/event-venue-floor-2026-07-31.json is the durable,
+  in-git record; the archive is a local audit convenience. Reactivation
+  re-measures fresh (below), so the raw snapshots have no forward value.
+- **Fee schedule the kill was adjudicated under:** Kalshi general trading fee,
+  encoded/observed 2026-07-31 = ceil(0.07 · C · P · (1−P)) per contract (taker;
+  maker typically $0). At a 2.5¢ contract this is ~$0.01/side ≈ an 80% takeout —
+  the structural killer.
+- **Reactivation trigger (named):** a CHANGED Kalshi fee schedule prompts a fresh
+  Stage 0 re-measurement from scratch — NEVER a resumed standing collection. If
+  the fee formula/rate changes materially, re-run venues/kalshi/ Stage 0 and
+  re-adjudicate; otherwise Charter E stays dead.
