@@ -2196,3 +2196,33 @@ adapter (public /markets, no auth), snapshot.py (own gitignored kalshi.db — ra
 snapshots NEVER committed, heeding the trader.db bloat), floor_report.py ->
 reports/event-venue-floor-{date}.json. cron-kalshi.sh: snapshot 3×/day, report+
 commit daily. Stage 0's report alone decides whether Charter E exists further.
+
+## 2026-07-31 — Charter E DEAD at Stage 0 (both sides); cron sunset recommended
+
+Stage 0 venue cost-floor study adjudicated per-side on the full Kalshi
+open-market population (reports/event-venue-floor-2026-07-31.json). BOTH sides
+die on cost — the honest negative the review predicted (S0-3):
+- **(a) longshot-sell (<10c):** all-in cost 2c (<5c bucket, ~80% of price, fee
+  floor alone) to 8c (5-10c, 107%). Plausible 1-2pp bias (1-2c) dwarfed. DEAD.
+  Racing-takeout death reproduced on an order-book venue — the venue fee IS the
+  takeout, ~80% at 2.5c vs parimutuel racing's 15-20%.
+- **(b) near-certainty-buy (>90c):** all-in 3c (0.95-1.00, tightest) to 5c
+  (0.90-0.95). Even 3c exceeds a 2pp edge (2c) by 1.5x; aggregate 5c = 2.5x a
+  2pp / 5x a 1pp edge. DEAD on cost. Population thin (397 mkts >=90c) but that is
+  NOT the decisive kill — cost is.
+Both epitaphed in reviews/foundry/dead-ideas.json (charter-E · E1-longshot-side,
+E1-near-certainty-side) + a failure lesson. **Charter E is dead at Stage 0.** The
+buy-side-only pre-reg revision (conditional on (b) surviving) does NOT happen.
+
+**Process note (caught, fixed):** the adapter's max_pages=30 default silently
+truncated the population and hid the entire >90c tail — read as "no near-certainty
+market" when it was just capped. Fixed (max_pages 30->800), re-measured. The
+no-silent-caps lesson, in our own code.
+
+**Cron sunset — RECOMMENDATION (operator decides, per instruction):** STOP the
+Kalshi snapshot + report crons. The kill is structural (venue takeout) and will
+not change, so further collection informs no decision; and post-truncation-fix
+each snapshot writes ~800k rows (~80 MB) 3x/day — pointless disk accumulation.
+KEEP venues/kalshi/ (adapter/report) as a reusable calibration instrument for any
+future event-venue question. If left running, the cron-gc.sh >=80% disk guard is
+the safety net. To sunset: remove the two cron-kalshi lines from the crontab.

@@ -1,13 +1,20 @@
 # PRE-REG — Charter E: Event Underwriting (venue study + hypothesis family E1)
 
-Status: **Stage 0 (measurement) built and corrected per adversarial review
-(`RECALIBRATION_REVIEW.md`, Charter E addendum).** Stage 0 is a venue
-cost-floor *measurement* and **spends no charter slot** (operator-confirmed;
-decision-log 2026-07-31) — the two-charter cap (§4.1) binds only at Stage 1
-activation. Proposed: 2026-07-31. Admissibility basis: Art 2.2 unamended
-(contract price = contractual max loss) + Art **2.10** (v2.1; event contracts,
-with the venue-robustness caveat) + Art 3.3. (Corrects the draft's "activates on
-commit" and stale RECALIBRATION §-citations, which were drafted against v1.0.)
+Status: **DEAD at Stage 0 (2026-07-31).** The venue cost-floor study killed BOTH
+sides of E1 on absolute cost (reports/event-venue-floor-2026-07-31.json;
+epitaphs in dead-ideas.json; adjudication in decision-log 2026-07-31):
+longshot-sell (<10¢) all-in 2–8¢ = 80–107% of price (fee floor dwarfs a 1–2¢
+bias); near-certainty-buy (>90¢) all-in 3–5¢ = 1.5–2.5× a 2pp edge. The venue
+fee is a takeout that exceeds any plausible bounded bias exactly where the bias
+lives — the racing-takeout death on an order-book venue. No Stage 1, no charter
+slot consumed. venues/kalshi/ is retained as a reusable instrument; the snapshot
+cron's sunset is an open operator decision (recommended: stop). The kept text
+below is the pre-death design, left for the record.
+
+_Historical (pre-death) status:_ Stage 0 (measurement) built and corrected per
+adversarial review (`RECALIBRATION_REVIEW.md`, Charter E addendum); it spent no
+charter slot (operator-confirmed); admissibility Art 2.2 + 2.10 (v2.1) + 3.3.
+The draft's "activates on commit" and its v1.0 §-citations were corrected.
 
 Prior library: horse-racing market literature (favorite–longshot bias,
 Griffith 1949 onward; late-money informativeness, Shin; crowd-correction
