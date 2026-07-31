@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[2]
+REPO = HERE.parents[1]   # venues/kalshi -> venues -> repo root
 DB = HERE / "kalshi.db"
 
 # 5¢ price buckets; tails (<10¢, >90¢) are where the favorite–longshot prior lives.

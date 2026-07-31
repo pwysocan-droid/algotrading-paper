@@ -39,3 +39,9 @@ def test_bucket_stats_aggregates_cost_lower_bound():
     assert tail["median_spread"] == 0.03
     assert math.isclose(tail["allin_roundtrip_cost_lower_bound"], 0.05, abs_tol=1e-9)
     assert not stats["0.50-0.55"]["tail"]
+
+
+def test_repo_root_resolves_to_repo():
+    # guards the parents[] off-by-one that pointed the report write above the repo
+    assert (fr.REPO / "CONSTITUTION.md").exists()
+    assert (fr.REPO / "reports").is_dir()
