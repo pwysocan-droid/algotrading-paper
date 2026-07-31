@@ -23,11 +23,12 @@ DATA = "https://data.alpaca.markets"
 H = {"APCA-API-KEY-ID": os.environ.get("ALPACA_LIVE_KEY_ID", ""),
      "APCA-API-SECRET-KEY": os.environ.get("ALPACA_LIVE_SECRET", "")}
 
-UNDERLYINGS = os.environ.get("BACKFILL_SYMS", "SPY,QQQ,IWM").split(",")
-WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3}
+UNDERLYINGS = os.environ.get("BACKFILL_SYMS", "SPY,QQQ,IWM,DIA,GLD,TLT,EEM").split(",")
+WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3, "DIA": 5, "GLD": 5, "TLT": 2, "EEM": 1}
 DTE_TARGET = 35
 RICH_MIN = 0.20
 HAIRCUT_PER_LEG = 0.03      # ~$0.03/leg crossing cost; live sells bid / buys ask
+SD_MULT = float(os.environ.get("BACKFILL_SD", "1.0"))   # strike distance in realized SDs
 START = os.environ.get("BACKFILL_START", "2024-02-05")  # Alpaca options history start
 
 
@@ -89,7 +90,7 @@ def main():
                 continue
             expiry = friday_expiry(d)
             dte = (expiry - d).days
-            one_sd = spot * rv * math.sqrt(dte / 252.0)
+            one_sd = SD_MULT * spot * rv * math.sqrt(dte / 252.0)
             short_k = round((spot - one_sd) / W) * W
             long_k = short_k - W
             os_, ol_ = occ(sym, expiry, short_k), occ(sym, expiry, long_k)
@@ -117,9 +118,10 @@ def main():
         print(f"{sym}: n={n}  clears20%(mid)={hit_mid:.1%}  clears20%(haircut)={hit_hc:.1%}"
               f"  median richness={pct(50):.1%}  p90={pct(90):.1%}  max={rm[-1]:.1%}")
 
-    out = REPO / "reports" / "vrp-richness-backfill.json"
+    tag = f"{SD_MULT:g}sd".replace(".", "_")
+    out = REPO / "reports" / f"vrp-richness-backfill-{tag}.json"
     out.write_text(json.dumps({"generated": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-                               "window": f"{START}..{end}", "gate": RICH_MIN,
+                               "window": f"{START}..{end}", "gate": RICH_MIN, "sd_mult": SD_MULT,
                                "method": "real Alpaca option daily closes; mid = short_close-long_close; "
                                          "haircut = 2 x $0.03/leg crossing",
                                "by_underlying": result}, indent=1) + "\n")
