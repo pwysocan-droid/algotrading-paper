@@ -302,16 +302,29 @@ def main() -> int:
     manage_positions(place)
     print("-- scan for new writes --")
     written = []
+    scan = []   # every underlying's real outcome (richness/skip) — self-documenting
     for sym in UNDERLYINGS:
         try:
             rec = propose(sym)
         except Exception as exc:  # noqa: BLE001
-            print(f"{sym}: ERROR {type(exc).__name__}: {exc}"); continue
+            print(f"{sym}: ERROR {type(exc).__name__}: {exc}")
+            scan.append({"sym": sym, "outcome": "error",
+                         "detail": f"{type(exc).__name__}: {exc}"}); continue
         if rec is None:
-            print(f"{sym}: no data"); continue
+            print(f"{sym}: no data")
+            scan.append({"sym": sym, "outcome": "no_data"}); continue
         if rec.get("skip"):
-            print(f"{sym}: SKIP — {rec['skip']}"); continue
+            print(f"{sym}: SKIP — {rec['skip']}")
+            scan.append({"sym": sym, "outcome": "skip", "reason": rec["skip"],
+                         "richness": rec.get("richness"), "credit": rec.get("credit"),
+                         "short_k": rec.get("short_k"), "long_k": rec.get("long_k"),
+                         "spot": rec.get("spot"), "rv": rec.get("rv"),
+                         "expiry": rec.get("expiry")}); continue
         sa = rec["standaside"]
+        scan.append({"sym": sym, "outcome": rec["action"].lower(),
+                     "richness": rec["richness"], "credit": rec["credit"],
+                     "short_k": rec["short_k"], "long_k": rec["long_k"],
+                     "spot": rec["spot"], "rv": rec["rv"], "expiry": rec["expiry"]})
         print(f"{sym}: {rec['action']}  {rec['short_k']}/{rec['long_k']}p {rec['expiry']} "
               f"credit ${rec['credit']:.2f} maxloss ${rec['max_loss_per']:.0f} "
               f"rich {rec['richness']:.0%} x{rec['contracts']}")
@@ -329,7 +342,8 @@ def main() -> int:
             written.append(rec)
     out = REPO / "reports" / f"vrp-{datetime.now(timezone.utc).date().isoformat()}.json"
     out.write_text(json.dumps({"ts": ts, "mode": "place" if place else "dry",
-                               "written": written}, indent=2) + "\n")
+                               "gate_richness_min": RICHNESS_MIN,
+                               "scan": scan, "written": written}, indent=2) + "\n")
     print(f"\n{len(written)} write candidate(s) · wrote {out.name}"
           + ("" if place else " · DRY-RUN (set PLACE=1 to trade paper)"))
     return 0
