@@ -45,7 +45,15 @@ UNDERLYINGS = ["SPY", "QQQ", "IWM", "DIA", "GLD"]
 DTE_TARGET = 35
 WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3, "DIA": 5,   # spread width in $ (~ price-scaled)
          "GLD": 5, "TLT": 2, "EEM": 1}             # TLT/EEM widths kept (unused now)
-RICHNESS_MIN = float(os.environ.get("RICHNESS_MIN", "0.20"))  # credit/width bar
+RICHNESS_MIN = float(os.environ.get("RICHNESS_MIN", "0.20"))  # legacy flat bar (superseded)
+# Book gate v2 — CONSTITUTION 2.9 / book/pre-reg-book-gate-v2.md. Write when the
+# day's richness is top-decile of its trailing 1-year distribution (IV-rank
+# convention) AND above an absolute floor. NOT a fairness test (safety = 2.2/2.4);
+# a pre-registered deployment-TIMING hypothesis, tested vs the always-write shadow.
+GATE_PCTL = int(os.environ.get("GATE_PCTL", "90"))        # top decile
+GATE_WINDOW = int(os.environ.get("GATE_WINDOW", "252"))   # 1yr trailing (IV-rank)
+GATE_FLOOR = float(os.environ.get("GATE_FLOOR", "0.08"))  # absolute floor (~pooled median)
+PREDICTED_FIRE = 0.21   # backfill p90 cadence (reports/vrp-richness-backfill-1sd.json)
 PROFIT_TAKE = float(os.environ.get("PROFIT_TAKE", "0.50"))  # close at 50% of credit captured
 CLOSE_DTE = int(os.environ.get("CLOSE_DTE", "10"))          # close near expiry (gamma/pin)
 BOOK_CAPITAL = 100_000.0                     # paper book; 5% = $5k max loss/position
@@ -167,6 +175,41 @@ def llm_standaside(sym, expiry, spot):
         return "write", f"LLM gate unavailable ({type(exc).__name__}); events priced", events
 
 
+BACKFILL_1SD = REPO / "reports" / "vrp-richness-backfill-1sd.json"
+
+
+def _richness_history(sym):
+    """Trailing 1-SD richness series for `sym` = committed backfill seed +
+    forward 1sd shadow observations (book/pre-reg-book-gate-v2.md). Deduped by
+    date; today's row is not yet logged when propose() runs, so it is excluded."""
+    seen = {}
+    try:
+        bf = json.loads(BACKFILL_1SD.read_text())
+        for r in (bf["by_underlying"].get(sym, {}).get("rows") or []):
+            if r.get("rich_hc") is not None:
+                seen[r["date"]] = r["rich_hc"]
+    except Exception:  # noqa: BLE001 — no seed ⇒ fall back to floor-only until history builds
+        pass
+    if SHADOW.exists():
+        for line in SHADOW.read_text().splitlines():
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            if (r.get("sym") == sym and r.get("arm", "1sd") == "1sd"
+                    and r.get("richness") is not None):
+                seen[r["date"]] = r["richness"]
+    return [seen[d] for d in sorted(seen)][-GATE_WINDOW:]
+
+
+def trailing_pctl(sym):
+    """Trailing GATE_PCTL percentile of the richness history, or None if <30 obs."""
+    s = _richness_history(sym)
+    if len(s) < 30:
+        return None
+    s = sorted(s)
+    return s[min(len(s) - 1, int(len(s) * GATE_PCTL / 100))]
+
+
 def propose(sym):
     closes = stock_bars(sym)
     if len(closes) < 22:
@@ -197,8 +240,19 @@ def propose(sym):
            "short_k": short_k, "long_k": long_k, "credit": round(credit, 2),
            "max_loss_per": round(max_loss * 100, 2), "richness": round(richness, 2),
            "contracts": contracts, "short_occ": sp["occ"], "long_occ": lp["occ"]}
-    if richness < RICHNESS_MIN:
-        rec["skip"] = f"premium thin (credit {richness:.0%} of width < {RICHNESS_MIN:.0%})"
+    # Book gate v2 (2.9): top-decile of trailing 1yr AND above the absolute floor.
+    thr = trailing_pctl(sym)
+    rec["gate_pctl_thr"] = round(thr, 3) if thr is not None else None
+    rec["gate_floor"] = GATE_FLOOR
+    below_floor = richness < GATE_FLOOR
+    below_pctl = (thr is not None) and (richness < thr)
+    rec["gate_pass"] = not (below_floor or below_pctl)
+    if below_floor:
+        rec["skip"] = f"below floor ({richness:.0%} < {GATE_FLOOR:.0%})"
+        return rec
+    if below_pctl:
+        rec["skip"] = (f"not top-decile ({richness:.0%} < trailing-{GATE_WINDOW}d "
+                       f"p{GATE_PCTL} {thr:.0%})")
         return rec
     if contracts < 1:
         rec["skip"] = "max loss > 5% cap even at 1 contract"
@@ -368,8 +422,26 @@ def log_shadow(scan, ts, arm="1sd"):
                 "date": day, "sym": s["sym"], "arm": arm, "expiry": s["expiry"],
                 "spot": s.get("spot"), "short_k": s["short_k"], "long_k": s["long_k"],
                 "width": WIDTH.get(s["sym"]), "credit": s["credit"], "richness": rich,
-                "gate_pass": (rich is not None and rich >= RICHNESS_MIN),
+                "gate_pass": s.get("gate_pass"),   # 1sd: real gate v2; 0.5sd: None (always-write)
+                "gate_pctl_thr": s.get("gate_pctl_thr"),
                 "outcome": s.get("outcome"), "status": "shadow_open"}) + "\n")
+
+
+def fire_rate():
+    """Cumulative realized gate fire-rate on the 1sd arm: gate_pass True over all
+    1sd shadow rows with a recorded gate decision. Compared vs PREDICTED_FIRE so a
+    drift from the ~21% backfill prediction is visible daily, not at month two."""
+    if not SHADOW.exists():
+        return None, 0
+    passes = total = 0
+    for line in SHADOW.read_text().splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        if r.get("arm", "1sd") == "1sd" and r.get("gate_pass") is not None:
+            total += 1
+            passes += 1 if r.get("gate_pass") else 0
+    return (passes / total if total else None), total
 
 
 def resolve_shadows():
@@ -436,12 +508,15 @@ def main() -> int:
                          "richness": rec.get("richness"), "credit": rec.get("credit"),
                          "short_k": rec.get("short_k"), "long_k": rec.get("long_k"),
                          "spot": rec.get("spot"), "rv": rec.get("rv"),
-                         "expiry": rec.get("expiry")}); continue
+                         "expiry": rec.get("expiry"), "gate_pass": rec.get("gate_pass"),
+                         "gate_pctl_thr": rec.get("gate_pctl_thr")}); continue
         sa = rec["standaside"]
         scan.append({"sym": sym, "outcome": rec["action"].lower(),
                      "richness": rec["richness"], "credit": rec["credit"],
                      "short_k": rec["short_k"], "long_k": rec["long_k"],
-                     "spot": rec["spot"], "rv": rec["rv"], "expiry": rec["expiry"]})
+                     "spot": rec["spot"], "rv": rec["rv"], "expiry": rec["expiry"],
+                     "gate_pass": rec.get("gate_pass"),
+                     "gate_pctl_thr": rec.get("gate_pctl_thr")})
         print(f"{sym}: {rec['action']}  {rec['short_k']}/{rec['long_k']}p {rec['expiry']} "
               f"credit ${rec['credit']:.2f} maxloss ${rec['max_loss_per']:.0f} "
               f"rich {rec['richness']:.0%} x{rec['contracts']}")
@@ -468,11 +543,17 @@ def main() -> int:
         if v:
             variant.append(v)
     log_shadow(variant, ts, arm="0.5sd")
+    rf, fn = fire_rate()
+    gate = {"pctl": GATE_PCTL, "window": GATE_WINDOW, "floor": GATE_FLOOR,
+            "predicted_fire": PREDICTED_FIRE,
+            "realized_fire": round(rf, 3) if rf is not None else None, "fire_n": fn}
     out = REPO / "reports" / f"vrp-{datetime.now(timezone.utc).date().isoformat()}.json"
     out.write_text(json.dumps({"ts": ts, "mode": "place" if place else "dry",
-                               "gate_richness_min": RICHNESS_MIN,
-                               "scan": scan, "written": written}, indent=2) + "\n")
-    print(f"\n{len(written)} write candidate(s) · wrote {out.name}"
+                               "gate": gate, "scan": scan, "written": written},
+                              indent=2) + "\n")
+    fr = f"{rf:.0%}" if rf is not None else "n/a"
+    print(f"\n{len(written)} write candidate(s) · gate fire {fr} (predicted "
+          f"{PREDICTED_FIRE:.0%}, n={fn}) · wrote {out.name}"
           + ("" if place else " · DRY-RUN (set PLACE=1 to trade paper)"))
     return 0
 

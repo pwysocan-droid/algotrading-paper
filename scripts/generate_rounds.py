@@ -121,6 +121,41 @@ def pipeline_health(repo_root: Path = REPO_ROOT,
     return warnings
 
 
+def book_block(repo_root: Path = REPO_ROOT) -> list[str]:
+    """The Book (VRP) section: gate fire-rate realized vs predicted so a drift
+    from the ~21% backfill prediction is visible in the daily digest, not
+    discovered at month two (Book gate v2 / 2.9)."""
+    reps = sorted(repo_root.glob("reports/vrp-2*.json"))
+    if not reps:
+        return []
+    try:
+        rep = json.loads(reps[-1].read_text())
+    except Exception:  # noqa: BLE001
+        return []
+    g = rep.get("gate") or {}
+    pred, real, n = g.get("predicted_fire"), g.get("realized_fire"), g.get("fire_n", 0)
+    lines = ["## The Book — VRP (Candidate #1)", ""]
+    if pred is not None:
+        real_s = f"{real:.0%}" if real is not None else "n/a"
+        flag = ""
+        if real is not None and n >= 20 and abs(real - pred) >= 0.10:
+            flag = "  ⚠ >10pp off prediction — investigate"
+        lines.append(f"gate fire (1-SD): **{real_s} realized** vs "
+                     f"{pred:.0%} predicted · n={n}{flag}")
+    w = rep.get("written") or []
+    lines.append(f"writes latest run: {len(w)} · mode {rep.get('mode', '?')}")
+    ssum = repo_root / "reports" / "vrp-shadow-summary.json"
+    if ssum.exists():
+        try:
+            sd = json.loads(ssum.read_text())
+            lines.append(f"shadow: {sd.get('resolved', 0)} resolved / "
+                         f"{sd.get('open', 0)} open (P&L verdict pending)")
+        except Exception:  # noqa: BLE001
+            pass
+    lines.append("")
+    return lines
+
+
 def build_digest(repo_root: Path = REPO_ROOT, db_path: Path | None = None,
                  now: datetime | None = None) -> str:
     ts = now or datetime.now(timezone.utc)
@@ -192,6 +227,8 @@ def build_digest(repo_root: Path = REPO_ROOT, db_path: Path | None = None,
         lines += [f"## Latest Friday review ({latest.stem})", ""]
         lines += quotes[-4:] if quotes else ["(see repo)"]
         lines.append("")
+
+    lines += book_block(repo_root)
 
     lines += [
         "## Backbone",
