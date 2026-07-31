@@ -207,6 +207,21 @@ negative is what makes the eventual positive (if any) believable.
   that records *why* (not just what) — these are what let a months-long
   autonomous project stay coherent and auditable.
 
+- **Reconcile externally-drafted artifacts against HEAD before reviewing
+  them — and verify citations mechanically.** A chat-drafted amendment
+  arrived carrying three citation errors (cited "Article 8" for governance
+  that is Article 6; "Article 0.3" for a prohibition that is 0.2; and
+  revived a "Service" concept) — all one root cause: it was drafted against
+  a *superseded snapshot* (v1.0) of the document it amended, not against
+  repo HEAD. The errors were caught by an adversarial reading, not by any
+  procedure — which means the next one might not be. Standing rule for the
+  contributing workflow: **(1)** any externally-drafted artifact is diffed
+  against repo HEAD as *step zero*, before substantive review; **(2)** every
+  citation is verified *mechanically* — grep the cited article's text and
+  confirm the number, never trust the number on its face. A stale-snapshot
+  draft looks authoritative and self-consistent; only the diff reveals it is
+  arguing against a document that no longer exists.
+
 ---
 
 ## The one-line takeaways

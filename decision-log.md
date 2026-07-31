@@ -2152,3 +2152,26 @@ same unamended discipline, each naming its mechanism); 2.9 (gate re-derivation);
 position open at adoption, so 6.1's same-day bar did not bind. Opening charter
 pair per §4.1: B′ (re-derived Book gate) + T (text signals) — the two pre-regs
 drafted next; Charter T data collection blocked until its pre-reg is committed.
+
+## 2026-07-31 — Forensic adjudication: the Service kill is logged (Finding a)
+
+Task: adjudicate whether the "Service" removal was documented, blocking for any
+Charter S revival. **Finding (a): a logged kill exists.**
+- v1.0 (9a2bbec88, "The Book & The Service") committed the Service as Article 3;
+  amendment governance was Article 8 (8.1/8.3); the mispricing prohibition was
+  0.3. v2.0 (bdf0f70f1) removed the Service and renumbered (8→6, prohibition
+  0.3→0.2, 0.3 reused for the generative mandate).
+- The removal is documented at the dated decision-log entry **"2026-07-23 —
+  Course correction: trading machine, not a publishing service,"** with operator
+  rationale and an explicit list of what was cut (Article 3 publishing,
+  Cochrane/UL sequencing, the auditor-conflict layer, conflict_check.py, service/).
+
+**Consequence:** Charter S rejection STANDS on a logged operator kill; a Service
+revival requires its own proposal that answers the 2026-07-23 entry.
+
+**Version provenance of RECALIBRATION.md citations:** all three errors trace to a
+single cause — RECALIBRATION was drafted against **v1.0** (9a2bbec88), not the
+committed v2.0/v2.1. "Art 8.1/8.3" = v1.0's amendment article; "rewrite Art 0.3
+(prohibition)" = v1.0's 0.3; "Charter S / the Service" = v1.0's Article 3. Every
+citation matches v1.0 and is superseded in v2.0. Not an undocumented removal
+(finding b) and not a chat-only invention (finding c) — a stale-snapshot draft.
