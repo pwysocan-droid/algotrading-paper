@@ -45,3 +45,16 @@ def test_repo_root_resolves_to_repo():
     # guards the parents[] off-by-one that pointed the report write above the repo
     assert (fr.REPO / "CONSTITUTION.md").exists()
     assert (fr.REPO / "reports").is_dir()
+
+
+def test_side_verdicts_split_longshot_and_near_certainty():
+    rows = [
+        {"mid": 0.03, "spread": 0.0, "yes_bid_size": 1, "yes_ask_size": 1, "ticker": "L1"},
+        {"mid": 0.07, "spread": 0.0, "yes_bid_size": 1, "yes_ask_size": 1, "ticker": "L2"},
+        {"mid": 0.97, "spread": 0.0, "yes_bid_size": 1, "yes_ask_size": 1, "ticker": "N1"},
+    ]
+    v = fr.side_verdicts(fr.bucket_stats(rows))
+    assert "longshot_sell" in v and "near_certainty_buy" in v
+    # spread 0 + 2*fee(~1c) = 2c all-in >= 1pp bias (1c) -> longshot side DEAD
+    assert "DEAD" in v["longshot_sell"]["verdict"]
+    assert v["near_certainty_buy"]["cost_pct_of_2pp_edge"] == 1.0

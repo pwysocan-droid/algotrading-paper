@@ -80,13 +80,58 @@ def bucket_stats(rows):
             "bucket": f"{b[0]:.2f}-{b[1]:.2f}", "tail": is_tail(b),
             "n_obs": len(d["spreads"]), "n_markets": len(d["tickers"]),
             "median_spread": med_spread,
+            "median_spread_cents": round(med_spread * 100, 2) if med_spread is not None else None,
             "median_halfspread_pct_of_price": (round((med_spread / 2) / mid_p, 3)
                                                if med_spread and mid_p else None),
             "documented_fee_per_contract": fee,
             "allin_roundtrip_cost_lower_bound": allin,
+            "allin_cost_cents": round(allin * 100, 2) if allin is not None else None,
+            "allin_pct_of_price": round(allin / mid_p, 3) if (allin and mid_p) else None,
             "median_top_depth_fp": _median(d["depth"]),
         })
     return out
+
+
+# Plausible tail calibration-bias magnitude (STATED PRIOR, absolute probability
+# points → dollars/contract). Racing's favorite–longshot bias is the magnitude
+# source, but a regulated order-book venue with arbitrageurs compresses it; 1–2pp
+# (= $0.01–0.02/contract) is a *generous upper bound* for what could exist here.
+BIAS_PP = [0.01, 0.02]
+
+
+def side_verdicts(stats):
+    """Adjudicate the two structurally opposite tail trades separately (the single
+    ~80%-of-price figure conflated them)."""
+    def agg(pred):
+        bs = [b for b in stats if pred(b) and b["allin_cost_cents"] is not None]
+        if not bs:
+            return None
+        costs = sorted(b["allin_cost_cents"] for b in bs)
+        return {"buckets": [b["bucket"] for b in bs],
+                "n_markets": sum(b["n_markets"] for b in bs),
+                "median_allin_cost_cents": costs[len(costs) // 2],
+                "cost_range_cents": [costs[0], costs[-1]]}
+
+    # longshot-sell: <10¢ buckets; near-certainty-buy: >90¢ buckets
+    ls = agg(lambda b: float(b["bucket"].split("-")[1]) <= 0.10)
+    nc = agg(lambda b: float(b["bucket"].split("-")[0]) >= 0.90)
+    v = {}
+    if ls:
+        cost_c = ls["median_allin_cost_cents"]
+        v["longshot_sell"] = {**ls,
+            "plausible_bias_cents": [round(b * 100, 1) for b in BIAS_PP],
+            "verdict": ("DEAD — cost >= plausible bias" if cost_c >= BIAS_PP[0] * 100
+                        else "survives — cost < 1pp bias"),
+            "note": "racing-takeout death reproduced on an order-book venue"}
+    if nc:
+        cost_c = nc["median_allin_cost_cents"]
+        v["near_certainty_buy"] = {**nc,
+            "cost_pct_of_1pp_edge": round(cost_c / (0.01 * 100), 2),
+            "cost_pct_of_2pp_edge": round(cost_c / (0.02 * 100), 2),
+            "verdict": ("DEAD at 1pp and 2pp — cost exceeds edge" if cost_c >= 0.02 * 100
+                        else "TESTABLE at 2pp — cost < 2pp edge"
+                        if cost_c < 0.02 * 100 else "marginal")}
+    return v
 
 
 VENUE_ROBUSTNESS = {
@@ -117,9 +162,13 @@ def build_report(db=DB):
         "cost_caveat": "LOWER BOUND: quoted spread + documented fee; no executed "
                        "verification, no time-to-fill (both require trading).",
         "coverage": {"total_obs": len(rows), "snapshots": snaps,
-                     "tail_bucket_obs": sum(b["n_obs"] for b in tail)},
+                     "tail_bucket_obs": sum(b["n_obs"] for b in tail),
+                     "note": ("cost floor is a CROSS-SECTIONAL property (spread "
+                              "distribution + deterministic fee); robust from a large "
+                              "cross-section even at low snapshot count.")},
         "by_bucket": stats,
         "tail_buckets": tail,
+        "side_verdicts": side_verdicts(stats),
         "venue_robustness": VENUE_ROBUSTNESS,
         "kill_note": "Charter E dies at Stage 0 if the tail-bucket lower-bound cost "
                      "already dominates any plausible bounded bias (kill is on "
@@ -136,9 +185,11 @@ def main():
     print(f"Stage 0 floor study: {cov['total_obs']} obs / {cov['snapshots']} snapshots "
           f"({cov['tail_bucket_obs']} in tail buckets) -> {out.name}")
     for b in rep["tail_buckets"]:
-        print(f"  tail {b['bucket']}: spread {b['median_spread']} · "
-              f"all-in LB {b['allin_roundtrip_cost_lower_bound']} · "
-              f"n={b['n_obs']}/{b['n_markets']}mkts")
+        print(f"  tail {b['bucket']}: spread {b['median_spread_cents']}c · "
+              f"all-in {b['allin_cost_cents']}c ({b['allin_pct_of_price']:.0%} of price) · "
+              f"n={b['n_markets']}mkts")
+    for side, v in rep["side_verdicts"].items():
+        print(f"  [{side}] cost {v['median_allin_cost_cents']}c · {v['verdict']}")
     return 0
 
 
