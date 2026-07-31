@@ -2100,3 +2100,26 @@ either distance) and EEM (illiquid, n as low as 112) from UNDERLYINGS → keep
 SPY/QQQ/IWM/DIA/GLD; (3) keep the 0.5-SD shadow arm running forward — richness is
 calibration, only the forward shadow P&L measures the physical-vs-implied gap
 that is the sole remaining edge. Calibration, not a P&L backtest (benign window).
+
+## 2026-07-31 — Feedback incorporated: self-referential fair-bar; TLT thread
+
+Operator feedback on the strike-distance finding (correct, incorporated):
+- **The delta-fair bar was partly self-referential.** N(-1)=16% / N(-0.5)=31%
+  come from the same realized-vol Gaussian that PLACES the strike, so "richness
+  beats the delta bar" is nearly circular. Fixed the shadow readout
+  (scripts/vrp_shadow_report.py) to judge realized breach against the MARKET's
+  own priced breakeven (richness = credit/width, from real quotes), and to lead
+  with realized P&L as the only verdict. The N(-sd) number is retained only as a
+  labeled self-referential reference.
+- **No profitability is established** — only "not obviously mispriced." The
+  forward shadow P&L is the sole real test and has not spoken (first resolutions
+  ~2026-09-04). Verdict on the book: PENDING.
+
+**Open thread — TLT (do not treat the cut as the answer).** TLT was never fairly
+paid at 1-SD (0%) *or* 0.5-SD (1.7%); median richness ~3%. Hypothesis to pull,
+not bury: the equity variance-risk-premium may simply not exist in bonds — bond
+option vol is rate-driven and may be fairly-to-cheaply priced, i.e. there is no
+premium to sell there (and possibly vol to BUY). Alternatively an artifact of a
+$2 width on a low-vol underlying. Either way it is a *finding about where VRP
+lives*, not mere universe hygiene. Parked as a lead for the continued search
+(Art 3), not closed.
