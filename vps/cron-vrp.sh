@@ -22,7 +22,7 @@ else
   echo "ALERT: vrp run FAILED $(date -u +%FT%TZ)" >> "${LOG}"
 fi
 
-git add book/positions.jsonl reports/vrp-*.json >>"${LOG}" 2>&1 || true
+git add book/positions.jsonl book/shadow.jsonl reports/vrp-*.json >>"${LOG}" 2>&1 || true
 if ! git diff --staged --quiet; then
   git commit -q -m "VRP paper run $(date -u +%FT%TZ)" \
     -m "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>" >>"${LOG}" 2>&1

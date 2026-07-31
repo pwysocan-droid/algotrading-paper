@@ -320,14 +320,14 @@ def log_shadow(scan, ts):
         for l in SHADOW.read_text().splitlines():
             if l.strip():
                 r = json.loads(l)
-                existing.add((r["date"], r["sym"], r["expiry"], r["short_k"]))
+                existing.add((r["date"], r["sym"]))   # one decision per name per day
     day = ts[:10]
     with SHADOW.open("a") as f:
         for s in scan:
             if (s.get("short_k") is None or s.get("credit") is None
                     or s["credit"] <= 0 or not s.get("expiry")):
                 continue                          # skip crossed/illiquid quotes
-            key = (day, s["sym"], s["expiry"], s["short_k"])
+            key = (day, s["sym"])
             if key in existing:
                 continue
             rich = s.get("richness")
