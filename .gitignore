@@ -58,3 +58,7 @@ html/
 venues/kalshi/kalshi.db
 venues/kalshi/kalshi.db-journal
 venues/kalshi/*.db.gz
+
+# Charter T forward-only archive — raw filings stay local (never committed)
+feeds/edgar_8k/*.db
+feeds/edgar_8k/*.db-journal

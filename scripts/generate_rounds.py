@@ -156,6 +156,32 @@ def book_block(repo_root: Path = REPO_ROOT) -> list[str]:
     return lines
 
 
+def charter_t_block(repo_root: Path = REPO_ROOT) -> list[str]:
+    """Charter T (EDGAR 8-K) forward-only archive health — data-contract status
+    surfaced LOUDLY (a forward archive with silent holes is unusable)."""
+    import importlib.util
+    ing = repo_root / "feeds" / "edgar_8k" / "ingest.py"
+    if not ing.exists():
+        return []
+    try:
+        sys.path.insert(0, str(ing.parent))
+        spec = importlib.util.spec_from_file_location("_edgar_ingest", ing)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        h = m.health(db=ing.parent / "filings.db")
+    except Exception:  # noqa: BLE001
+        return ["## Charter T archive (EDGAR 8-K)", "", "(health check unavailable)", ""]
+    lines = ["## Charter T archive (EDGAR 8-K · forward-only from 2026-07-31)", ""]
+    if not h:
+        lines += ["no ingest yet — archive not started", ""]
+        return lines
+    flag = "" if h["status"] == "OK" else f"  ⚠ CONTRACT {h['status']}: {h.get('note', '')}"
+    lines.append(f"{h['total']:,} filings archived · +{h.get('new_last', 0)} last ingest "
+                 f"({h.get('last_ingest', '?')}) · through {h.get('max_file_date', '?')}{flag}")
+    lines.append("")
+    return lines
+
+
 def build_digest(repo_root: Path = REPO_ROOT, db_path: Path | None = None,
                  now: datetime | None = None) -> str:
     ts = now or datetime.now(timezone.utc)
@@ -229,6 +255,7 @@ def build_digest(repo_root: Path = REPO_ROOT, db_path: Path | None = None,
         lines.append("")
 
     lines += book_block(repo_root)
+    lines += charter_t_block(repo_root)
 
     lines += [
         "## Backbone",

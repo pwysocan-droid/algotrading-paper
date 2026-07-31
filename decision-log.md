@@ -2248,3 +2248,34 @@ not a market condition — so a standing collection informs no further decision.
   Stage 0 re-measurement from scratch — NEVER a resumed standing collection. If
   the fee formula/rate changes materially, re-run venues/kalshi/ Stage 0 and
   re-adjudicate; otherwise Charter E stays dead.
+
+## 2026-07-31 — Charter T collection STARTED: SEC EDGAR 8-K (forward-only)
+
+Charter T pre-reg (book/pre-reg-charter-T.md) is committed → ingestion authorized
+(no hypothesis logic, no signals, no trading). Built the minimal pipe.
+
+**Source chosen: SEC EDGAR 8-K filing metadata (efts.sec.gov).** Rationale
+(mechanism-to-effort):
+- The pre-reg's LEAD, token-unlock/vesting calendars, has the strongest mechanism
+  (a named forced seller on a published schedule) but **no free data source** —
+  DefiLlama emissions is paywalled (402), gutting the effort half of the ratio.
+  Deferred until a free unlock feed is found.
+- SEC EDGAR 8-K is the best ratio among *fetchable* sources: free, stable,
+  documented, timestamped, gold-standard for a forward-only archive; ~370
+  filings/day. Mechanism (named per sub-hypothesis later): a material-event
+  disclosure that passive/index vehicles and institutions must process, slower-
+  reacting retail behind them. Maps to the equity (VRP) domain we already trade.
+- Snapshot governance (crypto, free GraphQL) confirmed working; held as a
+  candidate SECOND source, not built now (keep the pipe minimal).
+
+**Pipe:** feeds/edgar_8k/ (adapter = read-only efts fetch; ingest = append new by
+accession to a gitignored, single-writer filings.db — raw NEVER committed). Data
+contracts every run (schema / row-count / gap), surfaced LOUDLY in the daily
+digest (charter_t_block). cron-edgar.sh runs 03:00 UTC (before the 03:32 digest).
+
+**Birth certificate:** collection start **2026-07-31 (UTC)** —
+feeds/edgar_8k/COLLECTION_START.md (committed). Every future T sub-hypothesis's
+"forward-only from" line is this date; no 8-K dated earlier may be in-sample.
+
+**Steady-state disk:** ~370 rows/day × ~300 B ≈ ~110 KB/day ≈ **~40 MB/year**
+(gitignored, VPS-local). Negligible vs the Kalshi 220 MB/snapshot — no bloat risk.
