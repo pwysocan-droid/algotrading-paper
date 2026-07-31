@@ -53,3 +53,7 @@ html/
 # Editor / local tool state
 *.code-workspace
 .claude/settings.local.json
+
+# Charter E Stage 0 — raw Kalshi snapshots stay local (never committed)
+venues/kalshi/kalshi.db
+venues/kalshi/kalshi.db-journal

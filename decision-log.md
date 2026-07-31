@@ -2175,3 +2175,24 @@ committed v2.0/v2.1. "Art 8.1/8.3" = v1.0's amendment article; "rewrite Art 0.3
 (prohibition)" = v1.0's 0.3; "Charter S / the Service" = v1.0's Article 3. Every
 citation matches v1.0 and is superseded in v2.0. Not an undocumented removal
 (finding b) and not a chat-only invention (finding c) — a stale-snapshot draft.
+
+## 2026-07-31 — Charter E Stage 0 built (measurement); spends no charter slot
+
+Adversarial review first (RECALIBRATION_REVIEW.md, Charter E addendum): Stage 0
+survives as a measurement with corrections — kill on absolute cost not the racing
+magnitude (S0-1); snapshot-only, executed-order fee-verification and time-to-fill
+struck as trading-incompatible, cost reported as a LOWER BOUND (S0-2); venue-
+failure tail added per 2.10b (S0-4); N/days pinned (S0-5). §1.3 calibration
+deferred with computed per-bucket n (~750 resolved contracts for a 2pp tail bias,
+~3,400 for 1pp) as a hard precondition on Stage 1 (C-1..C-5).
+
+**Sequencing reading (operator-confirmed):** Stage 0 is a read-only venue
+cost-floor measurement/premise-check and **spends no charter slot** — it may kill
+Charter E before E ever activates. The two-charter cap (§4.1: B′+T active) binds
+at **Stage 1** activation, not at Stage 0.
+
+Built (measurement only, no trading, no order code): venues/kalshi/ read-only
+adapter (public /markets, no auth), snapshot.py (own gitignored kalshi.db — raw
+snapshots NEVER committed, heeding the trader.db bloat), floor_report.py ->
+reports/event-venue-floor-{date}.json. cron-kalshi.sh: snapshot 3×/day, report+
+commit daily. Stage 0's report alone decides whether Charter E exists further.
