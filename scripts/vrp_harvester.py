@@ -38,15 +38,17 @@ H = {"APCA-API-KEY-ID": os.environ.get("ALPACA_API_KEY", ""),
 HD = {"APCA-API-KEY-ID": os.environ.get("ALPACA_LIVE_KEY_ID", H["APCA-API-KEY-ID"]),
       "APCA-API-SECRET-KEY": os.environ.get("ALPACA_LIVE_SECRET", H["APCA-API-SECRET-KEY"])}
 
-UNDERLYINGS = ["SPY", "QQQ", "IWM"]
+UNDERLYINGS = ["SPY", "QQQ", "IWM", "DIA", "GLD", "TLT", "EEM"]  # liquid optionable ETFs
 DTE_TARGET = 35
-WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3}     # spread width in $
+WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3, "DIA": 5,   # spread width in $ (~ price-scaled)
+         "GLD": 5, "TLT": 2, "EEM": 1}
 RICHNESS_MIN = float(os.environ.get("RICHNESS_MIN", "0.20"))  # credit/width bar
 PROFIT_TAKE = float(os.environ.get("PROFIT_TAKE", "0.50"))  # close at 50% of credit captured
 CLOSE_DTE = int(os.environ.get("CLOSE_DTE", "10"))          # close near expiry (gamma/pin)
 BOOK_CAPITAL = 100_000.0                     # paper book; 5% = $5k max loss/position
 MAX_LOSS_FRAC = 0.05
 LEGDER = REPO / "book" / "positions.jsonl"
+SHADOW = REPO / "book" / "shadow.jsonl"   # zero-risk decision-rule record (Art 3.2)
 
 # Real scheduled-macro calendar (2026). FOMC decision dates are the Fed's
 # published 2026 schedule; CPI (~12th) and NFP (1st Friday) are computed.
@@ -293,6 +295,80 @@ def manage_positions(place):
         LEGDER.write_text("".join(json.dumps(x) + "\n" for x in rows))
 
 
+def close_on(sym, day):
+    """Underlying close on a specific date (for shadow resolution at expiry)."""
+    r = requests.get(f"{DATA}/v2/stocks/{sym}/bars",
+                     params={"timeframe": "1Day", "start": day, "end": day,
+                             "limit": 1, "feed": "iex", "adjustment": "all"},
+                     headers=HD, timeout=20)
+    if not r.ok:
+        return None
+    bars = r.json().get("bars") or []
+    return bars[0]["c"] if bars else None
+
+
+def log_shadow(scan, ts):
+    """Zero-risk decision-rule record (Art 3.2): log EVERY underlying's proposed
+    spread each day — executed or not — so the gate + stand-aside rule is
+    evaluated on ~250 days/yr, not just the rare days it trades."""
+    existing = set()
+    if SHADOW.exists():
+        for l in SHADOW.read_text().splitlines():
+            if l.strip():
+                r = json.loads(l)
+                existing.add((r["date"], r["sym"], r["expiry"], r["short_k"]))
+    day = ts[:10]
+    with SHADOW.open("a") as f:
+        for s in scan:
+            if s.get("short_k") is None or s.get("credit") is None or not s.get("expiry"):
+                continue
+            key = (day, s["sym"], s["expiry"], s["short_k"])
+            if key in existing:
+                continue
+            rich = s.get("richness")
+            f.write(json.dumps({
+                "date": day, "sym": s["sym"], "expiry": s["expiry"],
+                "spot": s.get("spot"), "short_k": s["short_k"], "long_k": s["long_k"],
+                "width": WIDTH.get(s["sym"]), "credit": s["credit"], "richness": rich,
+                "gate_pass": (rich is not None and rich >= RICHNESS_MIN),
+                "outcome": s.get("outcome"), "status": "shadow_open"}) + "\n")
+
+
+def resolve_shadows():
+    """At/after expiry, compute each shadow spread's hypothetical P&L from the
+    underlying's settlement close. Payoff of a put-credit spread at price U:
+    U>=short -> keep credit; U<=long -> max loss; between -> partial."""
+    if not SHADOW.exists():
+        return 0
+    rows = [json.loads(l) for l in SHADOW.read_text().splitlines() if l.strip()]
+    today = datetime.now(timezone.utc).date()
+    cache, resolved = {}, 0
+    for r in rows:
+        if r.get("status") != "shadow_open":
+            continue
+        if datetime.fromisoformat(r["expiry"]).date() > today:
+            continue
+        key = (r["sym"], r["expiry"])
+        U = cache.get(key) or close_on(r["sym"], r["expiry"])
+        cache[key] = U
+        if U is None:
+            continue                          # bar not posted yet; resolve next run
+        sk, lk, credit, width = r["short_k"], r["long_k"], r["credit"], r["width"]
+        if U >= sk:
+            pnl = credit
+        elif U <= lk:
+            pnl = credit - width
+        else:
+            pnl = credit - (sk - U)
+        r["underlying_at_expiry"] = round(U, 2)
+        r["pnl_per_contract"] = round(pnl * 100, 2)
+        r["status"] = "resolved"
+        resolved += 1
+    if resolved:
+        SHADOW.write_text("".join(json.dumps(x) + "\n" for x in rows))
+    return resolved
+
+
 def main() -> int:
     place = os.environ.get("PLACE") == "1"
     ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -300,6 +376,9 @@ def main() -> int:
           f"· book ${BOOK_CAPITAL:,.0f} · 5% cap ${BOOK_CAPITAL*MAX_LOSS_FRAC:,.0f}\n")
     print("-- manage open positions --")
     manage_positions(place)
+    nres = resolve_shadows()
+    if nres:
+        print(f"-- shadow: resolved {nres} matured spread(s) --")
     print("-- scan for new writes --")
     written = []
     scan = []   # every underlying's real outcome (richness/skip) — self-documenting
@@ -340,6 +419,7 @@ def main() -> int:
                         "structural_worst_case_pct": round(rec['max_loss_per']*rec['contracts']
                             / BOOK_CAPITAL*100, 3), "detail": rec}) + "\n")
             written.append(rec)
+    log_shadow(scan, ts)   # record the day's decision for every underlying (zero risk)
     out = REPO / "reports" / f"vrp-{datetime.now(timezone.utc).date().isoformat()}.json"
     out.write_text(json.dumps({"ts": ts, "mode": "place" if place else "dry",
                                "gate_richness_min": RICHNESS_MIN,
