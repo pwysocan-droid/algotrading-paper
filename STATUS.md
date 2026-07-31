@@ -1,16 +1,25 @@
 # STATUS — read this first
 
 One-file orientation for anyone (human or Claude) joining mid-flight.
-Snapshot date: **2026-07-31 (post-Amendment-1)**. If that looks stale, trust
-the live artifacts it points to over the prose here.
+Snapshot date: **2026-07-31 (post-Amendment-1; Charter T collecting)**. If that
+looks stale, trust the live artifacts it points to over the prose here.
+
+**Posture: two clocks running, one archive accruing, one kill on the wall.**
+- **Clock 1 — B′ gate** (VRP, 2.9): live write gate = trailing-252d p90 + 8%
+  floor (not flat 20%); digest tracks realized-vs-predicted (~21%) fire-rate.
+- **Clock 2 — VRP shadows**: first hypothetical-P&L resolutions ~2026-09-04.
+- **Archive — Charter T**: SEC EDGAR 8-K forward-only collection **started
+  2026-07-31** (feeds/edgar_8k/; ingestion only, no hypothesis yet); daily
+  digest shows data-contract health. Token unlocks (the pre-reg lead) deferred —
+  paywalled.
+- **Kill — Charter E** (event underwriting): **DEAD at Stage 0** — the Kalshi
+  venue fee is a takeout that beats the favorite–longshot bias on both tails;
+  crons sunset, adapter shelved.
 
 **Amendment 1 (CONSTITUTION v2.1) in force:** 0.2 bounds the mispricing ban to
 *price-derived signals*; untested input spaces (text/events/positioning) are in
-scope under the same brakes. **B′ gate live** (2.9): the VRP write gate is now
-trailing-252d p90 + 8% floor, not flat 20%. **Charter E (event underwriting)
-DEAD at Stage 0** — Kalshi venue fee is a takeout that beats the bias on both
-tails. **Charter T (text signals) scaffolded**, data-collection-gated. Charter S
-(the Service) permanently rejected (logged operator kill, 2026-07-23).
+scope under the same brakes. Charter S (the Service) permanently rejected
+(logged operator kill, 2026-07-23).
 
 ## What this is (and the pivot that defines the current era)
 
