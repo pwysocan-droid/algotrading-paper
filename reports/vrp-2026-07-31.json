@@ -1,0 +1,92 @@
+{
+  "ts": "2026-07-31T01:17:17+00:00",
+  "mode": "dry",
+  "gate_richness_min": 0.2,
+  "scan": [
+    {
+      "sym": "SPY",
+      "outcome": "skip",
+      "reason": "premium thin (credit 13% of width < 20%)",
+      "richness": 0.13,
+      "credit": 0.66,
+      "short_k": 710,
+      "long_k": 705,
+      "spot": 741.63,
+      "rv": 0.121,
+      "expiry": "2026-09-04"
+    },
+    {
+      "sym": "QQQ",
+      "outcome": "skip",
+      "reason": "premium thin (credit 2% of width < 20%)",
+      "richness": 0.02,
+      "credit": 0.11,
+      "short_k": 625,
+      "long_k": 620,
+      "spot": 683.6,
+      "rv": 0.236,
+      "expiry": "2026-09-04"
+    },
+    {
+      "sym": "IWM",
+      "outcome": "skip",
+      "reason": "premium thin (credit 9% of width < 20%)",
+      "richness": 0.09,
+      "credit": 0.27,
+      "short_k": 279,
+      "long_k": 276,
+      "spot": 292.53,
+      "rv": 0.13,
+      "expiry": "2026-09-04"
+    },
+    {
+      "sym": "DIA",
+      "outcome": "skip",
+      "reason": "premium thin (credit 5% of width < 20%)",
+      "richness": 0.05,
+      "credit": 0.23,
+      "short_k": 495,
+      "long_k": 490,
+      "spot": 521.37,
+      "rv": 0.128,
+      "expiry": "2026-09-04"
+    },
+    {
+      "sym": "GLD",
+      "outcome": "skip",
+      "reason": "premium thin (credit 5% of width < 20%)",
+      "richness": 0.05,
+      "credit": 0.27,
+      "short_k": 345,
+      "long_k": 340,
+      "spot": 377.17,
+      "rv": 0.215,
+      "expiry": "2026-09-04"
+    },
+    {
+      "sym": "TLT",
+      "outcome": "skip",
+      "reason": "premium thin (credit 12% of width < 20%)",
+      "richness": 0.12,
+      "credit": 0.23,
+      "short_k": 80,
+      "long_k": 78,
+      "spot": 82.8,
+      "rv": 0.083,
+      "expiry": "2026-09-04"
+    },
+    {
+      "sym": "EEM",
+      "outcome": "skip",
+      "reason": "no usable credit (crossed/illiquid: 56/55 bid 0.27 ask 0.7)",
+      "richness": null,
+      "credit": null,
+      "short_k": 56,
+      "long_k": 55,
+      "spot": 63.61,
+      "rv": null,
+      "expiry": null
+    }
+  ],
+  "written": []
+}

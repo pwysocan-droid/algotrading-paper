@@ -1,0 +1,15 @@
+{
+ "total_logged": 12,
+ "resolved": 0,
+ "open": 12,
+ "by_arm": {
+  "1sd": {
+   "resolved": 0,
+   "placement_model_odds_ref": 0.159
+  },
+  "0.5sd": {
+   "resolved": 0,
+   "placement_model_odds_ref": 0.309
+  }
+ }
+}
