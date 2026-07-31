@@ -16,10 +16,16 @@ def _f(x):
     return None if x is None else float(x)
 
 
-def fetch_markets(status="open", max_pages=30, page=1000, session=None):
+def fetch_markets(status="open", max_pages=800, page=1000, session=None):
     """Paginate GET /markets and return normalized two-sided quotes. Prices from
     the `*_dollars` fields (0.00–1.00); sizes are raw `*_fp` (scale unverified —
-    spread, not depth, is the primary Stage 0 quantity)."""
+    spread, not depth, is the primary Stage 0 quantity).
+
+    NOTE: max_pages defaults HIGH on purpose. The original default (30 → 30k
+    markets) SILENTLY TRUNCATED the population and hid the near-certainty (>90¢)
+    tail entirely (Kalshi has >600k open markets; near-certainties are ~72 of
+    them, ordered beyond the first 30k). That is the 'no silent caps' lesson —
+    a bounded fetch read as 'this side doesn't exist' when it was just cut off."""
     s = session or requests.Session()
     out, cursor = [], None
     for _ in range(max_pages):
