@@ -2123,3 +2123,32 @@ premium to sell there (and possibly vol to BUY). Alternatively an artifact of a
 $2 width on a low-vol underlying. Either way it is a *finding about where VRP
 lives*, not mere universe hygiene. Parked as a lead for the continued search
 (Art 3), not closed.
+
+## 2026-07-31 — Amendment 1 (v2.1) adopted after adversarial review
+
+RECALIBRATION.md (Amendment 1) reviewed adversarially first (RECALIBRATION_REVIEW.md),
+then adopted in corrected, scoped form.
+
+**Reviewed and corrected before adoption:**
+- **§2.9 percentile gate was the self-referential trap re-introduced** — a pure
+  trailing-percentile gate fires ~(100−N)% of days regardless of fairness, and
+  "correctness = reaches n≥30" is circular (always-write maximizes n). Reframed
+  on adoption: the percentile gate is NOT a fairness test (ruin-avoidance stays
+  in 2.2/2.4); it is a forward-tested deployment-TIMING hypothesis with a
+  principled (not P&L-tuned) threshold + absolute floor + the shadow always-write
+  arm as mandatory control. n≥30 is a decidability target, not a success metric.
+- **Citation errors fixed:** the draft cites "Art 8" (governance is Art 6) and
+  "rewrite Art 0.3" (the prohibition is 0.2; 0.3 is the generative mandate).
+  Bounding applied to **0.2**, generative mandate 0.3 left intact.
+- **2.10** adopted with an added venue-robustness caveat (event venues carry the
+  100%-of-venue tail per 2.7).
+- **Charter S / the Service REJECTED** — resurrects what v2.0 removed in full and
+  contradicts the operator's standing "not publishing" direction. Not implemented.
+
+**Adopted (v2.1):** 0.2 bounded to price-derived signals on liquid instruments
+(untested input spaces — text/events/positioning/structure — in scope under the
+same unamended discipline, each naming its mechanism); 2.9 (gate re-derivation);
+2.10 (event contracts). Engine and brakes unchanged; only the fuel. No Book
+position open at adoption, so 6.1's same-day bar did not bind. Opening charter
+pair per §4.1: B′ (re-derived Book gate) + T (text signals) — the two pre-regs
+drafted next; Charter T data collection blocked until its pre-reg is committed.

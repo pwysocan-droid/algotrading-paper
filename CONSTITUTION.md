@@ -12,6 +12,21 @@ waived verbally, from memory, or in the moment.
 > remains is the Book — a machine that earns by underwriting bounded risk —
 > plus disciplined search of the structures the evidence still licenses.
 > E-1.0 real-money cost experiment: shelved by operator (2026-07-23).
+>
+> **v2.1 (2026-07-31). Amendment 1** (`RECALIBRATION.md`), adopted after
+> written adversarial review (`RECALIBRATION_REVIEW.md`). Bounds the
+> mispricing prohibition (0.2) to *price-derived signals on liquid
+> instruments* — the input space actually measured empty by ~43
+> falsifications — opening untested spaces (text/filings, events,
+> positioning, contract structure) to search under the same unamended
+> discipline. Adds **2.9** (Book gate re-derivation: a forward-tested
+> deployment-*timing* hypothesis, NOT a new fairness test — ruin-avoidance
+> stays in 2.2/2.4) and **2.10** (event contracts admissible under the
+> existing partition). *Engine and brakes unchanged; only the fuel.*
+> **Not adopted from the draft:** Charter S / the Service (contradicts
+> v2.0's removal and the operator's standing "not publishing" direction) is
+> rejected; the draft's citation errors (Art 8→6; 0.3→0.2) are corrected.
+> No Book position was open at adoption, so 6.1's same-day bar does not bind.
 
 ---
 
@@ -23,13 +38,22 @@ small; the deliverable is a working machine and the proof it works. A
 credible negative is an acceptable outcome of any one experiment, never the
 aim of the program.
 
-0.2. The evidence forbids one whole approach and points at another. ~40
-falsifications established that **hunting mispricing** — out-predicting an
-efficient market at retail scale in liquid markets — does not pay net of
-costs. Any proposal requiring prediction of mispricing is out of scope by
-constitution. The two positive findings were **risk-premium-shaped**:
-compensation for bearing something, not reward for predicting something.
-The machine is built on that.
+0.2. **(v2.1 — bounded; Amendment 1.)** The evidence forbids one *measured*
+approach and points at another. ~43 falsifications (plus the ML ceiling
+study) established that **hunting mispricing in price-derived signals** —
+OHLCV and its transforms — on **liquid instruments** at retail cost does not
+pay net of costs. That is a ceiling on *one input space*, not a verdict about
+everything: a proposal requiring mispricing prediction **from price-derived
+signals on liquid instruments** is out of scope by constitution. Input spaces
+the registry has never tested — text/filings, scheduled events, positioning/
+crowd data, contract structure — are **in scope**, provided each (a) names its
+mechanism (who is forced to act on the information, and why slower than us),
+(b) enters forward-only under the full pre-registration / kill / premise-check
+discipline (2.5, 3.3), and (c) is not adaptively mined on a fixed archive
+without pre-registered splits. The two positive findings were
+**risk-premium-shaped**: compensation for bearing something, not reward for
+predicting. The machine is built on that — and now searches the untested
+spaces under the same brakes, never looser ones.
 
 0.3. **The generative mandate (the point).** This project exists because
 an LLM can rethink these markets from first principles and across domains,
@@ -115,6 +139,40 @@ only (book/pre-reg-funding-carry-basis.md): dominant tail = venue failure
 the fair-compensation test; VENUE-BLOCKED on Alpaca (spot-only). The likely
 true first position is a **spot-only defined-risk premium** executable on
 the account we hold — to be specified next, subject to every rule above.
+
+2.9. **Book gate — re-derivation (v2.1, Amendment 1).** The flat 20%-of-width
+richness gate is retired: it is an *absolute* bar the efficient market almost
+never meets (real quotes ~12–13% vs the 20% demand), guaranteeing n = 0 and
+permanent undecidability of the live gate (2.5). Its replacement is **not a
+new fairness test** — fairness against *ruin* already lives in the bounded
+partition (2.2) and solvency sizing (2.4); thin premium is at worst a −EV bet,
+never insolvency. The replacement is a **pre-registered deployment-timing
+hypothesis**: write when the day's credit/width sits at/above a **fixed,
+a-priori percentile of a trailing window** (an IV-rank-style "insurance is
+comparatively expensive now" rule) *and* at/above a **fixed absolute floor**
+(never write structurally-thin premium, however rich the recent week). The
+percentile, window, and floor are chosen by *stated principle*, never tuned to
+trade count or backtest P&L — that would fit the spent budget (1.3); the real
+distribution is computed only to *report* the cadence a principled choice
+implies. The **shadow always-write arm is the mandatory control** (3.2): the
+live gate tests whether this timing rule beats always-write *and* the drift
+null — if it adds nothing, it dies. n ≥ 30 within the 12-month deadline is a
+decidability *target*, not a success metric; a principled gate that still
+cannot reach it reports the *finding* "no fair premium at tradeable
+frequency," never a mis-specification to engineer around. Specific values are
+pinned in `book/pre-reg-book-gate-v2.md` before the first write.
+
+2.10. **Event contracts — admissibility reading (v2.1, Amendment 1).**
+Binary / defined-outcome contracts (regulated event markets; defined-risk
+option structures around named events) have contractually computable worst
+cases (max loss = stake or defined width) and are therefore admissible under
+the *existing, unamended* partition (2.2) — this clause records a reading, not
+a structural change. Two conditions attach: (a) the worst case is still priced
+per 2.3 (contractual extreme × guaranteed stressed time-to-flat), and (b) the
+settlement **venue** carries its own tail — thin/discontinuous event venues
+can fail or gap at settlement, the same 100%-of-venue tail that blocked
+funding-carry in 2.7 — so each venue must pass the fair-compensation /
+robustness test and be sized under 2.4 like any venue.
 
 ## Article 3 — Continued structural search (the other half of the machine)
 
@@ -202,3 +260,10 @@ worth writing. Nothing here mistakes "we can keep going" for "we should."
 - Data integrity over cleverness; the machine must not lie to its operator. (4)
 - Free money is a checklist, not a target. (5)
 - Everything is willing to stop, and says so in advance. (6)
+- The verdict was about candles, not everything; untested input spaces are in
+  scope under the same brakes, never looser ones. (0.2, v2.1)
+- Book safety lives in the bounded contract and the solvency cap, not in
+  demanding the market overpay; the gate is a forward-tested timing hypothesis,
+  not a fairness test. (2.9)
+- An event contract is admissible when its worst case *and* its venue are both
+  bounded and priced. (2.10)
