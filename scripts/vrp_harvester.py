@@ -183,6 +183,10 @@ def propose(sym):
                 f"(expiry {expiry}, spot {spot:.2f}, 1SD {one_sd:.2f})"}
     credit = sp["bid"] - lp["ask"]                 # conservative: sell bid, buy ask
     width = WIDTH[sym]
+    if credit <= 0:                                # crossed/illiquid quote, not real premium
+        return {"sym": sym, "skip": f"no usable credit (crossed/illiquid: "
+                f"{short_k}/{long_k} bid {sp['bid']} ask {lp['ask']})",
+                "spot": round(spot, 2), "short_k": short_k, "long_k": long_k}
     max_loss = width - credit
     richness = credit / width if width else 0
     contracts = max(0, int((BOOK_CAPITAL * MAX_LOSS_FRAC) / (max_loss * 100)))
@@ -320,8 +324,9 @@ def log_shadow(scan, ts):
     day = ts[:10]
     with SHADOW.open("a") as f:
         for s in scan:
-            if s.get("short_k") is None or s.get("credit") is None or not s.get("expiry"):
-                continue
+            if (s.get("short_k") is None or s.get("credit") is None
+                    or s["credit"] <= 0 or not s.get("expiry")):
+                continue                          # skip crossed/illiquid quotes
             key = (day, s["sym"], s["expiry"], s["short_k"])
             if key in existing:
                 continue
