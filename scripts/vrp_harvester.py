@@ -206,6 +206,34 @@ def propose(sym):
     return rec
 
 
+def propose_variant(sym, sd_mult):
+    """Shadow-only spread at `sd_mult` realized-SD OTM (e.g. 0.5 = closer strike,
+    fatter premium). Same math as propose(), no gate/stand-aside — pure data for
+    the shadow arm so real quotes decide the strike distance, not a guess."""
+    closes = stock_bars(sym)
+    if len(closes) < 22:
+        return None
+    spot, rv = closes[-1], realized_vol(closes)
+    if not rv:
+        return None
+    expiry = nearest_expiry()
+    dte = (datetime.fromisoformat(expiry).date() - datetime.now(timezone.utc).date()).days
+    W = WIDTH[sym]
+    one_sd = spot * rv * math.sqrt(dte / 252.0)
+    short_k = round((spot - sd_mult * one_sd) / W) * W
+    long_k = short_k - W
+    chain = option_chain(sym, expiry)
+    sp, lp = chain.get(float(short_k)), chain.get(float(long_k))
+    if not (sp and lp and sp.get("bid") and lp.get("ask")):
+        return None
+    credit = sp["bid"] - lp["ask"]
+    if credit <= 0:
+        return None
+    return {"sym": sym, "expiry": expiry, "spot": round(spot, 2),
+            "short_k": short_k, "long_k": long_k, "credit": round(credit, 2),
+            "richness": round(credit / W, 3), "outcome": "shadow_variant"}
+
+
 def place_paper(rec):
     """Multi-leg put-credit spread on the PAPER account (PLACE=1)."""
     order = {"order_class": "mleg", "qty": str(rec["contracts"]),
@@ -311,28 +339,30 @@ def close_on(sym, day):
     return bars[0]["c"] if bars else None
 
 
-def log_shadow(scan, ts):
+def log_shadow(scan, ts, arm="1sd"):
     """Zero-risk decision-rule record (Art 3.2): log EVERY underlying's proposed
     spread each day — executed or not — so the gate + stand-aside rule is
-    evaluated on ~250 days/yr, not just the rare days it trades."""
+    evaluated on ~250 days/yr, not just the rare days it trades. `arm` tags the
+    strike hypothesis (1sd = live/primary; 0.5sd = shadow-only closer strike),
+    so real quotes, not a guess, decide the strike distance."""
     existing = set()
     if SHADOW.exists():
         for l in SHADOW.read_text().splitlines():
             if l.strip():
                 r = json.loads(l)
-                existing.add((r["date"], r["sym"]))   # one decision per name per day
+                existing.add((r["date"], r["sym"], r.get("arm", "1sd")))
     day = ts[:10]
     with SHADOW.open("a") as f:
         for s in scan:
             if (s.get("short_k") is None or s.get("credit") is None
                     or s["credit"] <= 0 or not s.get("expiry")):
                 continue                          # skip crossed/illiquid quotes
-            key = (day, s["sym"])
+            key = (day, s["sym"], arm)
             if key in existing:
                 continue
             rich = s.get("richness")
             f.write(json.dumps({
-                "date": day, "sym": s["sym"], "expiry": s["expiry"],
+                "date": day, "sym": s["sym"], "arm": arm, "expiry": s["expiry"],
                 "spot": s.get("spot"), "short_k": s["short_k"], "long_k": s["long_k"],
                 "width": WIDTH.get(s["sym"]), "credit": s["credit"], "richness": rich,
                 "gate_pass": (rich is not None and rich >= RICHNESS_MIN),
@@ -424,7 +454,17 @@ def main() -> int:
                         "structural_worst_case_pct": round(rec['max_loss_per']*rec['contracts']
                             / BOOK_CAPITAL*100, 3), "detail": rec}) + "\n")
             written.append(rec)
-    log_shadow(scan, ts)   # record the day's decision for every underlying (zero risk)
+    log_shadow(scan, ts, arm="1sd")   # primary (live) strike hypothesis
+    # shadow-only closer strike (0.5 SD): fatter premium, higher odds — data, not a guess
+    variant = []
+    for sym in UNDERLYINGS:
+        try:
+            v = propose_variant(sym, 0.5)
+        except Exception:  # noqa: BLE001
+            v = None
+        if v:
+            variant.append(v)
+    log_shadow(variant, ts, arm="0.5sd")
     out = REPO / "reports" / f"vrp-{datetime.now(timezone.utc).date().isoformat()}.json"
     out.write_text(json.dumps({"ts": ts, "mode": "place" if place else "dry",
                                "gate_richness_min": RICHNESS_MIN,
