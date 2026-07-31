@@ -38,10 +38,13 @@ H = {"APCA-API-KEY-ID": os.environ.get("ALPACA_API_KEY", ""),
 HD = {"APCA-API-KEY-ID": os.environ.get("ALPACA_LIVE_KEY_ID", H["APCA-API-KEY-ID"]),
       "APCA-API-SECRET-KEY": os.environ.get("ALPACA_LIVE_SECRET", H["APCA-API-SECRET-KEY"])}
 
-UNDERLYINGS = ["SPY", "QQQ", "IWM", "DIA", "GLD", "TLT", "EEM"]  # liquid optionable ETFs
+# Universe trimmed on real calibration (reports/vrp-richness-backfill-*.json):
+# dropped TLT (never fairly paid — 0% of days at 1-SD) and EEM (illiquid, sparse/
+# crossed quotes, n as low as 112). Kept names clear their delta-fair bar 4-9% of days.
+UNDERLYINGS = ["SPY", "QQQ", "IWM", "DIA", "GLD"]
 DTE_TARGET = 35
 WIDTH = {"SPY": 5, "QQQ": 5, "IWM": 3, "DIA": 5,   # spread width in $ (~ price-scaled)
-         "GLD": 5, "TLT": 2, "EEM": 1}
+         "GLD": 5, "TLT": 2, "EEM": 1}             # TLT/EEM widths kept (unused now)
 RICHNESS_MIN = float(os.environ.get("RICHNESS_MIN", "0.20"))  # credit/width bar
 PROFIT_TAKE = float(os.environ.get("PROFIT_TAKE", "0.50"))  # close at 50% of credit captured
 CLOSE_DTE = int(os.environ.get("CLOSE_DTE", "10"))          # close near expiry (gamma/pin)

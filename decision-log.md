@@ -2078,3 +2078,25 @@ clears, commits its ledger+report so the operator can watch. The machine is
 now RUNNING and building its forward paper record. Currently writes nothing
 (premium thin) — correct. Next builds (not blocking): live news feed for
 real-time tail detection (v3), and surfacing the VRP book in the digest.
+
+## 2026-07-31 — Strike-distance calibration: closer strike is a mirage; TLT/EEM dropped
+
+Backfilled the new additions (7 ETFs × {1-SD, 0.5-SD}, real Alpaca option closes,
+Feb 2024–Jul 2026) — closing the gap that DIA/GLD/TLT/EEM and the 0.5-SD arm had
+zero historical calibration.
+
+**Key finding (decision-grade, counterintuitive).** The 0.5-SD (closer) strike
+clears the flat 20% gate ~10× more often (QQQ 3%→32%, GLD 2%→39%). That is a
+mirage: richness = breakeven loss-rate, and a 0.5-SD strike carries ~31%
+assignment odds vs ~16% at 1-SD, so 20% is fair at 1-SD but far too cheap at
+0.5-SD. Held to each strike's OWN delta-fair bar, the conservative 1-SD strike is
+fairly paid MORE often (4–9% of days) than the aggressive 0.5-SD (1–3%). Moving
+the strike closer does not create edge — the market prices every moneyness
+efficiently; the closer strike merely looks busier against a bar that's too low.
+
+**Actions:** (1) keep the conservative 1-SD strike live — the "trade more"
+shortcut would underwrite at unfair prices; (2) drop TLT (0% fairly paid at
+either distance) and EEM (illiquid, n as low as 112) from UNDERLYINGS → keep
+SPY/QQQ/IWM/DIA/GLD; (3) keep the 0.5-SD shadow arm running forward — richness is
+calibration, only the forward shadow P&L measures the physical-vs-implied gap
+that is the sole remaining edge. Calibration, not a P&L backtest (benign window).
