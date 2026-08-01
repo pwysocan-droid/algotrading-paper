@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-01T15:35:08Z",
+  "generated_at": "2026-08-01T15:40:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -14,7 +14,7 @@
     "tile_best": "null_baseline $-117.79",
     "tile_ab": "83/100 null closes",
     "tile_research": "45 ideas · 8 rounds",
-    "tile_days": "day 76"
+    "tile_days": "day 77"
   },
   "kahneman": {
     "trigger": "pre-review · anchoring",
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-01T15:35:04.450538+00:00",
+    "last_run_iso": "2026-08-01T15:40:04.301391+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-01 · 15:35 UTC",
+    "last_run_human_date": "2026-08-01 · 15:40 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "20137 of 20157 ok · 99.9%",
+    "uptime_recent": "20138 of 20158 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -48,7 +48,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 76 · open after week 4",
+      "qual": "curriculum day 77 · open after week 4",
       "figure": "1",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -92,18 +92,18 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "295,904",
-      "delta": "+1312",
+      "count": "295,908",
+      "delta": "+1311",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "295904"
+      "value": "295908"
     },
     {
       "name": "bar coverage",
       "count": "85%",
-      "delta": "-213",
+      "delta": "-214",
       "delta_class": "note",
       "spark": "█▇▅▄▄▄▁▃",
       "spark_class": null,
@@ -112,13 +112,13 @@
     },
     {
       "name": "cron runs",
-      "count": "20,157",
+      "count": "20,158",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "20157"
+      "value": "20158"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "34,615",
-      "delta": "+2014",
+      "count": "34,624",
+      "delta": "+2012",
       "delta_class": null,
-      "spark": "█▃▄▆▆▁▃▂",
+      "spark": "█▂▅▆▅▁▂▃",
       "spark_class": null,
       "key": "decisions",
-      "value": "34615"
+      "value": "34624"
     },
     {
       "name": "letters",
