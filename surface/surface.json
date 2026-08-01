@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-01T00:40:08Z",
+  "generated_at": "2026-08-01T00:45:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-01T00:40:04.311184+00:00",
+    "last_run_iso": "2026-08-01T00:45:03.865947+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-01 · 00:40 UTC",
+    "last_run_human_date": "2026-08-01 · 00:45 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "19959 of 19978 ok · 99.9%",
+    "uptime_recent": "19960 of 19979 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "295,182",
-      "delta": "+1473",
+      "count": "295,186",
+      "delta": "+1472",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "295182"
+      "value": "295186"
     },
     {
       "name": "bar coverage",
-      "count": "97%",
-      "delta": "-50",
+      "count": "96%",
+      "delta": "-51",
       "delta_class": "note",
       "spark": "█▇████▅▁",
       "spark_class": null,
       "key": "bar_coverage",
-      "value": "97"
+      "value": "96"
     },
     {
       "name": "cron runs",
-      "count": "19,978",
+      "count": "19,979",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "19978"
+      "value": "19979"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "33,407",
-      "delta": "+2394",
+      "count": "33,416",
+      "delta": "+2402",
       "delta_class": null,
-      "spark": "▅▁█▃▆▄▁▂",
+      "spark": "▅▂█▃▇▄▁▃",
       "spark_class": null,
       "key": "decisions",
-      "value": "33407"
+      "value": "33416"
     },
     {
       "name": "letters",
