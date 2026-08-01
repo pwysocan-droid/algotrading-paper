@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-01T08:05:08Z",
+  "generated_at": "2026-08-01T08:10:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-01T08:05:03.933000+00:00",
+    "last_run_iso": "2026-08-01T08:10:04.099575+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-01 · 08:05 UTC",
+    "last_run_human_date": "2026-08-01 · 08:10 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "20048 of 20067 ok · 99.9%",
+    "uptime_recent": "20049 of 20068 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -43,7 +43,7 @@
       "qual": "no strategies registered",
       "figure": "27",
       "unit": "",
-      "spark": "▁██▁▁▅▁▁",
+      "spark": "▁█▃▁▁▃▁▁",
       "spark_class": null
     },
     {
@@ -92,13 +92,13 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "295,559",
+      "count": "295,564",
       "delta": "+1412",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "295559"
+      "value": "295564"
     },
     {
       "name": "bar coverage",
@@ -112,13 +112,13 @@
     },
     {
       "name": "cron runs",
-      "count": "20,067",
+      "count": "20,068",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "20067"
+      "value": "20068"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "34,074",
+      "count": "34,082",
       "delta": "+2277",
       "delta_class": null,
-      "spark": "▅█▂▄▁▄▄▃",
+      "spark": "▄█▁▄▂▄▃▃",
       "spark_class": null,
       "key": "decisions",
-      "value": "34074"
+      "value": "34082"
     },
     {
       "name": "letters",
