@@ -31,7 +31,7 @@ machine-managed by adversarial_cron.py — replaced nightly, don't edit.
   when: open
   kind: ops
 
-- thing: "Nightly skeptic · 2026-08-01"
-  detail: "Your pipeline is green noise. Seven runs of identical 5-minute cadence, all 'ok,' all 68-72 bars...."
+- thing: "Nightly skeptic · 2026-08-02"
+  detail: "Pipeline is mechanically healthy but tells you nothing—all runs succeed with ~81 bars/5min, which..."
   when: open
   kind: ops
