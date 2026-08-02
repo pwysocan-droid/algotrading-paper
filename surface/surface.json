@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-02T09:10:08Z",
+  "generated_at": "2026-08-02T09:15:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-02T09:10:04.013840+00:00",
+    "last_run_iso": "2026-08-02T09:15:03.581979+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-02 · 09:10 UTC",
+    "last_run_human_date": "2026-08-02 · 09:15 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "20348 of 20368 ok · 99.9%",
+    "uptime_recent": "20349 of 20369 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -43,7 +43,7 @@
       "qual": "no strategies registered",
       "figure": "35",
       "unit": "",
-      "spark": "▁█▁▃▁▁▅▃",
+      "spark": "▁█▁▃▁▁▆▁",
       "spark_class": null
     },
     {
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "296,868",
+      "count": "296,873",
       "delta": "+1324",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "296868"
+      "value": "296873"
     },
     {
       "name": "bar coverage",
       "count": "87%",
       "delta": "-188",
       "delta_class": "note",
-      "spark": "▁▃▆█▅▆▆▅",
+      "spark": "▁▄▆█▅▇▆▅",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "87"
     },
     {
       "name": "cron runs",
-      "count": "20,368",
+      "count": "20,369",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "20368"
+      "value": "20369"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "36,555",
-      "delta": "+2415",
+      "count": "36,556",
+      "delta": "+2410",
       "delta_class": null,
       "spark": "▁▁▇▅▂█▂▄",
       "spark_class": null,
       "key": "decisions",
-      "value": "36555"
+      "value": "36556"
     },
     {
       "name": "letters",
