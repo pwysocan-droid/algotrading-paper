@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-08-02T03:30:07Z
+2026-08-02T03:35:07Z
 
 7 surfaces tracked
 
@@ -29,7 +29,7 @@ Phase 1  ·  Week 1
 
 ▸ First candidate-vs-null A/B readout — compare.py once arms accumulate closed trades · promotion bar p<0.05 over 100+
 
-▸ Nightly skeptic · 2026-08-01 — Your pipeline is green noise. Seven runs of identical 5-minute cadence, all 'ok,' all 68-72 bars....
+▸ Nightly skeptic · 2026-08-02 — Pipeline is mechanically healthy but tells you nothing—all runs succeed with ~81 bars/5min, which...
 
 ## § 03 — Read-me-when-lost · 4 pointers
 
