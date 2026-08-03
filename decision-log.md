@@ -2279,3 +2279,18 @@ feeds/edgar_8k/COLLECTION_START.md (committed). Every future T sub-hypothesis's
 
 **Steady-state disk:** ~370 rows/day × ~300 B ≈ ~110 KB/day ≈ **~40 MB/year**
 (gitignored, VPS-local). Negligible vs the Kalshi 220 MB/snapshot — no bloat risk.
+
+## 2026-08-03 — gc cadence weekly->daily; Charter T contract caught a transient error
+
+gc: fetch loop commits trader.db/context.db every 5 min (Option A) => ~6.5 GB/day
+loose objects. 2026-08-02 weekly gc packed cleanly (.git 13 GB -> 528 MB) but .git
+regrew to 11 GB by 2026-08-03 (~1.5 days) and would have filled the 38 GB disk
+mid-week before the next Sunday gc. Fix: gc cron weekly (0 6 * * 0) -> DAILY
+(0 6 * * *); ran one (.git 11 GB -> 548 MB, 31 GB free). Root cause (87 MB DB
+every 5 min) unchanged; daily gc bounds it without touching backup semantics.
+
+Charter T: EDGAR ingest hit a transient HTTPError on the 03:00 run; the data
+contract flagged CONTRACT FAIL loudly (working as designed). Source fine (fresh
+200); healed (+312 filings, 08-03 captured). The 3-day overlap window self-heals
+single-run failures regardless. (Committed from the VPS — local git is stalling
+on a credential PIN prompt.)

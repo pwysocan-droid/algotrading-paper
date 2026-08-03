@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Weekly git maintenance (2026-07-31). The fetch loop commits trader.db/context.db
+# DAILY git maintenance (weekly->daily 2026-08-03). The fetch loop commits trader.db/context.db
 # every run (Option A backup); without regular packing the loose objects ballooned
 # to 28 GB and filled the disk (auto-gc had fallen behind, likely disk/mem-starved).
-# This packs them weekly. Pack memory is capped in repo config (pack.threads=1,
+# Weekly proved insufficient (~6.5 GB/day loose growth outran it); daily now. Pack memory is capped in repo config (pack.threads=1,
 # pack.window=5, pack.windowMemory=96m) so pack-objects can't OOM the 3.7 GB box.
 
 set -uo pipefail
