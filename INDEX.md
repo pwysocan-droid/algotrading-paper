@@ -2,7 +2,7 @@
 
 Phase 1  ·  Week 1
 
-2026-08-03T22:55:07Z
+2026-08-03T23:00:07Z
 
 7 surfaces tracked
 
@@ -17,7 +17,7 @@ Phase 1  ·  Week 1
 
 | File | Last modified | Changed |
 | --- | --- | --- |
-| [decision-log.md](decision-log.md) | 2026-08-03T21:27:56Z | gc weekly->daily (loose growt… |
+| [decision-log.md](decision-log.md) | 2026-08-03T22:57:24Z | Event-market-tape review clos… |
 | [philosophy.md](philosophy.md) | 2026-07-20T06:33:51Z | Lesson 22 amendments: regime… |
 | [setup.md](setup.md) | 2026-05-23T20:40:49Z | Document VPS cron architectur… |
 | [PROJECT.md](PROJECT.md) | 2026-05-02T22:08:02Z | Initial project spec and supp… |
