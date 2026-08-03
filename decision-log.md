@@ -2334,3 +2334,36 @@ SPEC v2 citation sweep otherwise clean (Art 3.2/4.1/0.2/6.2 verify). Remaining t
 fully greenlight the curated W1+W3 bundle: fill the [SET] fields (intersection
 bar, cadence, disk numbers), run the §1.5 premise check, and send the patched
 addendum to close §2.5(a). The specs remain uncommitted external drafts.
+
+## 2026-08-03 — Event-market-tape review FULLY CLOSED (addendum received, §2.5(a) closed)
+
+Addendum v2 (§A W3 duel + §B/§C queue stubs) received; all citations grep-verify
+(Art 2.1/2.3/2.7/0.2(a); CX-1 = spec-local, no ghost). **§2.5(a) closed:** A.4's
+per-bucket tail-calibration error (engine vs venue) is exactly the per-bucket
+margin (pp = ¢/contract) that A.6's cost-net firewall compares to measured cost,
+under the §3.2 power bar — scoring produces what the firewall consumes. The full
+W1+W2+W3 (curated) bundle is greenlit on the review axis; remaining gates are
+operator actions (fill [SET], run §1.5 + §B/§C premise checks), not disputes.
+
+**Two refinements recorded for the build (not blockers):**
+1. **A.6 cost side is a LOWER BOUND within the tape.** §0.4 forbids orders and
+   Stage-0 cost was quoted-spread+fee (no executed verification — the S0-2
+   finding). So: engine LOSES vs lower-bound cost = definitive kill; engine WINS
+   vs lower-bound cost = PROVISIONAL, pending executed-cost verification that only
+   the E² stage (which places orders) can produce. A.6 should name this asymmetry.
+2. **Model-version pinning inherits the fee-schedule-drift caveat:** a hosted
+   model can change behind a stable name; the ledger's "model version" needs a
+   dated pin + manual vigilance, same class as the fee-schedule manual check (§4).
+
+**Queue stubs §B (odd-lot arithmetic) / §C (DEX-LP underwriting):** both sound,
+premise-gated, correctly-null'd. §C notably strong — states the literature null
+(LVR ≥ fees is the published default) and puts the burden on the data to refute.
+Build-time notes: §C's LVR computation is the load-bearing measurement (validate
+against closed-form/sim); §B's likely killer is capacity (tiny $/yr per deal),
+which its kill floor captures. Operator: verify queue count ≤12 (build_queue.md
+line count ≠ distinct-hypothesis count; §B/§C add 2).
+
+Specs remain uncommitted external drafts; nothing built, nothing trades; Charter E
+kill stands. The review converged across three adversarial rounds — deleted a
+census, measured an assumed conjunction, grounded a ghost citation, and made the
+firewall count cost at the forecast layer.
