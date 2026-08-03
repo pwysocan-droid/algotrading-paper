@@ -2294,3 +2294,43 @@ contract flagged CONTRACT FAIL loudly (working as designed). Source fine (fresh
 200); healed (+312 filings, 08-03 captured). The 3-day overlap window self-heals
 single-run failures regardless. (Committed from the VPS — local git is stalling
 on a credential PIN prompt.)
+
+## 2026-08-03 — Event-market-tape review closed (R1→R2→PATCH); ghost-citation lesson
+
+The externally-drafted event-market-tape spec converged through adversarial
+review (reviews/spec-event-market-tape-review.md = R1, -R2.md = R2) and a PATCH.
+Sign-off: **all three R2 conditions resolved.**
+- **Deferral withdrawn.** R1 said defer the broad calibration census; v2 CURATED
+  the snapshot universe and subordinated the ledger to the W3 duel — deleting the
+  census the verdict targeted (good convergence, not a concession war).
+- **Cond.1 (ghost citation) — closed.** "Art 4.2 conflict gate" was stale (HEAD
+  4.2 = autonomy state machine; the conflict/auditor layer was cut in v2.0). The
+  patch re-grounds the exclusion as spec-local rule CX-1 (no constitutional hook
+  claimed; promotion candidate). Provenance verified: it propagated from the DEAD
+  Charter E pre-reg §1.2 (book/pre-reg-charter-E.md:84), itself drafted 07-31 —
+  already stale, v2.0 being 07-23.
+- **Cond.2 (Q4 intersection) — closed** by a BLOCKING pre-build premise check
+  (§1.5): measure |8-K events ∩ liquid event markets| before building W1, with
+  pre-named readings (thin → §5 Charter T interface goes DORMANT, tape survives on
+  W3) + blind prediction P5. Correctly scoped to W1 only — the duel (W3) is robust
+  to a thin intersection.
+- **Cond.3 (firewall leak Q2) — closed** by a cost-net A.6: the only E²-citable
+  reading is "engine wins NET of MEASURED venue cost with the power bar met." Gross
+  skill that can't out-earn the takeout is the Charter E kill re-confirmed at the
+  forecast layer — not re-arguable without a genuinely lower-cost venue. §2.5(b)
+  over-satisfied (three readings pre-named). §2.5(a) pending the patched addendum's
+  full §A.4 (low-risk formality).
+
+**Registry lessons (logged):**
+1. **Grep applies to corpses.** Dead/quarantined documents are citation-
+   quarantined too — a stale citation in a killed pre-reg propagated by copy into
+   two live drafts. The HEAD-reconciliation rule (docs/field-notes.md) extends:
+   never inherit a citation from a dead document without re-grepping it.
+2. **Charter E pre-reg §1.2 annotation (do not edit the dead doc):** its
+   "Art 4.2 conflict gate" citation was stale-at-drafting; recorded here, not
+   edited in place.
+
+SPEC v2 citation sweep otherwise clean (Art 3.2/4.1/0.2/6.2 verify). Remaining to
+fully greenlight the curated W1+W3 bundle: fill the [SET] fields (intersection
+bar, cadence, disk numbers), run the §1.5 premise check, and send the patched
+addendum to close §2.5(a). The specs remain uncommitted external drafts.
