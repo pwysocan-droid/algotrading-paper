@@ -1,0 +1,85 @@
+{
+  "ts": "2026-08-03T15:30:03+00:00",
+  "mode": "place",
+  "gate": {
+    "pctl": 90,
+    "window": 252,
+    "floor": 0.08,
+    "predicted_fire": 0.21,
+    "realized_fire": 0.0,
+    "fire_n": 11
+  },
+  "scan": [
+    {
+      "sym": "SPY",
+      "outcome": "skip",
+      "reason": "not top-decile (9% < trailing-252d p90 15%)",
+      "richness": 0.09,
+      "credit": 0.46,
+      "short_k": 720,
+      "long_k": 715,
+      "spot": 755.14,
+      "rv": 0.126,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.146
+    },
+    {
+      "sym": "QQQ",
+      "outcome": "skip",
+      "reason": "not top-decile (10% < trailing-252d p90 17%)",
+      "richness": 0.1,
+      "credit": 0.48,
+      "short_k": 635,
+      "long_k": 630,
+      "spot": 695.95,
+      "rv": 0.229,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.174
+    },
+    {
+      "sym": "IWM",
+      "outcome": "skip",
+      "reason": "not top-decile (10% < trailing-252d p90 15%)",
+      "richness": 0.1,
+      "credit": 0.31,
+      "short_k": 279,
+      "long_k": 276,
+      "spot": 295.31,
+      "rv": 0.139,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.15
+    },
+    {
+      "sym": "DIA",
+      "outcome": "skip",
+      "reason": "below floor (6% < 8%)",
+      "richness": 0.06,
+      "credit": 0.28,
+      "short_k": 505,
+      "long_k": 500,
+      "spot": 529.77,
+      "rv": 0.129,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.144
+    },
+    {
+      "sym": "GLD",
+      "outcome": "skip",
+      "reason": "below floor (6% < 8%)",
+      "richness": 0.06,
+      "credit": 0.31,
+      "short_k": 340,
+      "long_k": 335,
+      "spot": 369.94,
+      "rv": 0.206,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.138
+    }
+  ],
+  "written": []
+}
