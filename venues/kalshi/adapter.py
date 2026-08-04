@@ -16,6 +16,39 @@ def _f(x):
     return None if x is None else float(x)
 
 
+def fetch_series(session=None):
+    """GET /series — every series with its CATEGORY (the field the bulk /markets
+    list endpoint returns null). Returns [{ticker, title, category, tags}]."""
+    s = session or requests.Session()
+    r = s.get(f"{BASE}/series", timeout=25)
+    r.raise_for_status()
+    return [{"ticker": x.get("ticker"), "title": x.get("title"),
+             "category": x.get("category"), "tags": x.get("tags")}
+            for x in (r.json().get("series") or [])]
+
+
+def fetch_series_markets(series_ticker, status="open", session=None):
+    """Open markets under one series — carries the two-sided quote (bid/ask) that
+    IS populated, used as the liquidity/activity proxy (volume/liquidity fields
+    are null in the list endpoint)."""
+    s = session or requests.Session()
+    r = s.get(f"{BASE}/markets",
+              params={"series_ticker": series_ticker, "status": status, "limit": 1000},
+              headers=UA, timeout=20)
+    if not r.ok:
+        return []
+    out = []
+    for m in (r.json().get("markets") or []):
+        yb, ya = _f(m.get("yes_bid_dollars")), _f(m.get("yes_ask_dollars"))
+        out.append({"ticker": m.get("ticker"), "title": m.get("title"),
+                    "yes_bid": yb, "yes_ask": ya,
+                    "two_sided": yb is not None and ya is not None})
+    return out
+
+
+UA = {"User-Agent": "algotrading-paper research (pwysocan@gmail.com)"}
+
+
 def fetch_markets(status="open", max_pages=800, page=1000, session=None):
     """Paginate GET /markets and return normalized two-sided quotes. Prices from
     the `*_dollars` fields (0.00–1.00); sizes are raw `*_fp` (scale unverified —

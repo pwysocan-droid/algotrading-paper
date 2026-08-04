@@ -1,36 +1,38 @@
 """SPEC §1.5 — text-intersection premise check (BLOCKING, pre-build).
 
-Measures |Charter-T 8-K companies ∩ liquid Kalshi markets|: how many companies
-with material-event filings also have a LIQUID, tradeable event market whose
-price could benchmark a text signal. Measurement only — no collection loop, no
-orders. Kalshi only for now (Polymarket adapter not built; flagged as a gap).
+Measures the OUTCOME (governing) and MENTION intersections between the Charter-T
+8-K company universe and Kalshi's CATEGORY-SCOPED series. Uses the /series
+endpoint (which carries `category`; the bulk /markets list returns it null), so
+sports/entertainment false positives are excluded by category — not guessed.
+Liquidity proxy = a series with ≥1 two-sided-quoted open market (volume/liquidity
+fields are null in the list endpoint; the bid/ask IS populated). Measurement
+only — no orders, no collection loop.
 
-Pre-named readings (SPEC §1.5): intersection >= bar -> §5 live; < bar -> §5
-DORMANT (tape survives on the W3 duel screen alone). Reports events/month +
-examples; the operator pins the bar.
+Frozen pre-reg (747b3a46e): OUTCOME governs; P5a 0–3/month; P5b tens/quarter;
+bar 8 OUTCOME events/quarter. This runs AFTER that freeze.
 """
 from __future__ import annotations
 
 import re
 import sqlite3
 import sys
+import time
+from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-# only venues/kalshi is on the path — feeds/edgar_8k also has an adapter.py, and
-# the 8-K side is read directly from sqlite (edgar_companies), not via its adapter.
 sys.path.insert(0, str(REPO / "venues" / "kalshi"))
-from adapter import fetch_markets  # noqa: E402  (Kalshi)
+from adapter import fetch_series, fetch_series_markets  # noqa: E402
 
 EDGAR_DB = REPO / "feeds" / "edgar_8k" / "filings.db"
-LIQ_FLOORS = [0, 100, 1000]   # liquidity_dollars floors to report robustness
+OUTCOME_CATS = {"Companies"}   # governing column: company-specific, event-resolving
+MENTION_CATS = {"Mentions"}    # phrase-said (earnings-call language) markets
 STOP = {"the", "inc", "corp", "corporation", "company", "co", "ltd", "plc",
         "holdings", "group", "trust", "fund", "capital", "partners", "llc",
-        "international", "technologies", "systems", "financial", "energy"}
+        "international", "technologies", "systems", "financial", "energy", "and"}
 
 
-def core_name(company: str) -> str | None:
-    """Distinctive lowercase token of a company name (e.g. 'Tesla Inc' -> tesla)."""
+def core_name(company):
     if not company:
         return None
     toks = [re.sub(r"[^a-z0-9]", "", t.lower()) for t in company.split()]
@@ -39,7 +41,6 @@ def core_name(company: str) -> str | None:
 
 
 def edgar_companies():
-    """(core_name -> (ticker, company)) for 8-K filers that carry a ticker."""
     con = sqlite3.connect(EDGAR_DB)
     rows = con.execute("SELECT DISTINCT ticker, company FROM filings "
                        "WHERE ticker IS NOT NULL").fetchall()
@@ -54,71 +55,37 @@ def edgar_companies():
 
 def main():
     comps = edgar_companies()
-    print(f"8-K archive: {len(comps)} distinct tickered companies (core names)", flush=True)
-    markets = fetch_markets(status="open", max_pages=500)
-    print(f"Kalshi open markets fetched: {len(markets)} (partial sample of the "
-          f"venue's ~800k+ open population — company-specific markets are rare and "
-          f"surface in any large sample)", flush=True)
-
-    # match by SET INTERSECTION on tokenized title words (a giant regex alternation
-    # of hundreds of names over ~800k titles is pathologically slow in Python's re).
     comp_names = set(comps)
+    print(f"8-K archive: {len(comps)} tickered companies (core names)", flush=True)
+    series = fetch_series()
+    cats = Counter(s["category"] for s in series)
+    print(f"Kalshi series: {len(series)} | categories: {dict(cats.most_common(8))}",
+          flush=True)
     tok = re.compile(r"[a-z0-9]+")
-    # Two governing columns (SPEC §1.5 PATCH 2026-08-03), never blended:
-    #   MENTION — resolves on whether a PHRASE is said (earnings-call language mkts)
-    #   OUTCOME — resolves on whether an EVENT happens (the thing occurs or not)
-    # Price-level markets ("close above $X") are NEITHER — not a benchmark for an
-    # 8-K event — and are excluded from both governing columns.
-    mention_kw = re.compile(r"\b(say|says|said|mention|mentions|utter|utters)\b", re.I)
-    outcome_kw = re.compile(
-        r"\b(earnings|eps|revenue|beat|miss|report|guidance|acquir|merger|buyout|"
-        r"takeover|launch|unveil|announc|approv|fda|recall|ceo|resign|bankrupt|"
-        r"delist|dividend|split|ipo|layoff|deliver|subscribers|recall)\b", re.I)
 
-    def classify(title):
-        if mention_kw.search(title):
-            return "MENTION"
-        if outcome_kw.search(title):
-            return "OUTCOME"
-        return "OTHER"          # price-level / generic — not a benchmark
+    for label, wanted in [("OUTCOME (GOVERNING)", OUTCOME_CATS), ("MENTION", MENTION_CATS)]:
+        pool = [s for s in series if s.get("category") in wanted]
+        matches = [(sorted(m)[0], s) for s in pool
+                   if (m := set(tok.findall((s.get("title") or "").lower())) & comp_names)]
+        liq = []
+        for cn, s in matches:
+            active = [x for x in fetch_series_markets(s["ticker"]) if x["two_sided"]]
+            if active:
+                liq.append((cn, s, len(active)))
+            time.sleep(0.03)
+        print(f"\n=== {label}: {len(pool)} series in category · "
+              f"{len(matches)} match an 8-K company · "
+              f"{len(liq)} of those have ≥1 liquid market "
+              f"({sum(x[2] for x in liq)} liquid markets) ===", flush=True)
+        for cn, s, na in sorted(liq, key=lambda x: -x[2])[:12]:
+            print(f"    {comps[cn][0]:6} {(s.get('title') or '')[:52]:52} {na} active mkts")
+        if not liq:
+            print("    (none liquid)")
 
-    hits = {}   # core_name -> list of (title, liquidity, volume, cls)
-    for m in markets:
-        title = (m.get("title") or "")
-        matched = set(tok.findall(title.lower())) & comp_names
-        if not matched:
-            continue
-        cn = sorted(matched)[0]     # deterministic pick if >1 company in a title
-        hits.setdefault(cn, []).append(
-            (title, m.get("liquidity") or 0, m.get("volume") or 0, classify(title)))
-
-    print("\n=== the two governing columns by liquidity floor (§1.5) ===")
-    for floor in LIQ_FLOORS:
-        def col(name):
-            co = {cn for cn, ms in hits.items()
-                  if any(l >= floor and c == name for _, l, _, c in ms)}
-            mk = sum(1 for ms in hits.values() for _, l, _, c in ms if l >= floor and c == name)
-            return len(co), mk
-        oc, om = col("OUTCOME")
-        mc, mm = col("MENTION")
-        print(f"  floor ${floor:>4}: OUTCOME {oc} co / {om} mkts  |  "
-              f"MENTION {mc} co / {mm} mkts   (governing column set by the operator pin)")
-
-    print("\n=== examples ([OUT]=outcome, [MEN]=mention, [oth]=price/other) ===")
-    shown = 0
-    for cn, ms in sorted(hits.items(), key=lambda kv: -max(x[1] or 0 for x in kv[1])):
-        ticker, company = comps[cn]
-        best = max(ms, key=lambda x: x[1] or 0)
-        tag = {"OUTCOME": "OUT", "MENTION": "MEN"}.get(best[3], "oth")
-        print(f"  [{tag}] {ticker:6} {company[:24]:24} liq ${best[1] or 0:>7.0f} | {best[0][:54]}")
-        shown += 1
-        if shown >= 20:
-            break
-    if not hits:
-        print("  (none — no 8-K company appears in any open Kalshi market title)")
-    print("\nNOTE: Kalshi only (Polymarket adapter unbuilt). Company-name match is "
-          "coarse; examples are for eyeballing false positives. The bar and the "
-          "§5-live/dormant reading are the operator's per SPEC §1.5.")
+    print("\nNOTE: Kalshi only (Polymarket adapter unbuilt). §5 reading is on the "
+          "OUTCOME (governing) LIQUID count vs the 8/quarter bar. Stock-vs-flow "
+          "caveat: these are currently-open series; the events/quarter flow follows "
+          "from their resolution cadence (a small stock => a small flow).")
 
 
 if __name__ == "__main__":
