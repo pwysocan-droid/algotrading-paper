@@ -54,13 +54,16 @@ def edgar_companies():
 
 def main():
     comps = edgar_companies()
-    print(f"8-K archive: {len(comps)} distinct tickered companies (core names)")
-    markets = fetch_markets(status="open", max_pages=800)
-    print(f"Kalshi open markets fetched: {len(markets)}")
+    print(f"8-K archive: {len(comps)} distinct tickered companies (core names)", flush=True)
+    markets = fetch_markets(status="open", max_pages=500)
+    print(f"Kalshi open markets fetched: {len(markets)} (partial sample of the "
+          f"venue's ~800k+ open population — company-specific markets are rare and "
+          f"surface in any large sample)", flush=True)
 
-    # match Kalshi titles against 8-K company core names (word-boundary)
-    patt = re.compile(r"\b(" + "|".join(re.escape(c) for c in comps) + r")\b", re.I) \
-        if comps else None
+    # match by SET INTERSECTION on tokenized title words (a giant regex alternation
+    # of hundreds of names over ~800k titles is pathologically slow in Python's re).
+    comp_names = set(comps)
+    tok = re.compile(r"[a-z0-9]+")
     # Two governing columns (SPEC §1.5 PATCH 2026-08-03), never blended:
     #   MENTION — resolves on whether a PHRASE is said (earnings-call language mkts)
     #   OUTCOME — resolves on whether an EVENT happens (the thing occurs or not)
@@ -82,12 +85,10 @@ def main():
     hits = {}   # core_name -> list of (title, liquidity, volume, cls)
     for m in markets:
         title = (m.get("title") or "")
-        if not patt:
-            break
-        found = patt.search(title.lower())
-        if not found:
+        matched = set(tok.findall(title.lower())) & comp_names
+        if not matched:
             continue
-        cn = found.group(1).lower()
+        cn = sorted(matched)[0]     # deterministic pick if >1 company in a title
         hits.setdefault(cn, []).append(
             (title, m.get("liquidity") or 0, m.get("volume") or 0, classify(title)))
 
