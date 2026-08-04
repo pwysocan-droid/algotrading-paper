@@ -60,7 +60,15 @@ def main():
     # match Kalshi titles against 8-K company core names (word-boundary)
     patt = re.compile(r"\b(" + "|".join(re.escape(c) for c in comps) + r")\b", re.I) \
         if comps else None
-    hits = {}   # core_name -> list of (title, liquidity, volume)
+    # outcome-market vs mention-market split (reviewer): a MENTION references the
+    # company; an OUTCOME market resolves on a company EVENT (the real benchmark
+    # for an 8-K text signal). Heuristic: event keywords near the company vs a
+    # generic price-level market.
+    event_kw = re.compile(
+        r"\b(earnings|eps|revenue|report|guidance|acquir|merger|buyout|takeover|"
+        r"launch|unveil|announc|approv|fda|recall|ceo|resign|bankrupt|delist|"
+        r"dividend|split|ipo|layoff|deliver|subscribers)\b", re.I)
+    hits = {}   # core_name -> list of (title, liquidity, volume, is_outcome)
     for m in markets:
         title = (m.get("title") or "")
         if not patt:
@@ -69,22 +77,27 @@ def main():
         if not found:
             continue
         cn = found.group(1).lower()
+        is_outcome = bool(event_kw.search(title))
         hits.setdefault(cn, []).append(
-            (title, m.get("liquidity") or 0, m.get("volume") or 0))
+            (title, m.get("liquidity") or 0, m.get("volume") or 0, is_outcome))
 
-    print("\n=== intersection by liquidity floor (liquidity_dollars) ===")
+    print("\n=== intersection by liquidity floor — MENTION vs OUTCOME markets ===")
     for floor in LIQ_FLOORS:
-        cos = {cn for cn, ms in hits.items()
-               if any((liq or 0) >= floor for _, liq, _ in ms)}
-        nmk = sum(1 for ms in hits.values() for _, liq, _ in ms if (liq or 0) >= floor)
-        print(f"  floor ${floor:>4}: {len(cos)} companies, {nmk} liquid markets")
+        men_co = {cn for cn, ms in hits.items() if any(l >= floor for _, l, _, _ in ms)}
+        men_mk = sum(1 for ms in hits.values() for _, l, _, _ in ms if l >= floor)
+        out_co = {cn for cn, ms in hits.items()
+                  if any(l >= floor and o for _, l, _, o in ms)}
+        out_mk = sum(1 for ms in hits.values() for _, l, _, o in ms if l >= floor and o)
+        print(f"  floor ${floor:>4}: MENTION {len(men_co)} co / {men_mk} mkts  |  "
+              f"OUTCOME {len(out_co)} co / {out_mk} mkts  (outcome = the real benchmark)")
 
-    print("\n=== examples (company -> a Kalshi market title) ===")
+    print("\n=== examples ([O]=outcome-market, [m]=mention-only) ===")
     shown = 0
     for cn, ms in sorted(hits.items(), key=lambda kv: -max(x[1] or 0 for x in kv[1])):
         ticker, company = comps[cn]
         best = max(ms, key=lambda x: x[1] or 0)
-        print(f"  {ticker:6} {company[:28]:28} liq ${best[1] or 0:>7.0f} | {best[0][:60]}")
+        tag = "O" if best[3] else "m"
+        print(f"  [{tag}] {ticker:6} {company[:26]:26} liq ${best[1] or 0:>7.0f} | {best[0][:56]}")
         shown += 1
         if shown >= 20:
             break
