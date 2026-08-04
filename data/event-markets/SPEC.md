@@ -79,23 +79,42 @@ current Kalshi and Polymarket catalogs for a LIQUID counterpart market
 (liquidity floor per §2.2). Report the intersection as events/month
 with a tradeable crowd benchmark.
 
-**Pre-named readings:**
-- intersection ≥ [SET: __ /month] → §5 (Charter T interface) is live
-  as specced;
-- intersection < that bar → §5 goes DORMANT (not deleted): the curated
-  universe collapses to the duel screen (addendum §A.3) alone, and the
-  Charter T benchmark rationale re-activates only when a text source
-  with measured intersection exists (macro-print text, governance
-  proposals — each requiring its own intersection check). The tape
-  survives on its primary consumer, W3.
+**Pre-named readings (against the GOVERNING column only, per below):**
+- governing-column intersection ≥ bar → §5 (Charter T interface) is
+  live as specced;
+- < bar → §5 goes DORMANT (not deleted): the curated universe collapses
+  to the duel screen (addendum §A.3) alone, and the Charter T benchmark
+  rationale re-activates only when a text source with measured
+  intersection exists (macro-print text, governance proposals — each
+  requiring its own intersection check). The tape survives on its
+  primary consumer, W3.
 
-**Blind prediction P5 (commit with P1–P4):** predicted intersection:
-[SET — drafting prior offered for the operator to accept or replace:
-thin but nonzero, dominated by mega-cap earnings/product markets,
-single digits/month]. Conjunction discipline: company-specific text ×
-liquid event market is plausibly anti-correlated (venues list
-macro/political questions; filings are corporate) — this check exists
-because the conjunction was assumed in v1/v2 rather than measured.
+**Class split (pre-named; PATCH 2026-08-03).** The intersection is
+counted and reported in two columns, never blended:
+- **OUTCOME** — company-specific, event-resolving markets (the thing
+  happens or doesn't) passing the liquidity floor;
+- **MENTION** — earnings-call mention markets (the phrase is said or
+  isn't) passing the liquidity floor.
+
+**Governing class: [SET: OUTCOME | MENTION] — pinned by the operator as
+the class Charter T's first-generation hypotheses will consume.** The §5
+live-vs-dormant reading is taken against the governing column ONLY. The
+pin is committed before the count runs so the verdict cannot be argued
+from whichever column favors it afterward.
+
+- **P5a (OUTCOME):** predicted intersection [SET: __ /month; drafting
+  prior: 0–3, near-zero off-season].
+- **P5b (MENTION):** predicted intersection [SET: __ /earnings-quarter;
+  drafting prior: tens per quarter, near-zero between]. Conjunction
+  caveat, stated: listed × LIQUID × 8-K-relevant — the liquidity floor
+  is the unmeasured conjunct; the catalog may be broad while tradeable
+  depth is narrow.
+
+**Bar derivation (principle, not taste):** the bar is the minimum flow
+letting a Charter T hypothesis reach n ≥ 30 scored events within 12
+months of activation: ≈ 2.5/month sustained, or — honoring the quarterly
+cadence — [SET: suggest 8–10] qualifying events per earnings quarter in
+the governing column.
 
 ## 2. What is collected (curated universe + disk budget)
 

@@ -51,6 +51,15 @@ tail-calibration claims additionally carry the SPEC §3.2 power bar.
 Decidability target: first scored report at [SET: __] resolutions or
 90d, whichever later.
 
+> **Two-column scoring (PATCH 2026-08-03).** The duel ledger carries
+> **separate columns per class (OUTCOME, MENTION)**, scored identically,
+> regardless of which class governs §5. Pre-named cross-reading: engine
+> wins MENTION but loses OUTCOME → the engine's measured edge is
+> Keynesian (text→text), not fundamental (text→world) — recorded as a
+> finding; a MENTION-only win licenses at most a MENTION-scoped E²
+> premise, which additionally carries the mention-market dispute tail
+> (worst-in-category; priced per Art 2.10(b) before any such pre-reg).
+
 A.5. **Blind prediction P4 (commit before first forecast).** Operator's
 predicted outcome: engine Brier vs venue Brier [SET: direction and
 margin], and whether the engine's tail calibration beats the venue's
