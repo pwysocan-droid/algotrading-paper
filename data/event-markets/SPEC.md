@@ -96,25 +96,25 @@ counted and reported in two columns, never blended:
 - **MENTION** — earnings-call mention markets (the phrase is said or
   isn't) passing the liquidity floor.
 
-**Governing class: [SET: OUTCOME | MENTION] — pinned by the operator as
-the class Charter T's first-generation hypotheses will consume.** The §5
-live-vs-dormant reading is taken against the governing column ONLY. The
-pin is committed before the count runs so the verdict cannot be argued
-from whichever column favors it afterward.
+**Governing class: OUTCOME** (pinned by the operator 2026-08-03, as the
+class Charter T's first-generation hypotheses will consume: text→world,
+not text→language). The §5 live-vs-dormant reading is taken against the
+OUTCOME column ONLY. The pin was committed before the count ran so the
+verdict cannot be argued from whichever column favors it afterward.
 
-- **P5a (OUTCOME):** predicted intersection [SET: __ /month; drafting
-  prior: 0–3, near-zero off-season].
-- **P5b (MENTION):** predicted intersection [SET: __ /earnings-quarter;
-  drafting prior: tens per quarter, near-zero between]. Conjunction
-  caveat, stated: listed × LIQUID × 8-K-relevant — the liquidity floor
-  is the unmeasured conjunct; the catalog may be broad while tradeable
-  depth is narrow.
+- **P5a (OUTCOME) — committed prediction: 0–3 /month** (near-zero
+  off-season). This is the governing column.
+- **P5b (MENTION) — committed prediction: tens /earnings-quarter**
+  (near-zero between). Conjunction caveat, stated: listed × LIQUID ×
+  8-K-relevant — the liquidity floor is the unmeasured conjunct; the
+  catalog may be broad while tradeable depth is narrow.
 
-**Bar derivation (principle, not taste):** the bar is the minimum flow
-letting a Charter T hypothesis reach n ≥ 30 scored events within 12
-months of activation: ≈ 2.5/month sustained, or — honoring the quarterly
-cadence — [SET: suggest 8–10] qualifying events per earnings quarter in
-the governing column.
+**Bar (committed): 8 qualifying OUTCOME events per earnings quarter**
+(≈ 2.5/month sustained) — the minimum flow letting a Charter T
+hypothesis reach n ≥ 30 scored events within 12 months of activation
+(8/qtr × 4 = 32/yr ≥ 30). §5 live iff measured OUTCOME flow ≥ this bar.
+Note P5a (0–3/month ≈ 0–9/qtr) straddles the bar, leaning dormant — the
+prediction itself expects §5 near the dormancy line.
 
 ## 2. What is collected (curated universe + disk budget)
 
