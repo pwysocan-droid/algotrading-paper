@@ -1,0 +1,85 @@
+{
+  "ts": "2026-08-04T15:30:03+00:00",
+  "mode": "place",
+  "gate": {
+    "pctl": 90,
+    "window": 252,
+    "floor": 0.08,
+    "predicted_fire": 0.21,
+    "realized_fire": 0.0,
+    "fire_n": 16
+  },
+  "scan": [
+    {
+      "sym": "SPY",
+      "outcome": "skip",
+      "reason": "below floor (6% < 8%)",
+      "richness": 0.06,
+      "credit": 0.31,
+      "short_k": 725,
+      "long_k": 720,
+      "spot": 767.35,
+      "rv": 0.135,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.146
+    },
+    {
+      "sym": "QQQ",
+      "outcome": "skip",
+      "reason": "below floor (7% < 8%)",
+      "richness": 0.07,
+      "credit": 0.37,
+      "short_k": 650,
+      "long_k": 645,
+      "spot": 717.95,
+      "rv": 0.244,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.172
+    },
+    {
+      "sym": "IWM",
+      "outcome": "skip",
+      "reason": "not top-decile (10% < trailing-252d p90 15%)",
+      "richness": 0.1,
+      "credit": 0.29,
+      "short_k": 282,
+      "long_k": 279,
+      "spot": 299.81,
+      "rv": 0.146,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.15
+    },
+    {
+      "sym": "DIA",
+      "outcome": "skip",
+      "reason": "below floor (5% < 8%)",
+      "richness": 0.05,
+      "credit": 0.23,
+      "short_k": 510,
+      "long_k": 505,
+      "spot": 539.12,
+      "rv": 0.141,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.144
+    },
+    {
+      "sym": "GLD",
+      "outcome": "skip",
+      "reason": "below floor (6% < 8%)",
+      "richness": 0.06,
+      "credit": 0.31,
+      "short_k": 345,
+      "long_k": 340,
+      "spot": 374.02,
+      "rv": 0.203,
+      "expiry": "2026-09-11",
+      "gate_pass": false,
+      "gate_pctl_thr": 0.138
+    }
+  ],
+  "written": []
+}
