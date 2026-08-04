@@ -1,5 +1,21 @@
 # SPEC v2.1 — Event-Market Tape & Duel Scoreboard
 
+> **Status: SHELVED (2026-08-04) — not killed.** The §1.5 premise check
+> fired the dormant reading: OUTCOME flow ~1–2/quarter vs the 8/quarter bar
+> (P5a predicted 0–3/month and scored correct). §6.1 re-earn test FAILED —
+> with E² not live, the duel's gate function has no consumer, and the weekly
+> hour loses to §B (odd-lot) on expected value. **No fetch infrastructure was
+> wired.** Reopen conditions, pre-named:
+> - **(a)** a live E² intent forms — firewall path unchanged (a cost-net duel
+>   verdict would still be required per §0.3/§A.6; the frozen pre-reg below is
+>   the instrument-in-waiting); OR
+> - **(b)** a venue lists *fast-resolving* markets intersecting the text
+>   universe (e.g. earnings-beat contracts) — reopening then requires only
+>   re-running §1.5 against the new catalog, no new spec.
+>
+> The frozen pre-regs (this spec, the addendum, P1–P5, the derived-comparisons
+> patch) remain committed untouched — the paid-for asset. History below.
+
 Status: **DRAFT v2.1 — externally drafted (chat, 2026-08-03). PATCH-R2
 applied (PATCH-1: CX-1; PATCH-2: §1.5 intersection check). All three R2
 conditions addressed; sent with addendum v2 for formal closure of

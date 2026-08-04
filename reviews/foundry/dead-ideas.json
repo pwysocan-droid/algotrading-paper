@@ -602,7 +602,15 @@
       "result": "near-certainty 0.95-1.00 all-in 3.0c (spread 1c + fee 2c, n=342); 0.90-0.95 all-in 5.0c (n=55). Even the tightest bucket's 3.0c exceeds a 2pp edge (2c) by 1.5x; aggregate 5.0c = 2.5x a 2pp edge, 5x a 1pp edge.",
       "verdict": "dead",
       "epitaph": "Stage 0 kill on cost: the all-in floor (3-5c) exceeds even a generous 2pp calibration edge (2c). Population is thin (397 markets >=90c) but NOT the decisive kill — cost is. A 30k pagination cap had initially hidden this entire tail, read as 'no near-certainty market'; caught, fixed (max_pages 30->800), re-measured — the no-silent-caps lesson in our own code. reports/event-venue-floor-2026-07-31.json."
+    },
+    {
+      "name": "event_market_tape_charter_t_benchmark",
+      "lineage": "event-market-tape | §1.5 premise check",
+      "tested": "2026-08-04 | Kalshi /series category-scoped intersection (OUTCOME governing)",
+      "result": "OUTCOME (Companies): 173 series -> 54 match an 8-K company -> 11 liquid (175 mkts: Robinhood/Starbucks/Meta/Apple KPI+event). Cadence: 0 resolve in next 90d; all settle 2027-2028 (annual KPIs) -> flow ~1-2/quarter vs the 8/quarter bar. P5a (0-3/month) scored correct.",
+      "verdict": "shelved_premise",
+      "epitaph": "Kalshi company markets resolve on an annual clock; the benchmark cannot accumulate scoreable events. P5a scored correct. Third clean premise-kill of the cycle. SHELVED not killed - reopens on a live E2 intent (firewall path unchanged) or a venue listing fast-resolving text-intersecting markets (re-run 1.5, no new spec). Frozen pre-regs preserved. data/event-markets/SPEC.md."
     }
   ],
-  "total_ideas_tested": 45
+  "total_ideas_tested": 46
 }

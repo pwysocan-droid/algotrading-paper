@@ -2396,3 +2396,24 @@ but they resolve on an annual clock a hypothesis cannot wait for.
 duel can run on FAST-resolving liquid markets (macro/weather/politics), which the
 company-market slowness does not constrain — so the duel survives §5 dormancy. But
 per §6.1 a tape whose sole consumer is the duel must re-earn its maintenance.
+
+## 2026-08-04 — Event-market tape SHELVED (§6.1 re-earn failed; not killed)
+
+Following the §5-dormant §1.5 result (prior entry), the §6.1 re-earn test was
+applied. **With E² not live, the W3 duel gates nothing** — the duel exists to
+gate a future E² premise (§0.3/§A.6), and absent any E² intent the gate has no
+consumer. A duel-only tape's ~1 h/week therefore loses to §B (odd-lot premise
+check) on expected value. **Verdict: SHELVED, not killed.**
+
+- SPEC.md marked **Status: SHELVED (2026-08-04)** with pre-named reopen
+  conditions: (a) a live E² intent forms — firewall path unchanged, the frozen
+  pre-reg is the instrument-in-waiting; or (b) a venue lists fast-resolving
+  markets intersecting the text universe — re-run §1.5 against the new catalog,
+  no new spec.
+- dead-ideas: verdict **shelved_premise** (third clean premise-kill of the
+  cycle; P5a scored correct).
+- **No fetch infrastructure was wired**; nothing references the tape (verified).
+  premise_check.py stays as the shelved instrument-in-waiting.
+- **Frozen pre-regs preserved untouched** (SPEC v2.1, addendum, P1–P5, the
+  derived-comparisons / cost-net patch) — the paid-for asset.
+- Charter T EDGAR archive keeps accruing for a later, market-independent hypothesis.
