@@ -27,11 +27,11 @@
       "promoted": false
     },
     {
-      "id": "ops:Nightly skeptic · 2026-08-03",
+      "id": "ops:Nightly skeptic · 2026-08-04",
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-08-03",
-      "detail": "Your pipeline is a metronome, not a strategy validator. Seven consecutive successful runs adding ...",
+      "thing": "Nightly skeptic · 2026-08-04",
+      "detail": "Your pipeline is a metronome with no steering. Seven runs of identical bar counts at 5-minute int...",
       "kind": "ops",
       "promoted": false
     }
