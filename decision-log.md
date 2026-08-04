@@ -2367,3 +2367,32 @@ Specs remain uncommitted external drafts; nothing built, nothing trades; Charter
 kill stands. The review converged across three adversarial rounds — deleted a
 census, measured an assumed conjunction, grounded a ghost citation, and made the
 firewall count cost at the forecast layer.
+
+## 2026-08-04 — §1.5 premise check RAN: §5 DORMANT (OUTCOME flow << bar); P5a held
+
+Frozen pre-reg 747b3a46e (OUTCOME governs, P5a 0-3/mo, P5b tens/qtr, bar 8/qtr),
+committed BEFORE the count. Instrument took three fixes first (8h regex hang -> set
+matching; all-sports false positives -> /series category scoping; dead liquidity
+field -> two-sided-quote proxy) — all principled, and the category fix found MORE
+than predicted, not less.
+
+**Result (Kalshi, /series category-scoped):**
+- OUTCOME (Companies): 173 series -> 54 match an 8-K company -> 11 liquid (175 mkts):
+  Robinhood/Starbucks/Chipotle/Meta/Altria/Carvana/Home Depot/Cava/United/Apple KPI
+  & event markets. Real (a few ticker labels mis-attributed via core-name collision).
+- MENTION (Mentions): 399 -> 69 match -> 4 liquid (60 mkts). Thin.
+- **Cadence (the decider): 0 of the 11 liquid series resolve in the next 90 days;
+  all settle 2027-2028 (83 in 2028-03) — long-dated ANNUAL KPIs.** OUTCOME event
+  FLOW ~1-2/quarter vs the 8/quarter bar.
+
+**Verdict: §5 (Charter T interface) DORMANT** per the §1.5 pre-named reading. The
+curated universe collapses to the W3 duel screen alone; the text->market benchmark
+rationale re-activates only when a text source with a measured, fast-enough-
+resolving market intersection exists. **P5a (0-3/month) HELD** — measured flow is
+in-band, low end. The finding is precise: our text HAS liquid markets to benchmark,
+but they resolve on an annual clock a hypothesis cannot wait for.
+
+**Operator decision now open (§6.1): does the W3 duel ALONE justify the tape?** The
+duel can run on FAST-resolving liquid markets (macro/weather/politics), which the
+company-market slowness does not constrain — so the duel survives §5 dormancy. But
+per §6.1 a tape whose sole consumer is the duel must re-earn its maintenance.
