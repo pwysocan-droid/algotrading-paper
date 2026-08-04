@@ -17,8 +17,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+# only venues/kalshi is on the path — feeds/edgar_8k also has an adapter.py, and
+# the 8-K side is read directly from sqlite (edgar_companies), not via its adapter.
 sys.path.insert(0, str(REPO / "venues" / "kalshi"))
-sys.path.insert(0, str(REPO / "feeds" / "edgar_8k"))
 from adapter import fetch_markets  # noqa: E402  (Kalshi)
 
 EDGAR_DB = REPO / "feeds" / "edgar_8k" / "filings.db"
