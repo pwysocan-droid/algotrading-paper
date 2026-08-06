@@ -229,15 +229,23 @@ def propose(sym):
                 f"(expiry {expiry}, spot {spot:.2f}, 1SD {one_sd:.2f})"}
     credit = sp["bid"] - lp["ask"]                 # conservative: sell bid, buy ask
     width = WIDTH[sym]
+    # MEASUREMENT (book/proposal-book-gate-seed §4): mid credit + real crossing cost.
+    # Gate UNCHANGED — this only logs; the gate still uses the executable credit/width.
+    mid_credit = crossing = None
+    if sp.get("ask") is not None and lp.get("bid") is not None:
+        mid_credit = round((sp["bid"] + sp["ask"]) / 2 - (lp["bid"] + lp["ask"]) / 2, 3)
+        crossing = round(mid_credit - credit, 3)   # $/spread the real bid/ask crossing costs
     if credit <= 0:                                # crossed/illiquid quote, not real premium
         return {"sym": sym, "skip": f"no usable credit (crossed/illiquid: "
                 f"{short_k}/{long_k} bid {sp['bid']} ask {lp['ask']})",
-                "spot": round(spot, 2), "short_k": short_k, "long_k": long_k}
+                "spot": round(spot, 2), "short_k": short_k, "long_k": long_k,
+                "mid_credit": mid_credit, "crossing_cost": crossing}
     max_loss = width - credit
     richness = credit / width if width else 0
     contracts = max(0, int((BOOK_CAPITAL * MAX_LOSS_FRAC) / (max_loss * 100)))
     rec = {"sym": sym, "expiry": expiry, "spot": round(spot, 2), "rv": round(rv, 3),
            "short_k": short_k, "long_k": long_k, "credit": round(credit, 2),
+           "mid_credit": mid_credit, "crossing_cost": crossing,
            "max_loss_per": round(max_loss * 100, 2), "richness": round(richness, 2),
            "contracts": contracts, "short_occ": sp["occ"], "long_occ": lp["occ"]}
     # Book gate v2 (2.9): top-decile of trailing 1yr AND above the absolute floor.
@@ -422,6 +430,8 @@ def log_shadow(scan, ts, arm="1sd"):
                 "date": day, "sym": s["sym"], "arm": arm, "expiry": s["expiry"],
                 "spot": s.get("spot"), "short_k": s["short_k"], "long_k": s["long_k"],
                 "width": WIDTH.get(s["sym"]), "credit": s["credit"], "richness": rich,
+                "mid_credit": s.get("mid_credit"),      # measurement (seed-proposal §4)
+                "crossing_cost": s.get("crossing_cost"),
                 "gate_pass": s.get("gate_pass"),   # 1sd: real gate v2; 0.5sd: None (always-write)
                 "gate_pctl_thr": s.get("gate_pctl_thr"),
                 "outcome": s.get("outcome"), "status": "shadow_open"}) + "\n")
@@ -506,6 +516,7 @@ def main() -> int:
             print(f"{sym}: SKIP — {rec['skip']}")
             scan.append({"sym": sym, "outcome": "skip", "reason": rec["skip"],
                          "richness": rec.get("richness"), "credit": rec.get("credit"),
+                         "mid_credit": rec.get("mid_credit"), "crossing_cost": rec.get("crossing_cost"),
                          "short_k": rec.get("short_k"), "long_k": rec.get("long_k"),
                          "spot": rec.get("spot"), "rv": rec.get("rv"),
                          "expiry": rec.get("expiry"), "gate_pass": rec.get("gate_pass"),
@@ -513,6 +524,7 @@ def main() -> int:
         sa = rec["standaside"]
         scan.append({"sym": sym, "outcome": rec["action"].lower(),
                      "richness": rec["richness"], "credit": rec["credit"],
+                     "mid_credit": rec.get("mid_credit"), "crossing_cost": rec.get("crossing_cost"),
                      "short_k": rec["short_k"], "long_k": rec["long_k"],
                      "spot": rec["spot"], "rv": rec["rv"], "expiry": rec["expiry"],
                      "gate_pass": rec.get("gate_pass"),
