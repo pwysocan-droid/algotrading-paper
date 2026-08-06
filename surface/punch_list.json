@@ -27,11 +27,11 @@
       "promoted": false
     },
     {
-      "id": "ops:Nightly skeptic · 2026-08-05",
+      "id": "ops:Nightly skeptic · 2026-08-06",
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-08-05",
-      "detail": "Your pipeline is humming but your decision gates are frozen. Seven consecutive runs with zero var...",
+      "thing": "Nightly skeptic · 2026-08-06",
+      "detail": "Your pipeline is a metronome—five minutes, eighty-three bars, every time—which means you're not d...",
       "kind": "ops",
       "promoted": false
     }
