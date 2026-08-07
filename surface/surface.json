@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T05:15:09Z",
+  "generated_at": "2026-08-07T05:20:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-07T05:15:04.433145+00:00",
+    "last_run_iso": "2026-08-07T05:20:03.959160+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-07 · 05:15 UTC",
+    "last_run_human_date": "2026-08-07 · 05:20 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "21741 of 21761 ok · 99.9%",
+    "uptime_recent": "21742 of 21762 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "303,565",
-      "delta": "+1469",
+      "count": "303,568",
+      "delta": "+1467",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "303565"
+      "value": "303568"
     },
     {
       "name": "bar coverage",
       "count": "96%",
-      "delta": "-55",
+      "delta": "-57",
       "delta_class": "note",
-      "spark": "▂▇▆█▅▁█▃",
+      "spark": "▂▇▆█▅▁█▂",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "96"
     },
     {
       "name": "cron runs",
-      "count": "21,761",
+      "count": "21,762",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "21761"
+      "value": "21762"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "49,768",
-      "delta": "+2824",
+      "count": "49,775",
+      "delta": "+2800",
       "delta_class": null,
-      "spark": "▁█▅▃▄▁▅▃",
+      "spark": "▁█▄▄▄▃▄▃",
       "spark_class": null,
       "key": "decisions",
-      "value": "49768"
+      "value": "49775"
     },
     {
       "name": "letters",
