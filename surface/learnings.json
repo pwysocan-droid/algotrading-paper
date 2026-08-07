@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-03T03:32:09.426197+00:00",
-  "decision_log_sha256": "bc2cfe74258fb199c1e6cba6d28ccbb3484b0e39242393e420e9e8b4252ae6cd",
+  "generated_at": "2026-08-07T03:32:10.488200+00:00",
+  "decision_log_sha256": "28b8c68508b01e47ed784a0ba2fa147a02de850e8a7d01f849e64491ab8d2cdd",
   "questions": [
     {
       "id": "fees-slippage",
@@ -49,331 +49,276 @@
   ],
   "learnings": [
     {
-      "claim": "GitHub Actions free-tier */5 cron delivers only ~3-5% of scheduled invocations for 5-min schedules on small/inactive public repos, not the documented 70-85%.",
+      "claim": "Short-horizon crypto continuation (\u226424h, taker) has gross edge below the cost floor at every horizon \u226412h and cannot clear costs.",
       "status": "validated",
-      "evidence": "2026-05-23 \u2014 Migrating cron from GitHub Actions to Hetzner VPS (69 of 1,712 expected = 4.0%); confirmed 2026-05-18 entry (~60 min actual cadence)",
+      "evidence": "2026-07-20 K1 adjudication: short-horizon crypto archived; ceiling-study evidence",
       "next_check": null
     },
     {
-      "claim": "Migrating the cron to a Hetzner CX22 VPS satisfies the 95% uptime architectural gate.",
+      "claim": "The cost lever (maker fills) mechanically works: maker beat taker in 12/12 matched pairs, ~$0.21-0.24 fees saved per trade, with near-zero fill loss because the strategy buys into falling price.",
       "status": "validated",
-      "evidence": "2026-07-02 \u2014 47-day operator gap entry (runs 84\u219211,574 all status='ok', zero >1h gaps; Phase 2 gate 1 mechanically satisfied)",
+      "evidence": "2026-07-17 First net-positive cell; exit-grid-drawdown_regime_contrarian_gate-2026-07-17.json",
       "next_check": null
     },
     {
-      "claim": "The infrastructure ran autonomously but the curriculum did not move \u2014 47 days produced zero signals/trades/decisions and only one day of the incompressible live-trade currency.",
+      "claim": "The first net-positive backtest configuration (maker\u00b772h\u00b7tp8%/sl4% = +$0.031/slot over 146 trades) is an edge statistically indistinguishable from zero and biased by multiple-comparisons selection.",
       "status": "validated",
-      "evidence": "2026-07-02 \u2014 47-day operator gap; and 2026-07-17 \u2014 Correction: the sequence was valuable; the duration was not (live clock started 2026-07-16; 11 weeks bought 1 day)",
+      "evidence": "2026-07-17 First net-positive cell",
       "next_check": null
     },
     {
-      "claim": "Both base strategies (Bollinger, MA-crossover) fail to clear the bar over a real 6-month window and are retired.",
+      "claim": "All five LLM-surfaced candidates in the 180-day constrained replay lost money net of fees; weekend_illiquidity_momentum was gross-positive but fee-negative, replicating the fee-floor failure shape.",
       "status": "validated",
-      "evidence": "2026-07-02 \u2014 Retire Bollinger and MA-crossover (net \u2212$1,719.44, every n>100 variant negative, only positives at n=3/13)",
+      "evidence": "2026-07-16 Gauntlet results; gauntlet-2026-07-16.md",
       "next_check": null
     },
     {
-      "claim": "The shared-ceiling architecture works: adding variants moves total P&L only through selection within the cap, not through added exposure.",
+      "claim": "Both base strategies (Bollinger Band mean-reversion and MA-crossover) fail to clear the bar over the 6-month window; every variant with n>100 is negative and the only positives run on n=3 and n=13 (noise).",
       "status": "validated",
-      "evidence": "2026-07-02 \u2014 Front-loaded all 12 variants on Day 1 (99.6% rejected, exposure never breached)",
+      "evidence": "2026-07-02 Retire Bollinger and MA-crossover; 6-month replay 2026-01-03 to 2026-07-02, net -$1,719.44",
       "next_check": null
     },
     {
-      "claim": "All five LLM-surfaced candidates lose money net of fees; the gross-positive/fee-negative failure shape replicates on novel strategies.",
+      "claim": "GitHub Actions free-tier */5 cron delivers only ~3-5% of scheduled invocations on public bot-only repos, making the 95% uptime gate unclearable on that platform.",
       "status": "validated",
-      "evidence": "2026-07-16 \u2014 Gauntlet results: every candidate negative net of fees (weekend_illiquidity_momentum gross-positive, fee-negative)",
+      "evidence": "2026-05-23 Migrating cron to Hetzner VPS; six days of cron data 2026-05-17 to 2026-05-23 (4.0% invocation rate)",
       "next_check": null
     },
     {
-      "claim": "Maker fills beat taker fills mechanically \u2014 the cost lever is a validated, reusable engineering advantage.",
+      "claim": "The Hetzner VPS migration mechanically satisfied Phase 2 architectural gate 1 (\u226595% uptime): 11,490+ fetch runs with zero gaps over ~1 hour across the 47-day window.",
       "status": "validated",
-      "evidence": "2026-07-17 \u2014 First net-positive cell (maker beat taker in 12/12 matched pairs, mean +$0.14/slot, near-zero fill loss because the strategy buys drawdowns into resting limits)",
+      "evidence": "2026-07-02 47-day operator gap; VPS ran clean",
       "next_check": null
     },
     {
-      "claim": "drawdown_regime_contrarian_gate's first net-positive cell has a statistically-zero edge (+$0.03/trade on 146 trades, best of 24 cells) and does not warrant burning the holdout.",
+      "claim": "Elapsed calendar time did not produce learning: nearly everything the project learned came from ~48 hours (2026-07-16/17), and eleven weeks of calendar bought only one day of live A/B trade-days (the only incompressible resource).",
       "status": "validated",
-      "evidence": "2026-07-17 \u2014 First net-positive cell; cost lever validated; holdout NOT burned",
+      "evidence": "2026-07-17 Correction: the sequence was valuable; the duration was not",
       "next_check": null
     },
     {
-      "claim": "The gauntlet's detection power is near zero where interesting edges live: reliable detection starts ~+0.6% net; a +0.17%-net edge passes only 32% at n=100 and less with more data.",
+      "claim": "The gauntlet's detection power is near zero where interesting edges live: a true +0.17%-net edge passes only 32% at n=100, and reliable detection starts ~+0.6% net; the +0.3% kill bar has a 21% false-positive rate at n=7.",
       "status": "validated",
-      "evidence": "2026-07-18 \u2014 Power calibration (reports/power-calibration-2026-07-18.json; bootstrap of null arm n=7,068)",
+      "evidence": "2026-07-18 Power calibration; power-calibration-2026-07-18.json",
       "next_check": null
     },
     {
-      "claim": "The +0.3% kill bar has a 21% false-positive rate at n=7, quantitatively vindicating the n<30 quarantine rule.",
+      "claim": "The blind-elicitation exercise produced more validated learning in one day than any week of inside work (ceiling study, power calibration, netting insight, slow-band prior, cost decomposition all trace to it).",
       "status": "validated",
-      "evidence": "2026-07-18 \u2014 Power calibration (r003 slot_scarcity-shaped pass is what noise produces one round in five)",
+      "evidence": "2026-07-18 Outside eyes institutionalized",
       "next_check": null
     },
     {
-      "claim": "The claim '5-min OHLCV has no edge' is only supported as 'no edge >= ~0.6% net detectable by this instrument'; smaller edges remain open.",
+      "claim": "The .env exposure (May 2026) exposed only the ANTHROPIC_API_KEY to a session transcript; git-history search confirmed no real credential was ever committed to the repo.",
       "status": "validated",
-      "evidence": "2026-07-18 \u2014 Power calibration decisions (meta-conclusion DOWNGRADED)",
+      "evidence": "2026-07-16 Post-incident record: .env exposure; git-history search 2026-07-16",
       "next_check": null
     },
     {
-      "claim": "The fixed-n promotion gate (p<0.05 at 100+ closes) has measured power of only ~20-25%.",
+      "claim": "Logging the .env incident ~60 days late lost the facts that would matter in a real postmortem (exact date, echoing command, transcript persistence), while the write-up cost only ten minutes.",
       "status": "validated",
-      "evidence": "2026-07-18 \u2014 Four rulings from the learning-maximization review (promotion gate rebuild)",
+      "evidence": "2026-07-16 Post-incident record: .env exposure",
       "next_check": null
     },
     {
-      "claim": "Blind, unanchored fresh contexts produce more validated learning than inside work because the pipeline's own context accumulates anchoring doctrine.",
+      "claim": "Alpaca crypto venue spreads range 0.07% (BTC) to 0.42% (SOL) versus Binance \u22640.015%, so fees+spread are selectable by symbol/order-type/venue; only slippage requires real trades to measure.",
       "status": "validated",
-      "evidence": "2026-07-18 \u2014 Outside eyes institutionalized (ceiling study, power calibration, netting insight, slow-band prior, cost decomposition all traced to the blind-elicitation exercise)",
+      "evidence": "2026-07-18 Critique-driven reorder: extraction engineering",
       "next_check": null
     },
     {
-      "claim": "The crypto cost floor is per-symbol and partly a choice: Alpaca spreads 0.07% (BTC) to 0.42% (SOL) vs Binance <=0.015%; only slippage requires real trades to measure.",
+      "claim": "Equity time-series momentum in 2024-26 lost to drift in-window (0/9 long-or-flat vs-drift cells); only the cross-sectional 6-1 spread was persistently positive but weakly significant (single-window t\u22481, pooled t\u22481.9, survivorship-inflated).",
       "status": "validated",
-      "evidence": "2026-07-18 \u2014 Critique-driven reorder: extraction engineering (first venue measurements)",
+      "evidence": "2026-07-20 The equity sky check, sober reading",
       "next_check": null
     },
     {
-      "claim": "The combination-stage prize is netting (offsetting signals so cost is never paid), not sqrt-breadth diversification, and is computable offline from persisted trade records.",
+      "claim": "Survivorship is fixable at zero data cost because Alpaca serves full daily bars for delisted names (SIVB, FRC, SBNY, BBBYQ, MULN all returned).",
       "status": "validated",
-      "evidence": "2026-07-18 \u2014 Critique-driven reorder: extraction engineering (combination mechanism corrected)",
+      "evidence": "2026-07-20 B2 corrected-archive registration",
       "next_check": null
     },
     {
-      "claim": "Short-horizon crypto continuation (<=24h, taker) has gross edge below the cost floor at every horizon <=12h and is archived.",
+      "claim": "The survivorship-corrected point-in-time re-score weakened the cross-sectional 6-1 spread: 2020-21 flipped to -2.57%/mo, pooled fell to +1.25%\u00b11.23/mo (t=+1.02), collapsing the pooled t toward zero and flipping a window's sign.",
       "status": "validated",
-      "evidence": "2026-07-20 \u2014 K1 adjudication: short-horizon crypto archived (ceiling-study evidence)",
+      "evidence": "2026-07-20 Corrected equity re-score; equity-sky-pit-2026-07-20.json",
       "next_check": null
     },
     {
-      "claim": "Crypto momentum in 2024-26 is negative/reverting (0/9 cells, -12.4% directional) and equity time-series momentum also lost to drift in-window (0/9 cells).",
+      "claim": "The E2 equity pipeline is validated: cross-sectional 12-1 momentum was detected with the correct sign and the textbook Daniel-Moskowitz momentum-crash signature (-17.3%/yr in 2020-21 rebound, +28.9%/yr in 2024-26).",
       "status": "validated",
-      "evidence": "2026-07-20 \u2014 The equity sky check, sober reading",
+      "evidence": "2026-07-20 E2 round zero: pipeline VALIDATED",
       "next_check": null
     },
     {
-      "claim": "After survivorship correction, the equity cross-sectional 6-1 spread weakens to pooled +1.25%/mo t=+1.02 with a window sign-flip \u2014 no live cross-sectional edge survives.",
+      "claim": "The +14.9%/yr round-zero momentum magnitude is not a deployable edge: far above the pre-registered 2-4%/yr band, only marginally significant (t=1.57, n=59), and ran on a modified pass (n=59 months, not the registered 20+ years) because Alpaca history reaches only ~2021.",
       "status": "validated",
-      "evidence": "2026-07-20 \u2014 Corrected equity re-score (equity-sky-pit-2026-07-20.json; 2020-21 flipped to -2.57%/mo)",
+      "evidence": "2026-07-20 E2 round zero AMENDMENTS",
       "next_check": null
     },
     {
-      "claim": "The equity pipeline is validated: 12-1 momentum detected with correct sign and the textbook Daniel-Moskowitz momentum-crash signature, though the +14.9%/yr magnitude is above the 2-4% band and not deployable.",
+      "claim": "The 59-month equity test window is typical, not a freak regime: French UMD 2021-26 +0.47%/mo vs 1927-present +0.62%/mo, z=-0.26.",
       "status": "validated",
-      "evidence": "2026-07-20 \u2014 E2 round zero: pipeline VALIDATED (magnitude distrusted)",
+      "evidence": "2026-07-20 UMD cross-check result; umd-crosscheck-2026-07-20.json",
       "next_check": null
     },
     {
-      "claim": "The test window (2021-26) is a typical momentum regime, not an outlier: French UMD 2021-26 +0.47%/mo vs +0.62%/mo full history, z=-0.26.",
+      "claim": "The measured equity object is momentum, confirmed chiefly by storm-conditional co-movement: tilt-vs-UMD correlation is +0.49 in high-|UMD| storm months versus +0.09 in calm months (full-sample only +0.26).",
       "status": "validated",
-      "evidence": "2026-07-20 \u2014 UMD cross-check result (umd-crosscheck-2026-07-20.json)",
+      "evidence": "2026-07-20 Identity test result; umd-identity-2026-07-20.json",
       "next_check": null
     },
     {
-      "claim": "The measured equity object is momentum, confirmed chiefly by storm-conditional co-movement with UMD (+0.49 in high-|UMD| months vs +0.09 calm), not by crash timing alone.",
+      "claim": "No single equity price/volume factor clears the best-of-4 hurdle (~1.7t) on the liquid large-cap universe at monthly horizon; momentum is the only positive at t=1.57, the rest noise or negative.",
       "status": "validated",
-      "evidence": "2026-07-20 \u2014 Identity test result (umd-identity-2026-07-20.json)",
+      "evidence": "2026-07-23 E2 round one; equity-gauntlet-2026-07-23.json",
       "next_check": null
     },
     {
-      "claim": "No equity price/volume factor clears the best-of-4 hurdle at monthly horizon on liquid large-caps; the top-500-liquid universe is efficient to simple price factors.",
+      "claim": "The equity price-factor structure (single and combined, across weekly/monthly/quarterly, on liquid large-caps) is a measured NULL: efficient after costs, and multi-factor composites reduce excess/IR versus momentum-alone.",
       "status": "validated",
-      "evidence": "2026-07-23 \u2014 E2 round one: no price-factor candidate (equity-gauntlet-2026-07-23.json)",
+      "evidence": "2026-07-23 E2 equity price-factor structure declared NULL",
       "next_check": null
     },
     {
-      "claim": "The equity price-factor structure (single and combined, weekly/monthly/quarterly, liquid large-caps) is a measured null \u2014 efficient after costs; multi-factor composites reduce excess vs momentum-alone.",
+      "claim": "Crypto shock-fade at a 72h pure hold is a genuine lead but not a candidate: n=18 (fails the n<30 quarantine), horizon-unstable (72h alive t=2.34, 120h dead), and the placebo is itself regime-flipping, so the family rides the 2024-25 reversion regime.",
       "status": "validated",
-      "evidence": "2026-07-23 \u2014 E2 equity price-factor structure declared NULL",
+      "evidence": "2026-07-23 D1 shock-fade: first genuine LEAD, quarantined",
       "next_check": null
     },
     {
-      "claim": "Crypto shock-fade is a genuine lead: at a matched 72h pure hold, shock-fade n=18 net +3.68%/tr t=2.34, beating a volume-agnostic placebo by +2.4%/tr, but it fails the n<30 quarantine and is horizon-unstable (dead at 120h).",
+      "claim": "Directional price prediction of mispricing is the one capability the project never demonstrated across ~40 falsifications in both markets; the realized product is the instrument + registry + knowledge, not returns.",
       "status": "validated",
-      "evidence": "2026-07-23 \u2014 D1 shock-fade: first genuine LEAD, quarantined",
+      "evidence": "2026-07-23 Next chapter set: the instrument is the product",
       "next_check": null
     },
     {
-      "claim": "Directional price-prediction structure is exhausted in both crypto and equity markets (~40 falsifications), so the tradeable edge is not in continuous directional price prediction.",
+      "claim": "Funding carry is venue-blocked on Alpaca (spot-only), so the constitution admitted it only as delta-neutral basis with \u22645%/venue sizing and no capital could move.",
       "status": "validated",
-      "evidence": "2026-07-23 \u2014 Next chapter set: the instrument is the product; 2026-07-23 \u2014 E2 equity price-factor structure declared NULL",
+      "evidence": "2026-07-23 Successor program: execution begins; book/pre-reg-funding-carry-basis.md",
       "next_check": null
     },
     {
-      "claim": "The May 2026 .env exposure surface was the session transcript, not the repository \u2014 a full git-history search confirms no real credential was ever committed.",
+      "claim": "The VRP harvester machine runs end-to-end on Alpaca paper: at the real 20% richness bar it correctly skips (SPY/QQQ/IWM premium 4-15% of width, genuinely thin) and the paper multi-leg order path is confirmed (SPY 705/700p spread accepted, status 200).",
       "status": "validated",
-      "evidence": "2026-07-16 \u2014 Post-incident record: .env exposure (git-history search 2026-07-16)",
+      "evidence": "2026-07-24 VRP harvester built + VRP machine fully validated end-to-end",
       "next_check": null
     },
     {
-      "claim": "Logging incidents the day they happen is essential \u2014 the ~60-day-late .env write-up lost the facts (exact date, echoing command, transcript persistence) that a real postmortem would need.",
+      "claim": "The LLM stand-aside rule as first built was too blunt: it defaulted to generic caution because every 5-week window has a CPI/FOMC and guessed macro dates it couldn't know; refined v2 correctly writes when scheduled events are already priced.",
       "status": "validated",
-      "evidence": "2026-07-16 \u2014 Post-incident record: .env exposure (lessons committed)",
+      "evidence": "2026-07-24 VRP harvester built; VRP machine fully validated end-to-end",
       "next_check": null
     },
     {
-      "claim": "The claude.ai Gmail connector is draft-only (cannot send) and Hetzner blocks outbound port 465 but leaves 587 open, requiring SMTP via 587/STARTTLS.",
+      "claim": "Defined-risk VRP is a breadth game not a size game: ~$25k functional floor, $50-100k sweet spot; expected total-book return ~5-8%/yr of which ~half is T-bill yield on idle cash and the VRP edge adds only ~2-4 points, with a fat negative left tail.",
       "status": "validated",
-      "evidence": "2026-07-17 \u2014 Seam closed for real (delivery confirmed via 587/STARTTLS; cloud digest-mailer disabled)",
+      "evidence": "2026-07-24 VRP machine fully validated end-to-end",
       "next_check": null
     },
     {
-      "claim": "Growing synthesis LENSES 5->8 silently exceeded max_tokens; the truncated tool input validated as {} and died with a misleading 'field missing' error.",
+      "claim": "Moving the option strike closer (0.5-SD) does not create edge: it clears the flat 20% gate ~10x more often only because 20% is too cheap for a strike with ~31% assignment odds; held to its own delta-fair bar the closer strike is fairly paid LESS often than the 1-SD strike.",
       "status": "validated",
-      "evidence": "2026-07-17 \u2014 Seam closed for real (bug found and hardened: max_tokens 16384, raise on stop_reason=max_tokens, 5-of-8 lens rotation)",
+      "evidence": "2026-07-31 Strike-distance calibration; 7 ETFs Feb 2024-Jul 2026 backfill",
       "next_check": null
     },
     {
-      "claim": "The VRP (variance-risk-premium credit-spread) harvester runs end-to-end on Alpaca paper and correctly skips at the real 20% richness bar because index premium is genuinely thin (SPY/QQQ/IWM credit 4-15% of width).",
+      "claim": "The delta-fair bar used to judge VRP richness was partly self-referential because the N(-sd) breakeven comes from the same realized-vol Gaussian that places the strike; no VRP profitability is established, only 'not obviously mispriced'.",
       "status": "validated",
-      "evidence": "2026-07-24 \u2014 VRP harvester built + first live paper run",
-      "next_check": null
-    },
-    {
-      "claim": "The initial LLM stand-aside rule is too blunt to be useful \u2014 it defaults to generic caution because every 5-week window contains a CPI/FOMC, so it would stand aside almost always.",
-      "status": "validated",
-      "evidence": "2026-07-24 \u2014 VRP harvester built + first live paper run (honest finding)",
-      "next_check": null
-    },
-    {
-      "claim": "Realistic VRP return expectation on total book capital is ~5-8%/yr, roughly half of which is T-bill yield on ~75% idle cash; the VRP edge adds only ~2-4 points with a fat negative left tail.",
-      "status": "validated",
-      "evidence": "2026-07-24 \u2014 VRP machine fully validated end-to-end (corrected return expectation)",
-      "next_check": null
-    },
-    {
-      "claim": "Moving the option strike closer (0.5-SD) does not create edge: it clears the flat 20% gate ~10x more often but carries ~31% assignment odds vs ~16% at 1-SD; the market prices every moneyness efficiently.",
-      "status": "validated",
-      "evidence": "2026-07-31 \u2014 Strike-distance calibration: closer strike is a mirage",
-      "next_check": null
-    },
-    {
-      "claim": "TLT was never fairly paid at either strike (0% at 1-SD) \u2014 a possible finding that the equity variance-risk-premium may not exist in rate-driven bond options.",
-      "status": "pending",
-      "evidence": "2026-07-31 \u2014 Strike-distance calibration (TLT dropped); 2026-07-31 \u2014 Feedback incorporated: TLT thread (parked as a lead, not closed)",
-      "next_check": null
-    },
-    {
-      "claim": "The VRP delta-fair bar was partly self-referential (N(-sd) comes from the same realized-vol Gaussian that places the strike); no profitability is established, only 'not obviously mispriced'.",
-      "status": "validated",
-      "evidence": "2026-07-31 \u2014 Feedback incorporated: self-referential fair-bar (shadow readout fixed to judge against market-priced breakeven)",
+      "evidence": "2026-07-31 Feedback incorporated: self-referential fair-bar",
       "next_check": "2026-09-04"
     },
     {
-      "claim": "Charter E (event-venue) is dead at Stage 0: both Kalshi sides die on a structural fee floor \u2014 longshot-sell all-in cost 2-8c (up to 107% of price), near-certainty-buy 3-5c (1.5-5x a 1-2pp edge).",
-      "status": "validated",
-      "evidence": "2026-07-31 \u2014 Charter E DEAD at Stage 0 (event-venue-floor-2026-07-31.json)",
+      "claim": "TLT was never fairly paid at either strike distance (0% at 1-SD, 1.7% at 0.5-SD), suggesting the equity variance-risk-premium may simply not exist in rate-driven bond options.",
+      "status": "pending",
+      "evidence": "2026-07-31 Feedback incorporated; open thread \u2014 TLT",
       "next_check": null
     },
     {
-      "claim": "A max_pages=30 default silently truncated the Kalshi population and hid the entire >90c tail \u2014 the no-silent-caps lesson reproduced in the project's own code.",
+      "claim": "Charter E is dead at Stage 0 on both sides: longshot-sell all-in cost 2-8c (~80-107% of price) and near-certainty-buy 3-5c both dwarf a plausible 1-2pp edge \u2014 a structural Kalshi fee-takeout (~80% at 2.5c), not a market condition.",
       "status": "validated",
-      "evidence": "2026-07-31 \u2014 Charter E DEAD at Stage 0 (process note; fixed max_pages 30->800)",
+      "evidence": "2026-07-31 Charter E DEAD at Stage 0; event-venue-floor-2026-07-31.json",
       "next_check": null
     },
     {
-      "claim": "RECALIBRATION.md's three citation errors (Art 8, rewrite 0.3, Charter S/Service) all trace to a single cause \u2014 it was drafted against constitution v1.0 (9a2bbec88), not the committed v2.0/v2.1.",
+      "claim": "The Kalshi adapter's max_pages=30 default silently truncated the market population and hid the entire >90c tail, reproducing the no-silent-caps failure mode in the project's own code (fixed to max_pages=800).",
       "status": "validated",
-      "evidence": "2026-07-31 \u2014 Forensic adjudication: the Service kill is logged",
+      "evidence": "2026-07-31 Charter E DEAD at Stage 0 process note",
       "next_check": null
     },
     {
-      "claim": "The token-unlock/vesting-calendar lead has the strongest Charter T mechanism (a named forced seller on a published schedule) but no free data source (DefiLlama emissions paywalled, 402), so SEC EDGAR 8-K was chosen instead by mechanism-to-effort ratio.",
+      "claim": "SEC EDGAR 8-K metadata is the best mechanism-to-effort ratio among fetchable text sources (free, stable, ~370 filings/day); the stronger-mechanism token-unlock lead has no free data source (DefiLlama paywalled 402).",
       "status": "validated",
-      "evidence": "2026-07-31 \u2014 Charter T collection STARTED: SEC EDGAR 8-K",
+      "evidence": "2026-07-31 Charter T collection STARTED; feeds/edgar_8k/",
+      "next_check": null
+    },
+    {
+      "claim": "The Option-A commit-back (trader.db/context.db every 5 min) regrows .git to ~11 GB in ~1.5 days, forcing gc cadence from weekly to daily to bound disk before it fills the 38 GB disk mid-week.",
+      "status": "validated",
+      "evidence": "2026-08-03 gc cadence weekly->daily",
+      "next_check": null
+    },
+    {
+      "claim": "A stale citation ('Art 4.2 conflict gate') in the dead Charter E pre-reg propagated by copy into two live drafts, establishing that dead/quarantined documents are citation-quarantined and must be re-grepped before inheritance.",
+      "status": "validated",
+      "evidence": "2026-08-03 Event-market-tape review closed; registry ghost-citation lesson",
+      "next_check": null
+    },
+    {
+      "claim": "The \u00a71.5 premise check found 11 liquid OUTCOME series intersecting 8-K companies but 0 of them resolve within 90 days (all settle 2027-2028 as annual KPIs), so event flow (~1-2/quarter) falls far below the 8/quarter bar.",
+      "status": "validated",
+      "evidence": "2026-08-04 \u00a71.5 premise check RAN; frozen pre-reg 747b3a46e",
+      "next_check": null
+    },
+    {
+      "claim": "The event-market tape's sole remaining consumer (the W3 duel) gates nothing while E\u00b2 is not live, so a duel-only tape loses to the \u00a7B odd-lot premise check on expected value.",
+      "status": "validated",
+      "evidence": "2026-08-04 Event-market tape SHELVED",
       "next_check": null
     }
   ],
   "hypotheses": [
     {
-      "commitment": "By end of the first calendar week of cron operation, the runs table should contain ~2,016 rows with status='ok' (90%+ success rate); if below 90%, investigate before Week 2 strategy-roster review.",
-      "source_entry": "2026-05-17 \u2014 Curriculum anchor is first cron run; cron wire-up; SQLite-in-repo",
-      "due": null,
-      "status": "resolved-against",
-      "resolution": "Resolved against: 2026-05-18/2026-05-23 measured only ~4% invocation rate on GitHub Actions; the hypothesis was amended (2026-05-23) to split invocation vs code-success rate and the platform was migrated to a VPS."
+      "commitment": "The residual crypto program (24h+maker fills and reversion-shaped 2-8 week specs) resolves under kill-criterion v2, gated on the real-money RTC measurement; if the RTC cannot run by 2026-08-15, the residual resolves on the assumed 0.6% cost figure treated as adverse.",
+      "source_entry": "2026-07-20 \u2014 K1 adjudication: short-horizon crypto archived",
+      "due": "2026-08-31",
+      "status": "overdue",
+      "resolution": null
     },
     {
-      "commitment": "By end of Week 2, the operator commits a decision-log entry naming one of three scheduler options (a/b/c); if no decision is committed by end of Week 2, the scheduler issue is the project's most expensive un-made call and the Week 3 build does not begin until it's made.",
+      "commitment": "If the survivorship-corrected re-score flips the cross-sectional sign or collapses pooled t toward zero, the E2 rationale formally reverts to breadth-and-throughput-only and round zero proceeds anyway.",
+      "source_entry": "2026-07-20 \u2014 B2 corrected-archive registration (pre-commitment)",
+      "due": null,
+      "status": "resolved-for",
+      "resolution": "Fired as pre-committed: the 2026-07-20 corrected re-score collapsed pooled t to +1.02 and flipped the 2020-21 window sign, so the E2 rationale reverted to breadth-and-throughput-only and round zero proceeded regardless."
+    },
+    {
+      "commitment": "Round zero pre-registration: detection = the cross-sectional 12-1 long-only US large-cap tilt landing inside or above the literature band (~2-4%/yr over benchmark, post-2000, decaying) with the sign right, at the significance 20+ years of monthly data affords; a noisy positive is NOT detection.",
+      "source_entry": "2026-07-20 \u2014 The equity sky check, sober reading (round-zero pre-registration)",
+      "due": null,
+      "status": "resolved-for",
+      "resolution": "Round zero detected momentum with correct sign and crash signature (pipeline validated), but on a modified pass (n=59 months, not 20+ years) and above-band/marginally-significant magnitude, so the magnitude was explicitly distrusted while pipeline validity was affirmed."
+    },
+    {
+      "commitment": "By end of Week 2 the operator commits a decision-log entry naming one of (a) keep GH cron for fetch+signals, move execute to real scheduler; (b) move signals+execute together now; (c) move everything to one real scheduler before Week 3. If no decision by end of Week 2, the scheduler issue has become the project's most expensive un-made call and the Week 3 build doesn't begin until made.",
       "source_entry": "2026-05-18 \u2014 GH cron cadence does not match assumed 5-min",
       "due": null,
       "status": "resolved-for",
-      "resolution": "Resolved for (option c, everything to a real scheduler): the 2026-05-23 entry migrated the cron to a Hetzner VPS."
+      "resolution": "Superseded/resolved by the 2026-05-23 decision to migrate the entire cron to a Hetzner VPS, which chose a real scheduler and cleared the platform-induced ceiling."
     },
     {
-      "commitment": "By end of Week 2, the Claude-mediated synthesis will produce either (a) a defensible justification for keeping Bollinger and MA-crossover naming which modern-filter criteria they pass/fail, or (b) a defensible alternative roster with the same justification structure; if neither, the LLM-as-epistemological-backbone thesis is weaker than expected and Week 3 starts a postmortem on the reframe.",
+      "commitment": "By end of the first calendar week of cron operation, the runs table should contain ~2,016 rows with status='ok' (90%+ success rate); if below 90%, the issue gets investigated before Week 2 strategy-roster review.",
+      "source_entry": "2026-05-17 \u2014 Curriculum anchor is first cron run",
+      "due": null,
+      "status": "resolved-against",
+      "resolution": "The GH-Actions cron delivered only ~4% invocation rate; the hypothesis was amended on 2026-05-23 to split invocation rate (VPS-controlled) from code success rate, removing the platform-induced ceiling that made the original unfalsifiable."
+    },
+    {
+      "commitment": "By end of Week 2, Claude-mediated synthesis will produce either (a) a defensible justification for keeping Bollinger and MA-crossover naming which modern-filter criteria they pass/fail, or (b) a defensible alternative roster with the same justification structure. If neither is achievable in two weeks, the LLM-as-epistemological-backbone thesis is weaker than expected and Week 3 starts a postmortem on the reframe itself.",
       "source_entry": "2026-04-26 \u2014 Claude as epistemological backbone (project reframe)",
       "due": null,
       "status": "resolved-for",
-      "resolution": "Resolved for (b): the 2026-07-02 retire-Bollinger-and-MA-crossover entry retired both on 6-month evidence and deferred replacement to LLM-surfaced candidates."
-    },
-    {
-      "commitment": "The reframe's falsifiable hypothesis: if neither base strategy clears the bar over a real window, replace them.",
-      "source_entry": "2026-04-26 \u2014 Claude as epistemological backbone (reframe)",
-      "due": null,
-      "status": "resolved-for",
-      "resolution": "Resolved for: 2026-07-02 6-month replay showed every real-sample variant negative; both base strategies retired."
-    },
-    {
-      "commitment": "The residual crypto program (24h+maker fills and reversion-shaped 2-8 week specs) remains alive under kill-criterion v2, resolving by 2026-08-31, gated on the real-money RTC measurement; if the RTC cannot run by 2026-08-15, the residual resolves on the assumed 0.6% cost figure treated as adverse.",
-      "source_entry": "2026-07-20 \u2014 K1 adjudication: short-horizon crypto archived, residual on a dated clock",
-      "due": "2026-08-31",
-      "status": "open",
-      "resolution": null
-    },
-    {
-      "commitment": "By 2026-08-31, and every 6 months thereafter, run the ceiling study per a locked analysis plan; if the one-sided 90% upper-CB of net_edge is below zero at every horizon, a 60-day execution-scoped remediation window opens and if breakeven RTC is still unachievable the program archives.",
-      "source_entry": "2026-07-18 \u2014 Critique-driven reorder (kill criterion v2 draft), ratified 2026-07-19",
-      "due": "2026-08-31",
-      "status": "open",
-      "resolution": null
-    },
-    {
-      "commitment": "Round zero pre-registration: the positive control is cross-sectional 12-1 long-only US large-cap momentum; DETECTION = landing inside or above the ~2-4%/yr literature band with the sign right at the significance 20+ years of monthly data affords; a noisy positive is NOT detection.",
-      "source_entry": "2026-07-20 \u2014 The equity sky check, sober reading",
-      "due": null,
-      "status": "resolved-for",
-      "resolution": "Resolved for (with caveat): 2026-07-20 round zero detected 12-1 momentum with correct sign and the crash signature, but on a modified n=59-month pass (long-history constraint dropped by data availability) at +14.9%/yr above the band; pipeline validated for research use, magnitude distrusted."
-    },
-    {
-      "commitment": "Pre-committed branch (registered before corrected numbers exist): if the corrected re-score flips the cross-sectional sign or collapses pooled t toward zero, the E2 rationale formally reverts to breadth-and-throughput-only and round zero proceeds anyway.",
-      "source_entry": "2026-07-20 \u2014 B2 corrected-archive registration",
-      "due": null,
-      "status": "resolved-for",
-      "resolution": "Resolved for: 2026-07-20 corrected re-score showed pooled t=+1.02 and a window sign-flip, so the rationale reverted to breadth-and-throughput-only and round zero proceeded regardless \u2014 no improvised decision required."
-    },
-    {
-      "commitment": "Equity kill criterion (draft): round zero must first validate the pipeline (detect 12-1 momentum inside/above the 2-4%/yr band with correct sign); a failure there is a build bug, not a market verdict. Once validated: if no equity spec beats the equal-weight benchmark net of costs at a 90% upper-CB with adequate power, the equity program archives.",
-      "source_entry": "2026-07-23 \u2014 E2 OPENED: equity cross-sectional program",
-      "due": null,
-      "status": "resolved-against",
-      "resolution": "Resolved against equity price-factors: 2026-07-23 declared the equity price-factor structure NULL (efficient after costs); the equity program pauses (not closed), reopening with fundamentals/small-cap or a non-price structure."
-    },
-    {
-      "commitment": "rejection_streak_gated_ignition / the gate family gets an out-of-sample re-test on the NEXT 180d window before any gate-family idea is judged again; that result decides whether the gate fits the current regime or best-of-round is what recency overfit looks like.",
-      "source_entry": "2026-07-17 \u2014 Seam closed for real; first fully autonomous cycle ran",
-      "due": null,
-      "status": "open",
-      "resolution": null
-    },
-    {
-      "commitment": "The VRP book verdict is PENDING; the forward shadow P&L is the sole real test and has not spoken, with first resolutions ~2026-09-04.",
-      "source_entry": "2026-07-31 \u2014 Feedback incorporated: self-referential fair-bar; TLT thread",
-      "due": "2026-09-04",
-      "status": "open",
-      "resolution": null
-    },
-    {
-      "commitment": "Charter E reactivation trigger: a changed Kalshi fee schedule prompts a fresh Stage 0 re-measurement from scratch \u2014 never a resumed standing collection; otherwise Charter E stays dead.",
-      "source_entry": "2026-07-31 \u2014 Kalshi crons sunset (Charter E shelved, adapter retained)",
-      "due": null,
-      "status": "open",
-      "resolution": null
-    },
-    {
-      "commitment": "Every future Charter T sub-hypothesis's 'forward-only from' date is 2026-07-31 (UTC); no 8-K dated earlier may be in-sample.",
-      "source_entry": "2026-07-31 \u2014 Charter T collection STARTED: SEC EDGAR 8-K",
-      "due": null,
-      "status": "open",
-      "resolution": null
+      "resolution": "The 2026-07-02 entry retired both base strategies on 6-month evidence and deferred a defensible alternative roster (LLM-surfaced candidates), matching branch (b)."
     }
   ],
   "overdue": []
