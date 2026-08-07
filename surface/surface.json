@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-07T15:35:09Z",
+  "generated_at": "2026-08-07T15:40:09Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 04s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 05s ago · 5 open · $1,000 exposure",
     "pipeline_line": "round 008 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
@@ -14,7 +14,7 @@
     "tile_best": "volume_thrust_regime_shift $-7.08",
     "tile_ab": "114/100 null closes",
     "tile_research": "46 ideas · 8 rounds",
-    "tile_days": "day 82"
+    "tile_days": "day 83"
   },
   "kahneman": {
     "trigger": "pre-review · anchoring",
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-07T15:35:04.336440+00:00",
-    "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-07 · 15:35 UTC",
-    "next_run_human": "59m 55s",
-    "uptime_recent": "21865 of 21885 ok · 99.9%",
+    "last_run_iso": "2026-08-07T15:40:04.450368+00:00",
+    "last_run_human": "0m 05s ago",
+    "last_run_human_date": "2026-08-07 · 15:40 UTC",
+    "next_run_human": "59m 54s",
+    "uptime_recent": "21866 of 21886 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -48,7 +48,7 @@
     },
     {
       "name": "phase 2 gates",
-      "qual": "curriculum day 82 · open after week 4",
+      "qual": "curriculum day 83 · open after week 4",
       "figure": "1",
       "unit": "/3",
       "spark": "▁▁▁▁▁▁▁▁",
@@ -92,53 +92,53 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "304,139",
+      "count": "304,144",
       "delta": "+1445",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "304139"
+      "value": "304144"
     },
     {
       "name": "bar coverage",
       "count": "94%",
       "delta": "-80",
       "delta_class": "note",
-      "spark": "█▅▅█▅▁▄▇",
+      "spark": "█▅▅█▅▁▃▇",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "94"
     },
     {
       "name": "cron runs",
-      "count": "21,885",
+      "count": "21,886",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "21885"
+      "value": "21886"
     },
     {
       "name": "llm calls",
       "count": "88",
       "delta": "+9",
       "delta_class": null,
-      "spark": "▁▁▁█▂▁▁▁",
+      "spark": "▁▁▁█▁▁▁▁",
       "spark_class": null,
       "key": "llm_calls",
       "value": "88"
     },
     {
       "name": "decisions",
-      "count": "51,048",
-      "delta": "+2793",
+      "count": "51,054",
+      "delta": "+2794",
       "delta_class": null,
-      "spark": "▃▁█▃█▆▄▅",
+      "spark": "▄▁█▃█▇▄▅",
       "spark_class": null,
       "key": "decisions",
-      "value": "51048"
+      "value": "51054"
     },
     {
       "name": "letters",
