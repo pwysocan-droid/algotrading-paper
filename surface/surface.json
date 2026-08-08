@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-08T07:55:08Z",
+  "generated_at": "2026-08-08T08:00:09Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-08T07:55:04.265241+00:00",
+    "last_run_iso": "2026-08-08T08:00:04.715845+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-08 · 07:55 UTC",
+    "last_run_human_date": "2026-08-08 · 08:00 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "22061 of 22081 ok · 99.9%",
+    "uptime_recent": "22062 of 22082 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "304,978",
-      "delta": "+1340",
+      "count": "304,981",
+      "delta": "+1338",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "304978"
+      "value": "304981"
     },
     {
       "name": "bar coverage",
       "count": "88%",
-      "delta": "-172",
+      "delta": "-173",
       "delta_class": "note",
-      "spark": "▅▇█▇▂▁▄▁",
+      "spark": "▅▇█▇▁▁▃▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "88"
     },
     {
       "name": "cron runs",
-      "count": "22,081",
+      "count": "22,082",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "22081"
+      "value": "22082"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "52,723",
-      "delta": "+2662",
+      "count": "52,730",
+      "delta": "+2664",
       "delta_class": null,
-      "spark": "██▃█▂▁▆▁",
+      "spark": "▇█▃▇▂▁▅▁",
       "spark_class": null,
       "key": "decisions",
-      "value": "52723"
+      "value": "52730"
     },
     {
       "name": "letters",
