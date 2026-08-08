@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-08-08T03:30:08Z",
+  "generated_at": "2026-08-08T03:35:09Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
   },
   "topline": {
-    "now_line": "cycle 0m 04s ago · 5 open · $1,000 exposure",
+    "now_line": "cycle 0m 04s ago · 4 open · $800 exposure",
     "pipeline_line": "round 008 · 5 ideas · waiting on implementer (cloud 08:00/20:00 UTC)",
     "health_line": "all clear",
     "health_warn": false,
-    "tile_pnl": "-$180.80",
-    "tile_pnl_sub": "117 closed · 36% win",
+    "tile_pnl": "-$179.95",
+    "tile_pnl_sub": "118 closed · 36% win",
     "tile_best": "volume_thrust_regime_shift $-7.08",
-    "tile_ab": "116/100 null closes",
+    "tile_ab": "117/100 null closes",
     "tile_research": "46 ideas · 8 rounds",
     "tile_days": "day 83"
   },
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-08T03:30:03.717083+00:00",
+    "last_run_iso": "2026-08-08T03:35:04.314087+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-08 · 03:30 UTC",
+    "last_run_human_date": "2026-08-08 · 03:35 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "22008 of 22028 ok · 99.9%",
+    "uptime_recent": "22009 of 22029 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -83,8 +83,8 @@
     {
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-08-07",
-      "detail": "Your pipeline is a metronome with no one listening. Seven runs in thirty minutes, all 'ok', all a...",
+      "thing": "Nightly skeptic · 2026-08-08",
+      "detail": "Your pipeline is a metronome masking stasis. Seven runs of identical health across five minutes t...",
       "kind": "ops",
       "promoted": false
     }
@@ -92,53 +92,53 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "304,753",
+      "count": "304,758",
       "delta": "+1367",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "304753"
+      "value": "304758"
     },
     {
       "name": "bar coverage",
       "count": "89%",
-      "delta": "-157",
+      "delta": "-156",
       "delta_class": "note",
-      "spark": "▆▅▆█▇▅▂▁",
+      "spark": "▆▄▆█▇▅▂▁",
       "spark_class": null,
       "key": "bar_coverage",
       "value": "89"
     },
     {
       "name": "cron runs",
-      "count": "22,028",
+      "count": "22,029",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "22028"
+      "value": "22029"
     },
     {
       "name": "llm calls",
-      "count": "88",
-      "delta": "+9",
+      "count": "89",
+      "delta": "+2",
       "delta_class": null,
-      "spark": "█▁▁▁▁▁▁▁",
+      "spark": "█▁▁▁▁▁▁█",
       "spark_class": null,
       "key": "llm_calls",
-      "value": "88"
+      "value": "89"
     },
     {
       "name": "decisions",
-      "count": "52,289",
-      "delta": "+2722",
+      "count": "52,326",
+      "delta": "+2753",
       "delta_class": null,
-      "spark": "█▅▅▅▅▁▁▄",
+      "spark": "█▆▄▅▅▂▁▆",
       "spark_class": null,
       "key": "decisions",
-      "value": "52289"
+      "value": "52326"
     },
     {
       "name": "letters",
@@ -213,15 +213,15 @@
     }
   ],
   "llm": {
-    "total_calls": 88,
-    "total_cost_usd": 7.0084,
+    "total_calls": 89,
+    "total_cost_usd": 7.0104,
     "by_caller": [
       {
         "called_from": "adversarial_cron",
         "model": "claude-haiku-4-5",
-        "calls": 22,
-        "tokens": 22345,
-        "cost_usd": 0.0492
+        "calls": 23,
+        "tokens": 23306,
+        "cost_usd": 0.0512
       },
       {
         "called_from": "learnings_ledger",
@@ -330,18 +330,18 @@
       {
         "name": "null_baseline",
         "placed": 121,
-        "open": 5,
-        "closed": 116,
-        "wins": 42,
-        "win_rate": 0.3620689655172414,
-        "pnl_usd": -173.72
+        "open": 4,
+        "closed": 117,
+        "wins": 43,
+        "win_rate": 0.36752136752136755,
+        "pnl_usd": -172.87
       }
     ],
     "total": {
       "placed": 122,
-      "open": 5,
-      "closed": 117,
-      "pnl_usd": -180.8
+      "open": 4,
+      "closed": 118,
+      "pnl_usd": -179.95
     }
   }
 }

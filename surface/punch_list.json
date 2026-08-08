@@ -27,11 +27,11 @@
       "promoted": false
     },
     {
-      "id": "ops:Nightly skeptic · 2026-08-07",
+      "id": "ops:Nightly skeptic · 2026-08-08",
       "when": "open",
       "when_class": "open",
-      "thing": "Nightly skeptic · 2026-08-07",
-      "detail": "Your pipeline is a metronome with no one listening. Seven runs in thirty minutes, all 'ok', all a...",
+      "thing": "Nightly skeptic · 2026-08-08",
+      "detail": "Your pipeline is a metronome masking stasis. Seven runs of identical health across five minutes t...",
       "kind": "ops",
       "promoted": false
     }
