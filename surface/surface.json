@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-08T01:35:09Z",
+  "generated_at": "2026-08-08T01:40:08Z",
   "masthead": {
     "title": "algotrading-paper",
     "sub": "live"
@@ -22,11 +22,11 @@
     "attribution": "— after Kahneman & Tversky, 1974"
   },
   "vitals": {
-    "last_run_iso": "2026-08-08T01:35:04.309911+00:00",
+    "last_run_iso": "2026-08-08T01:40:03.795364+00:00",
     "last_run_human": "0m 04s ago",
-    "last_run_human_date": "2026-08-08 · 01:35 UTC",
+    "last_run_human_date": "2026-08-08 · 01:40 UTC",
     "next_run_human": "59m 55s",
-    "uptime_recent": "21985 of 22005 ok · 99.9%",
+    "uptime_recent": "21986 of 22006 ok · 99.9%",
     "cron_interval_seconds": 3600
   },
   "state": [
@@ -92,33 +92,33 @@
   "accumulating": [
     {
       "name": "bars",
-      "count": "304,660",
-      "delta": "+1389",
+      "count": "304,664",
+      "delta": "+1388",
       "delta_class": null,
       "spark": "▁▂▃▄▅▆▇█",
       "spark_class": "growing",
       "key": "bars",
-      "value": "304660"
+      "value": "304664"
     },
     {
       "name": "bar coverage",
-      "count": "91%",
-      "delta": "-136",
+      "count": "90%",
+      "delta": "-137",
       "delta_class": "note",
-      "spark": "█▆▄▇█▇▃▁",
+      "spark": "█▆▅▇██▃▁",
       "spark_class": null,
       "key": "bar_coverage",
-      "value": "91"
+      "value": "90"
     },
     {
       "name": "cron runs",
-      "count": "22,005",
+      "count": "22,006",
       "delta": "+288",
       "delta_class": null,
       "spark": "▅▅▅▅▅▅▅▅",
       "spark_class": null,
       "key": "cron_runs",
-      "value": "22005"
+      "value": "22006"
     },
     {
       "name": "llm calls",
@@ -132,13 +132,13 @@
     },
     {
       "name": "decisions",
-      "count": "52,057",
-      "delta": "+2695",
+      "count": "52,074",
+      "delta": "+2697",
       "delta_class": null,
-      "spark": "▅▆▇▇▄█▂▁",
+      "spark": "▅▆▇█▄█▃▁",
       "spark_class": null,
       "key": "decisions",
-      "value": "52057"
+      "value": "52074"
     },
     {
       "name": "letters",
