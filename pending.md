@@ -31,7 +31,7 @@ machine-managed by adversarial_cron.py — replaced nightly, don't edit.
   when: open
   kind: ops
 
-- thing: "Nightly skeptic · 2026-08-07"
-  detail: "Your pipeline is a metronome with no one listening. Seven runs in thirty minutes, all 'ok', all a..."
+- thing: "Nightly skeptic · 2026-08-08"
+  detail: "Your pipeline is a metronome masking stasis. Seven runs of identical health across five minutes t..."
   when: open
   kind: ops
